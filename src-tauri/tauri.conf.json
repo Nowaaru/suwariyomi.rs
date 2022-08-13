@@ -7,8 +7,8 @@
         "distDir": "../dist"
     },
     "package": {
-        "productName": "tauri-test",
-        "version": "0.1.0"
+        "productName": "suwariyomi.rs",
+        "version": "1.0.3"
     },
     "tauri": {
         "allowlist": {
@@ -56,7 +56,7 @@
         "windows": [
             {
                 "label": "main",
-                "title": "Tauri Test",
+                "title": "suwariyomi.rs",
                 "fullscreen": false,
                 "decorations": true,
                 "resizable": true,

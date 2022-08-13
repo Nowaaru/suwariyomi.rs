@@ -14,9 +14,20 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "preserve",
-    "jsxFactory": "h",
-    "jsxFragmentFactory": "Fragment"
+    "jsx": "react-jsx",
+
+    "baseUrl": ".",
+    "paths": {
+      "src/assets/*": [
+        "src/assets/*"
+      ],
+      "src/components/*": [
+        "src/components/*"
+      ],
+      "src/pages/*": [
+        "src/pages/*"
+      ],
+    }
   },
   "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }]

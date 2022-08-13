@@ -1,14 +1,15 @@
+import React from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import './assets/app.css';
 
 // Page Imports
-import BaseClass from "./pages/base";
+import BaseClass from "./pages/main";
 import SplashScreen from "./pages/splash";
+
 // TODO: Instead of directly writing the routes with the target page
 //      we should use a function to setup any additional logic (i.e. redirecting),
 //      and then return the logic after all is done.
 
-export function App() {
+export default function App() {
     return (
         <BrowserRouter>
             <Routes>

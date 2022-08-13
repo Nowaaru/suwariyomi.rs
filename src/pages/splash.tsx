@@ -1,24 +1,27 @@
+import React from "react";
+import AppImage from "../assets/icon.png";
+
 const SplashScreen = () => {
     return (
         <div
             style={{
-                backgroundColor: '#FFFFFF00',
-                'border-radius': '10px',
-                background: 'white',
-                overflow: 'hidden',
+                backgroundColor: "#FFFFFF00",
+                borderRadius: "10px",
+                background: "white",
+                overflow: "hidden",
             }}
         >
             <h1
                 style={{
-                    color: '#FFFFFF',
-                    'text-align': 'center',
-                    'font-size': '3em',
-                    'font-weight': 'bold',
-                    'margin-top': '1em',
-                    'textShadow': '1px 1px 1px #000000',
+                    color: "#FFFFFF",
+                    borderRadius: "center",
+                    fontSize: "3em",
+                    fontWeight: "bold",
+                    marginTop: "1em",
+                    textShadow: "1px 1px 1px #000000",
                 }}
             >
-                <img src=""
+                <img src={AppImage} />
             </h1>
         </div>
     );

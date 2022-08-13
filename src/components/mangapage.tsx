@@ -1,3 +1,3 @@
-export const MangaPage = () => {
-    
+export default function MangaPage() {
+    return <canvas />;
 }
