@@ -1,7 +1,9 @@
 
 import { useState } from 'preact/hooks';
-import '../app.css';
 import preactLogo from '../assets/preact.svg';
+
+import './app.css';
+import './index.css';
 
 const BaseClass = () => {
     const [count, setCount] = useState(0)

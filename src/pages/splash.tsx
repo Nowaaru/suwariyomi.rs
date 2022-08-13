@@ -1,12 +1,27 @@
-
 const SplashScreen = () => {
     return (
-        <div style={{
-            background: 'red',
-        }}>
-            <h1>Splash Screen</h1>
+        <div
+            style={{
+                backgroundColor: '#FFFFFF00',
+                'border-radius': '10px',
+                background: 'white',
+                overflow: 'hidden',
+            }}
+        >
+            <h1
+                style={{
+                    color: '#FFFFFF',
+                    'text-align': 'center',
+                    'font-size': '3em',
+                    'font-weight': 'bold',
+                    'margin-top': '1em',
+                    'textShadow': '1px 1px 1px #000000',
+                }}
+            >
+                感 kanjiru
+            </h1>
         </div>
-    )   
-}
+    );
+};
 
 export default SplashScreen;

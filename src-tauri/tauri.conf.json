@@ -74,8 +74,8 @@
                 "maxWidth": 400,
                 "maxHeight": 200,
                 "decorations": false,
+                "transparent": true,
                 "center": true,
-
                 "url": "splash"
             }
         ]

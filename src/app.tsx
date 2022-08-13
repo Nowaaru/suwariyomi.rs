@@ -1,4 +1,5 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import './assets/app.css';
 
 // Page Imports
 import BaseClass from "./pages/base";
