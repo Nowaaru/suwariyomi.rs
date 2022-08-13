@@ -1,11 +1,11 @@
 [package]
-name = "app"
-version = "0.1.0"
-description = "A Tauri App"
+name = "suwariyomi-rs"
+version = "0.1.3"
+description = "A rusty manga reader."
 authors = ["you"]
 license = ""
 repository = ""
-default-run = "app"
+default-run = "suwariyomi-rs"
 edition = "2021"
 rust-version = "1.57"
 
