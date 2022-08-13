@@ -5,6 +5,7 @@
 import "jest";
 import * as ReactDOM from "react-dom";
 import { css, StyleSheet } from "../util/aphrodite";
+import { getComputedStyle } from "./utilities/tsx";
 
 describe("Aphrodite", () => {
     const styles = StyleSheet.create({
@@ -48,9 +49,9 @@ describe("Aphrodite", () => {
             expect(dom_conversion?.className).not.toBe("");
             if (dom_conversion) {
                 expect(
-                    document.defaultView
-                        ?.getComputedStyle(dom_conversion, null)
-                        .getPropertyValue("background-color")
+                    getComputedStyle(
+                        dom_conversion as HTMLElement
+                    ).getPropertyValue("background-color")
                 ).toBe("red");
             }
         });
