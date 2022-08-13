@@ -8,7 +8,7 @@
     },
     "package": {
         "productName": "suwariyomi.rs",
-        "version": "1.0.3"
+        "version": "0.2.0"
     },
     "tauri": {
         "allowlist": {
