@@ -1,37 +1,31 @@
 {
-  "compilerOptions": {
-    "target": "ESNext",
-    "useDefineForClassFields": true,
-    "lib": ["DOM", "DOM.Iterable", "ESNext"],
-    "allowJs": false,
-    "skipLibCheck": true,
-    "esModuleInterop": false,
-    "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "module": "ESNext",
-    "moduleResolution": "Node",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
-    "jsx": "react-jsx",
-
-    "baseUrl": ".",
-    "paths": {
-      "src/assets/*": [
-        "src/assets/*"
-      ],
-      "src/components/*": [
-        "src/components/*"
-      ],
-      "src/pages/*": [
-        "src/pages/*"
-      ],
-      "aphrodite": [
-        "src/util/aphrodite.ts"
-      ],
-    }
-  },
-  "include": ["src"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+    "compilerOptions": {
+        "target": "ESNext",
+        "useDefineForClassFields": true,
+        "lib": ["DOM", "DOM.Iterable", "ESNext"],
+        "allowJs": false,
+        "skipLibCheck": true,
+        "esModuleInterop": false,
+        "allowSyntheticDefaultImports": true,
+        "strict": true,
+        "forceConsistentCasingInFileNames": true,
+        "module": "ESNext",
+        "moduleResolution": "Node",
+        "resolveJsonModule": true,
+        "isolatedModules": false,
+        "noEmit": true,
+        "jsx": "react-jsx",
+        "types": ["jest", "node"],
+        "baseUrl": ".",
+        "paths": {
+            "assets/*": ["src/assets/*"],
+            "components/*": ["src/components/*"],
+            "pages/*": ["src/pages/*"],
+            "util/*": ["src/util/*"],
+            "src/*": ["src/*"],
+            "aphrodite": ["src/util/aphrodite.ts"]
+        }
+    },
+    "include": ["src"],
+    "references": [{ "path": "./tsconfig.node.json" }]
 }
