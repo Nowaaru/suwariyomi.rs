@@ -1,9 +1,9 @@
-// import { css as ecss } from "@emotion/react";
+import { css as emotion_css } from "@emotion/css";
 import type { CSSProperties } from "react";
 
-interface Styles {
-    [key: string]: CSSProperties;
-}
+type Styles<T = unknown> = {
+    [K in keyof T]: CSSProperties;
+};
 
 class Style {
     constructor(
@@ -18,43 +18,34 @@ class Style {
     public _value: CSSProperties[keyof CSSProperties];
 }
 
-class StyleSheetObject {
-    constructor(styles: Styles) {
-        this.internals = { styles: {} };
+export class StyleSheet {
+    static create<TYPE>(styles: Styles<TYPE>): {
+        [KEY in keyof TYPE]: Style;
+    } {
+        const result: Record<string, Style> = {};
+        (Object.keys(styles) as (keyof TYPE)[]).forEach((key: keyof TYPE) => {
+            result[key as string] = new Style(
+                key as string as keyof CSSProperties,
+                styles[key] as CSSProperties[keyof CSSProperties]
+            );
+        });
 
-        for (const identifier in styles) {
-            /*
-                Styles {
-                    button_div: {
-                        display: 'flex',
-                        flexDirection: 'column',
-                    }
-                }
-                */
-            const styles_ref = styles[identifier];
-            for (const style in styles_ref) {
-                this.internals.styles[identifier] = new Style(
-                    style as keyof CSSProperties,
-                    styles_ref[style as keyof CSSProperties]
-                );
-            }
-        }
-    }
-
-    public concat(object: StyleSheetObject) {
-        this.internals.styles = {
-            ...this.internals.styles,
-            ...object.internals.styles,
+        return result as {
+            [KEY in keyof TYPE]: Style;
         };
     }
-
-    public internals: {
-        styles: { [key: string]: Style };
-    };
 }
 
-export class StyleSheet {
-    static create(styles: Styles) {
-        return new StyleSheetObject(styles);
-    }
+export function css(...styles: (Style | false)[]) {
+    const CSSValues: {
+        [KEY in keyof CSSProperties]: CSSProperties[keyof CSSProperties];
+    } = {};
+
+    styles.forEach((style: Style | false) => {
+        if (style) {
+            CSSValues[style._key] = style._value;
+        }
+    });
+
+    return emotion_css(CSSValues as Record<string, string>);
 }
