@@ -9,6 +9,12 @@ import SplashScreen from "./pages/splash";
 //      we should use a function to setup any additional logic (i.e. redirecting),
 //      and then return the logic after all is done.
 
+// TODO: Don't even think about using Enmaps. Use a Rust database library instead.
+
+// TODO: Instead of having settings handled by react, create a Settings module
+//      in Rust with a serializer function, then use Tauri to stream the serialized
+//      settings to the client.
+
 export default function App() {
     return (
         <BrowserRouter>
