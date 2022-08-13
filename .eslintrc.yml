@@ -4,6 +4,7 @@ env:
 extends:
     - eslint:recommended
     - plugin:react/recommended
+    - plugin:import/recommended
     - plugin:@typescript-eslint/recommended
 parser: "@typescript-eslint/parser"
 parserOptions:
@@ -13,8 +14,16 @@ parserOptions:
     sourceType: module
 plugins:
     - "@typescript-eslint"
+    - import
     - react
     - jest
+settings:
+    "@typescript-eslint/parser":
+        - ".ts"
+        - ".tsx"
+    "import/resolver": 
+        typescript:
+            alwaysTryTypes: true
 rules:
     react/react-in-jsx-scope: off
     indent:
