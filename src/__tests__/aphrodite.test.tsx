@@ -35,14 +35,24 @@ describe("Aphrodite", () => {
     describe("effectiveness in-dom", () => {
         it("should be able to apply to a DOM element", () => {
             ReactDOM.render(
-                <div id="item" className={css(styles.jerry, styles.george)} />,
+                <div id="item" className={css(styles.jerry)} />,
                 document.body.appendChild(document.createElement("div"))
             );
 
             const dom_conversion = document.getElementById("item");
             expect(dom_conversion).toBeDefined();
 
+            // these two have to be separate because there was an error that
+            // appleid the css styling to the element, but the declarations
+            // were not applied to the element.
             expect(dom_conversion?.className).not.toBe("");
+            if (dom_conversion) {
+                expect(
+                    document.defaultView
+                        ?.getComputedStyle(dom_conversion, null)
+                        .getPropertyValue("background-color")
+                ).toBe("red");
+            }
         });
     });
 });

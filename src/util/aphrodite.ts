@@ -47,5 +47,5 @@ export function css(...styles: (Style | false)[]) {
         }
     });
 
-    return emotion_css(CSSValues as Record<string, string>);
+    return emotion_css(...Object.values(CSSValues as Record<string, string>));
 }
