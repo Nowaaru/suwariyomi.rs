@@ -18,7 +18,7 @@ const SplashScreen = () => {
                     'textShadow': '1px 1px 1px #000000',
                 }}
             >
-                感 kanjiru
+                <img src=""
             </h1>
         </div>
     );
