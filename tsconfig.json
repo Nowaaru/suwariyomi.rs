@@ -27,6 +27,9 @@
       "src/pages/*": [
         "src/pages/*"
       ],
+      "aphrodite": [
+        "src/util/aphrodite.ts"
+      ],
     }
   },
   "include": ["src"],
