@@ -18,15 +18,18 @@ async fn main() {
                 let window = app.get_window("splashscreen").unwrap();
                 window.set_always_on_top(true)?;
                 tauri::async_runtime::spawn(async move {
-                    // setup garbo
-                    println!("Initializing..!");
                     std::thread::sleep(std::time::Duration::from_secs_f64(8.0));
-                    println!("Done!");
-
                     if let Ok(()) = handlers::splash_close(window) {
-                        println!("splash screen closed.");
                         if let Ok(()) = window_main.show() {
                             window_main.open_devtools();
+
+                            if let Ok(()) = window_main.set_focus() {
+                                Ok(())
+                            } else {
+                                Ok(())
+                            }
+                        } else {
+                            Err(errors::InternalError::new("unable to show main window"))
                         }
                     } else {
                         panic!("splash screen failed to close.")
@@ -36,7 +39,7 @@ async fn main() {
 
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![crate::handlers::splash_close])
+        .invoke_handler(tauri::generate_handler![handlers::splash_close])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
