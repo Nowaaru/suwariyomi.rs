@@ -50,13 +50,13 @@ const BasePage = () => {
                     filter: "brightness(0.8)",
                 },
                 animation: `${keyframes`
-						from {
-							transform: rotate(0deg);
-						}
-						to {
-							transform: rotate(360deg);
-						}
-					`} infinite 20s linear`,
+                        from {
+                            transform: rotate(0deg);
+                        }
+                        to {
+                            transform: rotate(360deg);
+                        }
+                    `} infinite 20s linear`,
             },
 
             card: {
