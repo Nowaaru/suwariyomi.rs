@@ -13,24 +13,26 @@ mod handlers;
 async fn main() {
     tauri::Builder::default()
         .setup(|app| {
+            let window_main = app.get_window("main").unwrap();
             let _splash_screen = {
                 let window = app.get_window("splashscreen").unwrap();
-                window.open_devtools();
-
+                window.set_always_on_top(true)?;
                 tauri::async_runtime::spawn(async move {
                     // setup garbo
                     println!("Initializing..!");
-                    std::thread::sleep(std::time::Duration::from_secs_f64(5.0));
+                    std::thread::sleep(std::time::Duration::from_secs_f64(8.0));
                     println!("Done!");
 
                     if let Ok(()) = handlers::splash_close(window) {
-                       println!("Splash screen closed.");
+                        println!("splash screen closed.");
+                        if let Ok(()) = window_main.show() {
+                            window_main.open_devtools();
+                        }
+                    } else {
+                        panic!("splash screen failed to close.")
                     }
                 })
             };
-
-            let window = app.get_window("main").unwrap();
-            window.open_devtools();
 
             Ok(())
         })
