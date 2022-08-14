@@ -1,7 +1,10 @@
-import { css as emotion_css, keyframes as emotion_keyframes } from "@emotion/css";
+import {
+    css as emotion_css,
+    keyframes as emotion_keyframes,
+} from "@emotion/css";
 import type { CSSProperties } from "react";
 type Styles<T = unknown> = {
-    [K in keyof T]: CSSProperties & { [P in keyof T[K]]: CSSProperties };
+    [K in keyof T]: CSSProperties | Styles<T[K]>;
 };
 class Style {
     constructor(
