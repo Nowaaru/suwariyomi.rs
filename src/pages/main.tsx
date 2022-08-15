@@ -26,7 +26,7 @@ const BasePage = () => {
                 width: "100vw",
                 height: "100vh",
                 margin: "0 auto",
-                padding: "2rem",
+                padding: "2rem 0rem",
                 textAlign: "center",
 
                 "@media(prefers-color-scheme: light)": {

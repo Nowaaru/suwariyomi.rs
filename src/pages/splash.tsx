@@ -16,13 +16,6 @@ const styles = StyleSheet.create({
 
         transform: "scale(1)",
         filter: "blur(0)",
-        // animation: `${`
-        // 35% {transform: scale(1) rotate(0deg); filter: blur(0);}
-        // 40% {transform: scale(0.8) rotate(0deg);}
-        // 40.01% {transform: scale(0.8) rotate(0deg); filter: blur(4px);}
-        // 95% {transform: scale(0.8) rotate(calc(360deg * 8)); filter: blur(4px);}
-        // 95.01% {filter: blur(0); transform: scale(0.8) rotate(0deg);}`} infinite 4s linear`,
-
         animation: new Animation({
             ["35%"]: {
                 transform: "scale(1) rotate(0deg)",
