@@ -15,11 +15,16 @@ rust-version = "1.57"
 tauri-build = { version = "1.0.4", features = [] }
 
 [dependencies]
-reqwest = "0.11.11"
-serde_json = "1.0"
-serde = { version = "1.0", features = ["derive"] }
 tauri = { version = "1.0.5", features = ["api-all", "clipboard", "devtools", "fs-extract-api", "icon-ico", "reqwest-client"] }
+reqwest = { version = "0.11", features = ["json", "stream"] }
+serde = { version = "1.0", features = ["derive"] }
 tokio = { version = "1.20.1", features = ["full"] }
+bindet = { version = "0.3.2", features = ["mime"] }
+futures-util = "0.3.23"
+serde_json = "1.0"
+error = "0.1.9"
+mime = "0.3.16"
+bytes = "1.2.1"
 
 [features]
 # by default Tauri runs in production mode
