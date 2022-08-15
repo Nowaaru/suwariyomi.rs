@@ -4,7 +4,7 @@
 
 import "jest";
 import * as ReactDOM from "react-dom";
-import { css, StyleSheet } from "../util/aphrodite";
+import { css, StyleSheet } from "aphrodite";
 import { getComputedStyle } from "./utilities/tsx";
 
 describe("Aphrodite", () => {
