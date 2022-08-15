@@ -3,11 +3,14 @@
  */
 
 import "jest";
-import * as ReactDOM from "react-dom";
-import { css, StyleSheet } from "aphrodite";
+import { createRoot } from "react-dom/client";
+import { css, StyleSheet } from "../../src/util/aphrodite";
 import { getComputedStyle } from "./utilities/tsx";
 
 describe("Aphrodite", () => {
+    const root = createRoot(
+        document.body.appendChild(document.createElement("div"))
+    );
     const styles = StyleSheet.create({
         jerry: {
             backgroundColor: "red" /* this one's pretty mad! */,
@@ -35,10 +38,7 @@ describe("Aphrodite", () => {
 
     describe("effectiveness in-dom", () => {
         it("should be able to apply to a DOM element", () => {
-            ReactDOM.render(
-                <div id="item" className={css(styles.jerry)} />,
-                document.body.appendChild(document.createElement("div"))
-            );
+            root.render(<div className={css(styles.jerry)} />);
 
             const dom_conversion = document.getElementById("item");
             expect(dom_conversion).toBeDefined();
