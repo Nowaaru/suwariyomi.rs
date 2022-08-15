@@ -1,4 +1,4 @@
-import { css, keyframes, StyleSheet } from "aphrodite";
+import { css, Animation, StyleSheet } from "aphrodite";
 import { useMemo, useState } from "react";
 import reactLogo from "../assets/react.svg";
 
@@ -49,14 +49,18 @@ const BasePage = () => {
                 "&:hover": {
                     filter: "brightness(0.8)",
                 },
-                animation: `${keyframes`
-                        from {
-                            transform: rotate(0deg);
-                        }
-                        to {
-                            transform: rotate(360deg);
-                        }
-                    `} infinite 20s linear`,
+                animation: new Animation({
+                    from: {
+                        transform: "rotate(0deg)",
+                    },
+                    to: {
+                        transform: "rotate(360deg)",
+                    },
+                }).finalize({
+                    iterations: "infinite",
+                    duration: "20s",
+                    easing: "linear",
+                }),
             },
 
             card: {
