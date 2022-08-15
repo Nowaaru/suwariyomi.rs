@@ -1,4 +1,4 @@
-import { css, keyframes, StyleSheet } from "pages/util/aphrodite";
+import { css, keyframes, StyleSheet } from "aphrodite";
 import { useMemo, useState } from "react";
 import reactLogo from "../assets/react.svg";
 
@@ -50,13 +50,13 @@ const BasePage = () => {
                     filter: "brightness(0.8)",
                 },
                 animation: `${keyframes`
-						from {
-							transform: rotate(0deg);
-						}
-						to {
-							transform: rotate(360deg);
-						}
-					`} infinite 20s linear`,
+                        from {
+                            transform: rotate(0deg);
+                        }
+                        to {
+                            transform: rotate(360deg);
+                        }
+                    `} infinite 20s linear`,
             },
 
             card: {
@@ -147,14 +147,14 @@ const BasePage = () => {
                     className={css(styles.button)}
                     onClick={() => setCount((count) => count + 1)}
                 >
-					count is {count}
+                    count is {count}
                 </button>
                 <p>
-					Edit <code>src/App.tsx</code> and save to test HMR
+                    Edit <code>src/App.tsx</code> and save to test HMR
                 </p>
             </div>
             <p className={css(styles["read-the-docs"])}>
-				Click on the Vite and React logos to learn more
+                Click on the Vite and React logos to learn more
             </p>
         </div>
     );
