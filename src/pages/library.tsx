@@ -1,5 +1,6 @@
 import { StyleSheet, css, rgba } from "util/aphrodite";
 import { useState, useMemo, useCallback } from "react";
+import { motion } from "framer-motion";
 import _ from "lodash";
 import {
     ButtonGroup,
@@ -125,7 +126,6 @@ const Library = () => {
                         position: "relative",
                         verticalAlign: "middle",
                         marginLeft: "6px",
-                        bottom: "6px",
                         color: textAccent,
                         width: "30px",
                         height: "32px",
@@ -200,7 +200,23 @@ const Library = () => {
                         styles.welcomeFieldContainer
                     )}
                 >
-                    <h1 className={css(styles.welcomeText)}>Welcome back.</h1>
+                    <motion.h1
+                        initial={{
+                            y: "-20px",
+                            scaleY: 1,
+                            opacity: 0,
+                        }}
+                        animate={{
+                            y: 0,
+                            scaleY: 1,
+                            opacity: 1,
+                        }}
+                        whileInView={{ opacity: 1 }}
+                        className={css(styles.welcomeText)}
+                        transition={{ duration: 1 }}
+                    >
+                        Welcome back.
+                    </motion.h1>
                 </div>
                 <div
                     className={css(
@@ -222,24 +238,26 @@ const Library = () => {
                             </Tooltip>
                         </span>
                         ?
+                        {displayRandomize ? (
+                            <Tooltip label="Refresh">
+                                <IconButton
+                                    aria-label="Randomize"
+                                    className={css(styles.randomizeButton)}
+                                    icon={
+                                        <RepeatIcon
+                                            className={css(
+                                                styles.randomizeIcon
+                                            )}
+                                        />
+                                    }
+                                    variant="ghost"
+                                    onClick={() => {
+                                        updateRandomManga();
+                                    }}
+                                />
+                            </Tooltip>
+                        ) : null}
                     </h3>
-                    {displayRandomize ? (
-                        <Tooltip label="Refresh">
-                            <IconButton
-                                aria-label="Randomize"
-                                className={css(styles.randomizeButton)}
-                                icon={
-                                    <RepeatIcon
-                                        className={css(styles.randomizeIcon)}
-                                    />
-                                }
-                                variant="ghost"
-                                onClick={() => {
-                                    updateRandomManga();
-                                }}
-                            />
-                        </Tooltip>
-                    ) : null}
                 </div>
             </div>
             <ButtonGroup
