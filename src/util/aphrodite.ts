@@ -175,3 +175,11 @@ export class Animation {
     private _keyframes: { [key: string]: Array<Style> };
     private isFromTo = false;
 }
+
+export function rgb(r: number, g: number, b: number) {
+    return `rgb(${r}, ${g}, ${b})`;
+}
+
+export function rgba(r: number, g: number, b: number, a: number) {
+    return `rgba(${r}, ${g}, ${b}, ${a})`;
+}

@@ -4,7 +4,13 @@
 
 import "jest";
 import { createRoot } from "react-dom/client";
-import { css, StyleSheet, Animation } from "../../src/util/aphrodite";
+import {
+    css,
+    StyleSheet,
+    Animation,
+    rgba,
+    rgb,
+} from "../../src/util/aphrodite";
 import { getComputedStyle } from "./utilities/tsx";
 
 describe("Aphrodite", () => {
@@ -85,6 +91,22 @@ describe("Aphrodite", () => {
         it("should work", () => {
             expect(keyframeAnimation).toBeDefined();
             expect(keyframeAnimation.json()).toHaveProperty("95%");
+        });
+    });
+
+    describe("Auxiliary Functions", () => {
+        describe("rgba", () => {
+            it("should work", () => {
+                expect(rgba(255, 255, 255, 0.8)).toBe(
+                    "rgba(255, 255, 255, 0.8)"
+                );
+            });
+        });
+
+        describe("rgb", () => {
+            it("should work", () => {
+                expect(rgb(255, 255, 255)).toBe("rgb(255, 255, 255)");
+            });
         });
     });
 });
