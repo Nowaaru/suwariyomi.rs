@@ -2,7 +2,5 @@
 module.exports = {
     preset: "ts-jest",
     testEnvironment: "node",
-    testPathIgnorePatterns: [
-        "/src/__tests__/utilities/*",
-    ]
+    testPathIgnorePatterns: ["/src/__tests__/utilities/*", "/src-tauri/*"],
 };
