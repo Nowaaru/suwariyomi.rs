@@ -6,6 +6,7 @@ extends:
     - plugin:react/recommended
     - plugin:import/recommended
     - plugin:@typescript-eslint/recommended
+    - plugin:react-hooks/recommended
 parser: "@typescript-eslint/parser"
 parserOptions:
     ecmaFeatures:
@@ -14,6 +15,7 @@ parserOptions:
     sourceType: module
 plugins:
     - "@typescript-eslint"
+    - "react-hooks"
     - import
     - react
     - jest
@@ -21,11 +23,15 @@ settings:
     "@typescript-eslint/parser":
         - ".ts"
         - ".tsx"
-    "import/resolver": 
+    "import/resolver":
         typescript:
             alwaysTryTypes: true
 rules:
     react/react-in-jsx-scope: off
+    react-hooks/rules-of-hooks:
+        - error
+    react-hooks/exhaustive-deps:
+        - warn
     indent:
         - error
         - 4

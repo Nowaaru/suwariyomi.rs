@@ -1,7 +1,4 @@
-import { StyleSheet, css } from "util/aphrodite";
-import { useState, useMemo } from "react";
-import { ButtonGroup, IconButton } from "@chakra-ui/react";
-import { DownloadIcon, SettingsIcon, TimeIcon } from "@chakra-ui/icons";
+import _ from "lodash";
 
 const backgroundColor_high = "rgb(18, 30, 42)";
 const backgroundColor_low = "#0D1620";
