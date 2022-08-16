@@ -5,6 +5,7 @@
 
 use std;
 use tauri::Manager;
+use tauri::SystemTray;
 
 pub mod errors;
 pub mod handlers;

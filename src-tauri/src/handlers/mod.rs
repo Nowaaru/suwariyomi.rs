@@ -1,7 +1,7 @@
 use tauri::Manager;
-
+use crate::errors;
 #[tauri::command]
-pub fn splash_close(window: tauri::Window) -> Result<(), crate::errors::InternalError> {
+pub fn splash_close(window: tauri::Window) -> Result<(), errors::InternalError> {
 	if let Some(splashscreen) = window.get_window("splashscreen") {
 		match splashscreen.close() {
 			Ok(()) => return Ok(()),
@@ -15,4 +15,9 @@ pub fn splash_close(window: tauri::Window) -> Result<(), crate::errors::Internal
 	} else {
 		Err(crate::errors::InternalError::new("No splash-screen found."))
 	}
+}
+
+#[tauri::command]
+pub fn return_to_tray(window: tauri::Window) -> Result<(), errors::InternalError> {
+	Ok(())
 }
