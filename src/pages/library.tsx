@@ -79,6 +79,8 @@ const Library = () => {
                     borderWidth: "2px 2px 0 2px",
                     borderTopColor: objectAccent,
                     borderBottomColor: objectAccent,
+                    minWidth: "420px",
+                    maxWidth: "420px",
                 },
                 welcomeText: {
                     fontSize: "48px",
@@ -100,11 +102,13 @@ const Library = () => {
                     borderWidth: "2px 2px 2px 2px",
                     borderTopColor: objectAccent,
                     borderBottomColor: objectAccent,
+                    minWidth: "434px",
+                    maxWidth: "800px",
 
                     "::before": {
                         content: "\" \"",
                         position: "absolute",
-                        width: "406px",
+                        width: "416px",
                         height: "2px",
                         top: "-2px",
                         left: "0",
@@ -116,6 +120,9 @@ const Library = () => {
                     position: "relative",
                     display: "inline-block",
                     fontSize: "32px",
+                    "@media (max-height: 700px)": {
+                        fontSize: "24px",
+                    },
                 },
                 libraryButton: {
                     marginTop: "1em",
@@ -169,14 +176,14 @@ const Library = () => {
     const [displayRandomize, setDisplayRandomize] = useState(false);
     const randomMangaToUseForNames = useMemo(
         () => [
-            "Fuzoroi no Renri",
-            "Prunus Girl",
+            // "Fuzoroi no Renri",
+            // "Prunus Girl",
             "A Yuri Story About a Girl Who Insits \"It's Impossible for Two Girls to Get Together\" Completely Falling Within 100 Days",
-            "Please Bully Me, Miss Villainess!",
-            "I Don't Know Which One Is Love",
-            "Beast of Blue Obsidian",
-            "Amaesasete Hinamori-san!",
-            "Chikara Aru Succubus wa Seiyoku wo Mitashitai Dake",
+            // "Please Bully Me, Miss Villainess!",
+            // "I Don't Know Which One Is Love",
+            // "Beast of Blue Obsidian",
+            // "Amaesasete Hinamori-san!",
+            // "Chikara Aru Succubus wa Seiyoku wo Mitashitai Dake",
         ],
         []
     );
