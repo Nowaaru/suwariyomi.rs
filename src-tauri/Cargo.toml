@@ -25,6 +25,7 @@ serde_json = "1.0"
 error = "0.1.9"
 mime = "0.3.16"
 bytes = "1.2.1"
+rusqlite = {version = "0.28.0", features = ["bundled"] }
 
 [features]
 # by default Tauri runs in production mode
