@@ -18,6 +18,7 @@
         "types": ["jest", "node"],
         "baseUrl": ".",
         "paths": {
+            "types/*": ["src/util/types/*"],
             "assets/*": ["src/assets/*"],
             "components/*": ["src/components/*"],
             "pages/*": ["src/pages/*"],

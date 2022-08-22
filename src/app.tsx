@@ -20,6 +20,12 @@ import DefaultThemeDark from "assets/themes/dark";
 //      settings to the client.
 
 export default function App() {
+    window.addEventListener("keydown", (e) => {
+        if (e.key === "F12") {
+            e.preventDefault();
+        }
+    });
+
     return (
         <React.StrictMode>
             <ChakraProvider theme={extendTheme(DefaultThemeDark)}>

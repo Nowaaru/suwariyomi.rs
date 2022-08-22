@@ -1,6 +1,7 @@
 import { StyleSheet, css, rgba } from "util/aphrodite";
+import LibrarySource from "components/librarysource";
 import { useState, useMemo, useCallback } from "react";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 import _ from "lodash";
 import {
     ButtonGroup,
@@ -21,6 +22,22 @@ const backgroundColor_low = "#0D1620";
 const objectAccent = "#fb8e84";
 const textAccent = "#f88379";
 
+const libraryVariants: Variants = {
+    hidden: {
+        opacity: 0,
+        transition: {
+            duration: 0.5,
+            ease: "easeInOut",
+        },
+    },
+    visible: {
+        opacity: 1,
+        transition: {
+            duration: 0.5,
+            ease: "easeInOut",
+        },
+    },
+};
 const LibraryButton = (props: IconButtonProps) => {
     const modifiedProps = {
         ...props,
@@ -54,10 +71,25 @@ const Library = () => {
                     height: "100vh",
                     fontFamily: "Cascadia Code",
                     zIndex: -2,
+                    overflowX: "hidden",
+                    overflowY: "auto",
+
+                    "&::-webkit-slider-thumb": {
+                        borderRadius: "10px",
+                        backgroundColor: objectAccent,
+                    },
+
+                    "&::-webkit-scrollbar-track": {
+                        borderRadius: "10px",
+                    },
+
+                    "&::-webkit-scrollbar": {
+                        width: "8px",
+                    },
                 },
                 topStyle: {
                     position: "absolute",
-                    background: `linear-gradient(to bottom, ${backgroundColor_high} 0%, ${backgroundColor_low} 100%)`,
+                    background: `linear-gradient(to bottom, ${backgroundColor_high} 65%, ${backgroundColor_low} 100%)`,
                     width: "100vw",
                     height: "322px",
                     top: 0,
@@ -104,9 +136,9 @@ const Library = () => {
                     borderBottomColor: objectAccent,
                     minWidth: "434px",
                     maxWidth: "800px",
-
+                    maxHeight: "125px",
                     "::before": {
-                        content: "\" \"",
+                        content: '" "',
                         position: "absolute",
                         width: "416px",
                         height: "2px",
@@ -119,10 +151,7 @@ const Library = () => {
                 suggestionText: {
                     position: "relative",
                     display: "inline-block",
-                    fontSize: "32px",
-                    "@media (max-height: 700px)": {
-                        fontSize: "24px",
-                    },
+                    fontSize: "24px",
                 },
                 libraryButton: {
                     marginTop: "1em",
@@ -154,6 +183,7 @@ const Library = () => {
                 recommendation: {
                     textDecoration: "underline",
                     transition: "color 0.25s ease-in-out",
+                    cursor: "pointer",
                     "&&:hover": {
                         color: objectAccent,
                     },
@@ -162,12 +192,13 @@ const Library = () => {
                     color: "#f88379",
                 },
                 line: {
-                    position: "absolute",
+                    position: "relative",
                     borderColor: backgroundColor_high,
                     borderTop: "dashed 1px",
                     width: "100%",
-                    top: "322px",
+                    top: "16px",
                     left: 0,
+                    marginBottom: "48px",
                 },
             }),
         []
@@ -176,13 +207,13 @@ const Library = () => {
     const [displayRandomize, setDisplayRandomize] = useState(false);
     const randomMangaToUseForNames = useMemo(
         () => [
-            // "Fuzoroi no Renri",
-            // "Prunus Girl",
-            "A Yuri Story About a Girl Who Insits \"It's Impossible for Two Girls to Get Together\" Completely Falling Within 100 Days",
-            // "Please Bully Me, Miss Villainess!",
-            // "I Don't Know Which One Is Love",
-            // "Beast of Blue Obsidian",
-            // "Amaesasete Hinamori-san!",
+            "Fuzoroi no Renri",
+            "Prunus Girl",
+            'A Yuri Story About a Girl Who Insists "It\'s Impossible for Two Girls to Get Together" Completely Falling Within 100 Days',
+            "Please Bully Me, Miss Villainess!",
+            "I Don't Know Which One Is Love",
+            "Beast of Blue Obsidian",
+            "Amaesasete Hinamori-san!",
             // "Chikara Aru Succubus wa Seiyoku wo Mitashitai Dake",
         ],
         []
@@ -201,71 +232,59 @@ const Library = () => {
                 onMouseLeave={() => setDisplayRandomize(false)}
             >
                 <div className={css(styles.topStyle)} />
-                <div
-                    className={css(
-                        styles.welcomeTextContainer,
-                        styles.welcomeFieldContainer
-                    )}
-                >
-                    <motion.h1
-                        initial={{
-                            y: "-20px",
-                            scaleY: 1,
-                            opacity: 0,
-                        }}
-                        animate={{
-                            y: 0,
-                            scaleY: 1,
-                            opacity: 1,
-                        }}
-                        whileInView={{ opacity: 1 }}
-                        className={css(styles.welcomeText)}
-                        transition={{ duration: 1 }}
+                <motion.div variants={libraryVariants}>
+                    <div
+                        className={css(
+                            styles.welcomeTextContainer,
+                            styles.welcomeFieldContainer
+                        )}
                     >
-                        Welcome back.
-                    </motion.h1>
-                </div>
-                <div
-                    className={css(
-                        styles.suggestionTextContainer,
-                        styles.welcomeFieldContainer
-                    )}
-                >
-                    <h3 className={css(styles.suggestionText)}>
-                        Is it time to read{" "}
-                        <span
-                            className={css(
-                                styles.recommendation,
-                                styles.accent
-                            )}
-                            onMouseEnter={() => setDisplayRandomize(true)}
-                        >
-                            <Tooltip label="Click to continue reading.">
-                                <u>{selectedMangaIndex}</u>
-                            </Tooltip>
-                        </span>
-                        ?
-                        {displayRandomize ? (
-                            <Tooltip label="Refresh">
-                                <IconButton
-                                    aria-label="Randomize"
-                                    className={css(styles.randomizeButton)}
-                                    icon={
-                                        <RepeatIcon
-                                            className={css(
-                                                styles.randomizeIcon
-                                            )}
-                                        />
-                                    }
-                                    variant="ghost"
-                                    onClick={() => {
-                                        updateRandomManga();
-                                    }}
-                                />
-                            </Tooltip>
-                        ) : null}
-                    </h3>
-                </div>
+                        <h1 className={css(styles.welcomeText)}>
+                            Welcome back.
+                        </h1>
+                    </div>
+                    <div
+                        className={css(
+                            styles.suggestionTextContainer,
+                            styles.welcomeFieldContainer
+                        )}
+                    >
+                        <h3 className={css(styles.suggestionText)}>
+                            Is it time to read{" "}
+                            <span
+                                className={css(
+                                    styles.recommendation,
+                                    styles.accent
+                                )}
+                                onMouseEnter={() => setDisplayRandomize(true)}
+                            >
+                                <Tooltip label="Click to continue reading.">
+                                    <u>{selectedMangaIndex}</u>
+                                </Tooltip>
+                            </span>
+                            ?
+                            {displayRandomize ? (
+                                <Tooltip label="Refresh">
+                                    <IconButton
+                                        aria-label="Randomize"
+                                        className={css(styles.randomizeButton)}
+                                        icon={
+                                            <RepeatIcon
+                                                className={css(
+                                                    styles.randomizeIcon
+                                                )}
+                                            />
+                                        }
+                                        variant="ghost"
+                                        onClick={() => {
+                                            updateRandomManga();
+                                        }}
+                                    />
+                                </Tooltip>
+                            ) : null}
+                        </h3>
+                    </div>
+                </motion.div>
             </div>
             <ButtonGroup
                 className={css(styles.libraryButton)}
@@ -277,6 +296,24 @@ const Library = () => {
                 <LibraryButton aria-label="Download" icon={<DownloadIcon />} />
             </ButtonGroup>
             <hr className={css(styles.line)} />
+            <LibrarySource
+                sourceIcon="https://mangadex.org/favicon.ico"
+                sourceName="MangaDex"
+                sourceManga={[...Array(100).keys()].map(() => ({
+                    id: Math.random(),
+                    name: "Watashi no Yuri wa Oshigoto desu!",
+                    source: "MangaDex",
+                    covers: [
+                        "https://mangadex.org/covers/12f92897-ad75-4c54-baed-b2834a9d8082/5d891dc0-1af9-4725-a003-64858d54bce9.jpg",
+                    ],
+
+                    added: new Date(),
+                    updated: Date.now() - 3450000,
+
+                    chapters: [],
+                    uploaded: Math.round(Date.now() * 0.95),
+                }))}
+            />
         </div>
     );
 };

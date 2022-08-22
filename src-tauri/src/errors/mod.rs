@@ -5,7 +5,9 @@ pub struct InternalError {
 
 impl InternalError {
     pub fn new(message: &str) -> Self {
-        InternalError { message: message.to_string() }
+        InternalError {
+            message: message.to_string(),
+        }
     }
 }
 impl std::fmt::Display for InternalError {
@@ -28,14 +30,14 @@ pub struct DownloadError {
 impl DownloadError {
     pub fn new(msg: std::string::String) -> Self {
         Self {
-            message: msg.to_string(), 
+            message: msg.to_string(),
         }
     }
 }
 
 impl std::fmt::Display for DownloadError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f,"{}", &self.message)
+        write!(f, "{}", &self.message)
     }
 }
 
@@ -54,7 +56,7 @@ pub struct RequestError {
 impl RequestError {
     pub fn new(msg: std::string::String, status: std::string::String) -> Self {
         Self {
-            message: msg.to_string(), 
+            message: msg.to_string(),
             status: status,
         }
     }
@@ -62,7 +64,7 @@ impl RequestError {
 
 impl std::fmt::Display for RequestError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f,"{}: {}", &self.status, &self.message)
+        write!(f, "{}: {}", &self.status, &self.message)
     }
 }
 
