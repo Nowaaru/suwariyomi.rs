@@ -19,8 +19,8 @@
 
 -   [x] Implement backend Download module.
     -   Write module that allows downloading from a source, returning a Download / Result object. Expecting good coding habits in this one.
--   [ ] Implement library page.
 
+-   [x] Implement library page.
     -   Thinking of a more floaty design compared to Suwariyomi's rough, rigid,
         and serious design.
 
