@@ -15,7 +15,7 @@ rust-version = "1.57"
 tauri-build = { version = "1.0.4", features = [] }
 
 [dependencies]
-tauri = { version = "1.0.5", features = ["api-all", "clipboard", "devtools", "fs-extract-api", "http-api", "icon-ico", "reqwest-client", "system-tray"] }
+tauri = { version = "1.0.5", features = ["clipboard", "devtools", "fs-create-dir", "fs-extract-api", "fs-read-dir", "fs-read-file", "fs-remove-dir", "fs-remove-file", "fs-write-file", "http-api", "icon-ico", "reqwest-client", "system-tray"] }
 reqwest = { version = "0.11", features = ["json", "stream"] }
 serde = { version = "1.0", features = ["derive"] }
 tokio = { version = "1.20.1", features = ["full"] }
