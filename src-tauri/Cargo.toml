@@ -20,12 +20,12 @@ reqwest = { version = "0.11", features = ["json", "stream"] }
 serde = { version = "1.0", features = ["derive"] }
 tokio = { version = "1.20.1", features = ["full"] }
 bindet = { version = "0.3.2", features = ["mime"] }
+rusqlite = {version = "0.28.0", features = ["bundled"] }
 futures-util = "0.3.23"
 serde_json = "1.0"
 error = "0.1.9"
 mime = "0.3.16"
 bytes = "1.2.1"
-rusqlite = {version = "0.28.0", features = ["bundled"] }
 
 [features]
 # by default Tauri runs in production mode
