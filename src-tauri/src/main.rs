@@ -3,11 +3,11 @@
     windows_subsystem = "windows"
 )]
 
-use std;
 use tauri::CustomMenuItem;
 use tauri::Manager;
 use tauri::{SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem};
 
+pub mod db;
 pub mod download;
 pub mod errors;
 pub mod handlers;
@@ -17,30 +17,34 @@ async fn main() {
     tauri::Builder::default()
         .setup(|app| {
             let window_main = app.get_window("main").unwrap();
-            let _splash_screen = {
-                let window = app.get_window("splashscreen").unwrap();
-                window.set_always_on_top(true)?;
-                tauri::async_runtime::spawn(async move {
-                    std::thread::sleep(std::time::Duration::from_secs_f64(8.0));
-                    if let Ok(()) = handlers::splash_close(window) {
-                        if let Ok(()) = window_main.show() {
-                            window_main.open_devtools();
+            let window = app.get_window("splashscreen").unwrap();
+            window.set_always_on_top(true)?;
+            tauri::async_runtime::spawn(async move {
+                std::thread::sleep(std::time::Duration::from_secs_f64(8.0));
+                if handlers::splash_close(window).is_ok() {
+                    if window_main.show().is_ok() {
+                        window_main.open_devtools();
 
-                            if let Ok(()) = window_main.set_focus() {
-                                Ok(())
-                            } else {
-                                Ok(())
-                            }
-                        } else {
-                            Err(errors::InternalError::new("unable to show main window"))
-                        }
+                        if window_main.set_focus().is_err() {
+                            Err(errors::InternalError::new("unable to focus main window"))
+                        } else { Ok(()) }
                     } else {
-                        panic!("splash screen failed to close.")
+                        Err(errors::InternalError::new("unable to show main window"))
                     }
-                });
+                } else {
+                    panic!("splash screen failed to close.")
+                }
+            });
 
-                tauri::async_runtime::spawn(async move {})
-            };
+            // Setup files in filesystem
+            let app_config = app.config();
+            let app_data = tauri::api::path::app_dir(&app_config);
+            if let Some(path) = app_data {
+                if !path.exists() && std::fs::create_dir(&path).is_err() {
+                    println!("unable to create path {:?}", path.to_str().unwrap());
+                }
+            }
+
             Ok(())
         })
         .system_tray(
@@ -51,14 +55,11 @@ async fn main() {
                     .add_item(CustomMenuItem::new("quit".to_string(), "Quit")),
             ),
         )
-        .on_system_tray_event(|app, handler| match handler {
-            SystemTrayEvent::LeftClick { .. } => {
+        .on_system_tray_event(|app, handler| {
+            if let SystemTrayEvent::LeftClick { .. } = handler {
                 let window = app.get_window("main").unwrap();
-                if let Err(..) = window.show() {
-                    panic!("Could not show window.");
-                }
+                window.show().expect("Could not show window.");
             }
-            _ => (),
         })
         .invoke_handler(tauri::generate_handler![handlers::splash_close])
         .run(tauri::generate_context!())
