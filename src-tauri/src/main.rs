@@ -20,14 +20,17 @@ async fn main() {
             let window = app.get_window("splashscreen").unwrap();
             window.set_always_on_top(true)?;
             tauri::async_runtime::spawn(async move {
-                std::thread::sleep(std::time::Duration::from_secs_f64(8.0));
+                // Uncomment if the splash screen needs debugging.
+                // std::thread::sleep(std::time::Duration::from_secs_f64(8.0));
                 if handlers::splash_close(window).is_ok() {
                     if window_main.show().is_ok() {
                         window_main.open_devtools();
 
                         if window_main.set_focus().is_err() {
                             Err(errors::InternalError::new("unable to focus main window"))
-                        } else { Ok(()) }
+                        } else {
+                            Ok(())
+                        }
                     } else {
                         Err(errors::InternalError::new("unable to show main window"))
                     }
@@ -41,8 +44,11 @@ async fn main() {
             let app_data = tauri::api::path::app_dir(&app_config);
             if let Some(path) = app_data {
                 if !path.exists() && std::fs::create_dir(&path).is_err() {
-                    println!("unable to create path {:?}", path.to_str().unwrap());
+                    panic!("unable to create path {:?}", path.to_str().unwrap());
                 }
+
+                // Start up database handler
+                db::init(&path).expect("Test failed.");
             }
 
             Ok(())
