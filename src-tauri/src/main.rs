@@ -49,34 +49,33 @@ async fn main() {
 
                 // Start up database handler and then test manga
                 let handler = db::init(&path).unwrap();
-                handler.manga_db.insert(db::Manga {
-                    name: "Fuzoroi no Renri".to_string(),
-                    source: "MangaDex".to_string(),
-                    id: "153779b6-0d55-4681-99ba-f42ca58de385".to_string(),
-                    covers: db::Covers {
-                        covers: vec![
-                            db::Cover { 
-                                url: "https://mangadex.org/covers/153779b6-0d55-4681-99ba-f42ca58de385/7355c533-0e1f-407f-b100-5639eeef21f9.jpg"
-                                    .to_string() 
-                            }
-                        ]
-                    },
-                    chapters: "".to_string(),
-                    added: 0,
-                    uploaded: 0,
-                }).expect("Failed to insert manga.");
+                for i in 1..25 {
+                    handler.manga_db.insert(db::Manga {
+                        name: "Fuzoroi no Renri".to_string(),
+                        source: "MangaDex".to_string(),
+                        id: i.to_string(), //"153779b6-0d55-4681-99ba-f42ca58de385".to_string(),
+                        covers: db::Covers {
+                            covers: vec![
+                                db::Cover { 
+                                    url: "https://mangadex.org/covers/153779b6-0d55-4681-99ba-f42ca58de385/7355c533-0e1f-407f-b100-5639eeef21f9.jpg"
+                                        .to_string() 
+                                }
+                            ]
+                        },
+                        chapters: "".to_string(),
+                        added: 0,
+                        uploaded: 0,
+                    }).expect("Failed to insert manga.");
+                };
 
-                match handler.manga_db.get("153779b6-0d55-4681-99ba-f42ca58de385".to_string(), "MangaDex".to_string()) {
-                    Ok(Some(val)) => {
-                        println!("{}", val);
-                    }
-                    Ok(None) => {
-                        println!("Apparently.. no value was found.")
-                    }
-                    Err(val) => {
-                        println!("An error occured: {}", val)
-                    }
-                }
+                match handler.manga_db.get_all("MangaDex".to_string()) {
+                    Ok(v) => {
+                        for manga in v {
+                            println!("{}", manga);
+                        }
+                    },
+                    Err(y) => println!("{}", y)
+                };
 
                 handler.chapter_db.insert(db::Chapter {
                     id: "Test 1".to_string(),

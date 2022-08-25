@@ -1,4 +1,6 @@
-use rusqlite::{self, Connection, OptionalExtension};
+use std::{convert::Infallible, error::Error};
+
+use rusqlite::{self, Connection, OptionalExtension, Row};
 
 pub struct Covers {
     pub covers: std::vec::Vec<Cover>,
@@ -117,6 +119,28 @@ pub struct DBHandler {
     pub chapter_db: ChapterDB,
 }
 
+fn generate_manga_from_row(row: &Row) -> Manga {
+    Manga {
+        id: row.get("id").unwrap(),
+        name: row.get("name").unwrap(),
+
+        source: row.get("source").unwrap(),
+        covers: Covers {
+            covers: row
+                .get::<&str, std::string::String>("covers")
+                .unwrap()
+                .split("$$")
+                .map(|url| Cover {
+                    url: url.to_string(),
+                })
+            .collect::<std::vec::Vec<Cover>>(),
+        },
+        chapters: row.get("chapters").unwrap(),
+        uploaded: row.get("uploaded").unwrap(),
+        added: row.get("added").unwrap(),
+    }
+}
+
 impl MangaDB {
     pub fn new(path: Option<std::path::PathBuf>) -> Self {
         // Make tables if not present.
@@ -195,27 +219,18 @@ impl MangaDB {
     pub fn get(&self, id: String, source: String) -> Result<Option<Manga>, rusqlite::Error> {
         self.db
             .query_row("SELECT * FROM Library WHERE id = ?1 AND source = ?2", [id, source], |row| {
-                Ok(Manga {
-                    id: row.get("id").unwrap(),
-                    name: row.get("name").unwrap(),
-
-                    source: row.get("source").unwrap(),
-                    covers: Covers {
-                        covers: row
-                            .get::<&str, std::string::String>("covers")
-                            .unwrap()
-                            .split("$$")
-                            .map(|url| Cover {
-                                url: url.to_string(),
-                            })
-                            .collect::<std::vec::Vec<Cover>>(),
-                    },
-                    chapters: row.get("chapters").unwrap(),
-                    uploaded: row.get("uploaded").unwrap(),
-                    added: row.get("added").unwrap(),
-                })
+                Ok(generate_manga_from_row(row))
             })
             .optional()
+    }
+
+    pub fn get_all(&self, source: String) -> Result<std::vec::Vec<Manga>, rusqlite::Error> {
+        let mut prepared_rows = self.db.prepare("SELECT * FROM Library WHERE source = ?1")?;
+        let iter = prepared_rows.query_map([source], |row| Ok(
+            generate_manga_from_row(row)
+        ))?;
+
+        Ok(iter.map(|v| v.unwrap() ).collect::<std::vec::Vec<Manga>>())
     }
 }
 
