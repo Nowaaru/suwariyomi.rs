@@ -47,59 +47,9 @@ async fn main() {
                     panic!("unable to create path {:?}", path.to_str().unwrap());
                 }
 
-                // Start up database handler and then test manga
-                let handler = db::init(&path).unwrap();
-                for i in 1..25 {
-                    handler.manga_db.insert(db::Manga {
-                        name: "Fuzoroi no Renri".to_string(),
-                        source: "MangaDex".to_string(),
-                        id: i.to_string(), //"153779b6-0d55-4681-99ba-f42ca58de385".to_string(),
-                        covers: db::Covers {
-                            covers: vec![
-                                db::Cover { 
-                                    url: "https://mangadex.org/covers/153779b6-0d55-4681-99ba-f42ca58de385/7355c533-0e1f-407f-b100-5639eeef21f9.jpg"
-                                        .to_string() 
-                                }
-                            ]
-                        },
-                        chapters: "".to_string(),
-                        added: 0,
-                        uploaded: 0,
-                    }).expect("Failed to insert manga.");
-                };
-
-                match handler.manga_db.get_all(None) {
-                    Ok(v) => {
-                        println!("{}", v.len());
-                    },
-                    Err(y) => println!("{}", y)
-                };
-
-                handler.chapter_db.insert(db::Chapter {
-                    id: "Test 1".to_string(),
-                    title: "The End".to_string(),
-                    manga_id: "153779b6-0d55-4681-99ba-f42ca58de385".to_string(),
-                    
-                    volume: 0,
-                    chapter: 1,
-                    
-                    last_read: 0,
-                    last_updated: 0,
-                    time_spent_reading: 0,
-
-                    pages: 0,
-                    count: 0,
-
-                    scanlators: vec![],
-                }).expect("Failed to insert chapter.");
-
-                match handler.chapter_db.get("Test 1".to_string(), "153779b6-0d55-4681-99ba-f42ca58de385".to_string()) {
-                    Ok(Some(v)) => println!("{}", v),
-                    Ok(None) => println!("No chapters found."),
-                    Err(val) => println!("A chapter error occured: {}", val),
-                }
-            };
-
+                // Start up database handler, use for testing
+                let _handler = db::init(&path).unwrap();
+            }
             Ok(())
         })
         .system_tray(
