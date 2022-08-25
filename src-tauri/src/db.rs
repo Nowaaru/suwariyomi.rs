@@ -1,6 +1,3 @@
-use std::convert::Infallible;
-
-use crate::errors::{self, InternalError};
 use rusqlite::{self, Connection, OptionalExtension};
 
 pub struct Covers {
@@ -89,8 +86,13 @@ pub struct DBHandler {
 impl MangaDB {
     pub fn new(path: Option<std::path::PathBuf>) -> Self {
         // Make tables if not present.
-        let db = if path.is_none() { Connection::open_in_memory().expect("unable to open in-memory database") }
-                else { Connection::open(path.unwrap()).expect("unable to open database") };
+        // let db = if path.is_none() { Connection::open_in_memory().expect("unable to open in-memory database") }
+        //        else { Connection::open(path.unwrap()).expect("unable to open database") };
+
+        let db = if let Some(path) = path {
+            let p2 = path.clone();
+            Connection::open(path).unwrap_or_else(|_| panic!("unable to open database from path {}", p2.to_str().unwrap()))
+        } else { Connection::open_in_memory().expect("unable to open in-memory database") };
 
         // Since arrays cannot be stored in SQL, just have covers be a JSON array. Same with
         // chapters
@@ -184,21 +186,14 @@ impl MangaDB {
 
 impl ChapterDB {
     pub fn new(path: Option<std::path::PathBuf> ) -> Self {
-        let db: Connection;
-        if let None = path {
-            db = Connection::open_in_memory().expect("unable to open in-memory database");
-        } else { 
-            let path = path.unwrap();
+        let db: Connection =
+        if let Some(path) = path {
             let p2 = path.clone();
-            db = Connection::open(path).expect( 
-                format!("unable to open database with path {}", 
-                        p2
-                            .to_str()
-                            .unwrap() 
-                       )
-                .as_str() 
-            )  
-        }
+            Connection::open(path).unwrap_or_else(|_| panic!( "unable to open database with path {}", p2.to_str().unwrap()))
+        } else {
+            Connection::open_in_memory().expect("unable to open database")
+        };
+
         match db.execute("
                          CREATE TABLE IF NOT EXISTS Chapters 
                          (
@@ -287,7 +282,7 @@ impl ChapterDB {
     }
 }
 
-pub fn init(mut _path: &std::path::PathBuf) -> Result<DBHandler, errors::InternalError> {
+pub fn init(mut _path: &std::path::PathBuf) -> Result<DBHandler, crate::errors::InternalError> {
     // Create database files in the app folder
     // For now, open the database in memory for testing purposes.
     // path.push("sw.db");

@@ -77,82 +77,83 @@ impl Result {
                     return Ok(());
                 }
 
-                return Err(DownloadError::new(
+                 Err(DownloadError::new(
                     "An error occured whilst writing to file.".to_string(),
-                ));
+                    ))
             }
             Err(why) => {
-                return Err(DownloadError::new(format!(
+                 Err(DownloadError::new(format!(
                     "Failed to write file: {}",
-                    why.to_string()
+                    why,
                 )))
             }
-        };
+        }
     }
 }
 
 impl Download {
     pub fn new(url: &str) -> Self {
-        return Self {
+         Self {
             url: std::string::String::from(url),
             size: 0,
             progress: None,
 
             bytes: Vec::new(),
-        };
+        }
     }
 
     pub fn progress(&self) -> Option<usize> {
-        return self.progress;
+         self.progress
     }
 
     pub fn bytes(&self) -> &Vec<u8> {
-        return &self.bytes;
+         &self.bytes
     }
 
     pub async fn start(&mut self) -> std::result::Result<Result, DownloadError> {
         match reqwest::get(&self.url).await {
             Err(why) => {
-                return Err(DownloadError::new(
+                 Err(DownloadError::new(
                     crate::errors::RequestError::new(
                         why.to_string(),
                         why.status().unwrap().to_string(),
                     )
                     .to_string(),
-                ));
+                ))
             }
             Ok(data) => {
                 let content_length = data.content_length();
-                if let Some(_) = content_length {
+                if content_length.is_some() {
                     self.size = content_length.unwrap();
-                } else {
-                    return Err(DownloadError::new(
-                        "No content length provided.".to_string(),
-                    ));
-                }
-
-                let mut stream = data.bytes_stream();
-                while let Some(item) = stream.next().await {
-                    match item {
-                        Ok(chunk) => {
-                            let mut iter = Vec::from_iter(chunk);
-                            self.bytes.append(&mut iter);
-                            match self.progress {
-                                Some(_) => {
-                                    self.progress = Some(self.progress.unwrap() + iter.len());
-                                }
-                                None => {
-                                    self.progress = Some(iter.len());
+                    let mut stream = data.bytes_stream();
+                    while let Some(item) = stream.next().await {
+                        match item {
+                            Ok(chunk) => {
+                                let mut iter = Vec::from_iter(chunk);
+                                self.bytes.append(&mut iter);
+                                match self.progress {
+                                    Some(_) => {
+                                        self.progress = Some(self.progress.unwrap() + iter.len());
+                                    }
+                                    None => {
+                                        self.progress = Some(iter.len());
+                                    }
                                 }
                             }
-                        }
-                        Err(why) => {
-                            return Err(DownloadError::new(why.to_string()));
+                            Err(why) => {
+                                return Err(DownloadError::new(why.to_string()));
+                            }
                         }
                     }
-                }
 
-                Ok(Result::new(self))
+                    Ok(Result::new(self))
+                } else {
+                     Err(
+                         DownloadError::new(
+                            "No content length provided.".to_string(),
+                        )
+                    )
+                }
             }
         }
     }

@@ -4,13 +4,11 @@ use tauri::Manager;
 pub fn splash_close(window: tauri::Window) -> Result<(), errors::InternalError> {
     if let Some(splashscreen) = window.get_window("splashscreen") {
         match splashscreen.close() {
-            Ok(()) => return Ok(()),
-            Err(why) => {
-                return Err(crate::errors::InternalError::new(&*format!(
-                    "Splashscreen failed to close: {}",
-                    why
-                )))
-            }
+            Ok(()) => Ok(()),
+            Err(why) => Err(crate::errors::InternalError::new(&*format!(
+                "Splashscreen failed to close: {}",
+                why
+            ))),
         }
     } else {
         Err(crate::errors::InternalError::new("No splash-screen found."))
@@ -19,9 +17,9 @@ pub fn splash_close(window: tauri::Window) -> Result<(), errors::InternalError> 
 
 #[tauri::command]
 pub fn return_to_tray(window: tauri::Window) -> Result<(), errors::InternalError> {
-    if let Err(_) = window.hide() {
-        return Err(errors::InternalError::new("failed to hide window"));
+    if window.hide().is_err() {
+        Err(errors::InternalError::new("failed to hide window"))
+    } else {
+        Ok(())
     }
-
-    Ok(())
 }

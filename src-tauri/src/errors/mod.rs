@@ -30,7 +30,7 @@ pub struct DownloadError {
 impl DownloadError {
     pub fn new(msg: std::string::String) -> Self {
         Self {
-            message: msg.to_string(),
+            message: msg,
         }
     }
 }
@@ -56,8 +56,8 @@ pub struct RequestError {
 impl RequestError {
     pub fn new(msg: std::string::String, status: std::string::String) -> Self {
         Self {
-            message: msg.to_string(),
-            status: status,
+            message: msg,
+            status,
         }
     }
 }
