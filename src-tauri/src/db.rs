@@ -49,7 +49,9 @@ impl std::fmt::Display for Manga {
             uploaded,
             added,
         } = self;
-        write!(f, "Manga {{\n\tid: {}\n\tname: {}\n\tsource: {}\n\tcovers: {}\n\n\tchapters: {}\n\tuploaded: {}\n\tadded: {}\n}}", id, name, source, covers, chapters, uploaded, added)
+
+        // TODO: Make this multiline
+        write!(f, "Manga {{\n\tid: {}\n\tname: {}\n\tsource: {}\n\tcovers: {}\n\n\tchapters: [ {} ]\n\tuploaded: {}\n\tadded: {}\n}}", id, name, source, covers, chapters, uploaded, added)
     }
 }
 
@@ -68,6 +70,38 @@ pub struct Chapter {
     pub pages: i32,
     pub count: i32,
     pub scanlators: std::vec::Vec<String>,
+}
+
+impl std::fmt::Display for Chapter {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let Chapter {
+            id,
+            manga_id,
+            chapter,
+            volume,
+            title,
+            last_read,
+            last_updated,
+            time_spent_reading,
+            pages,
+            count,
+            scanlators
+        } = self;
+
+        writeln!(f, "Chapter {{")?;
+        writeln!(f, "\tid: {}", id)?;
+        writeln!(f, "\tmanga_id: {}", manga_id)?;
+        writeln!(f, "\tchapter: {}", chapter)?;
+        writeln!(f, "\tvolume: {}", volume)?;
+        writeln!(f, "\ttitle: {}", title)?;
+        writeln!(f, "\tlast_read: {}", last_read)?;
+        writeln!(f, "\tlast_updated: {}", last_updated)?;
+        writeln!(f, "\ttime_spent_reading: {}", time_spent_reading)?;
+        writeln!(f, "\tpages: {}", pages)?;
+        writeln!(f, "\tcount: {}", count)?;
+        writeln!(f, "\tscanlators: [ {} ]", scanlators.join(" "))?;
+        write!(f, "}}")
+    }
 }
 
 pub struct MangaDB {
@@ -128,6 +162,7 @@ impl MangaDB {
             uploaded,
             added,
         } = manga;
+    
         let mut serialized_covers = String::new();
         for cover in covers.covers.iter() {
             let mut cover_with_separator = cover.url.clone();
@@ -157,9 +192,9 @@ impl MangaDB {
             .optional()
     }
 
-    pub fn get_from_id(&self, id: String) -> Result<Option<Manga>, rusqlite::Error> {
+    pub fn get(&self, id: String, source: String) -> Result<Option<Manga>, rusqlite::Error> {
         self.db
-            .query_row("SELECT * FROM Library WHERE id = ?1", [id], |row| {
+            .query_row("SELECT * FROM Library WHERE id = ?1 AND source = ?2", [id, source], |row| {
                 Ok(Manga {
                     id: row.get("id").unwrap(),
                     name: row.get("name").unwrap(),
@@ -256,8 +291,8 @@ impl ChapterDB {
         )
     }
 
-    pub fn get_from_id(&self, chapter_id: String) -> Result<Option<Chapter>, rusqlite::Error> {
-         self.db.query_row("SELECT * FROM Chapters WHERE id = ?1", [chapter_id], | row | Ok(Chapter {
+    pub fn get(&self, chapter_id: String, manga_id: String) -> Result<Option<Chapter>, rusqlite::Error> {
+         self.db.query_row("SELECT * FROM Chapters WHERE id = ?1 AND manga_id = ?2", [chapter_id, manga_id], | row | Ok(Chapter {
             id: row.get("id").unwrap(),
             manga_id: row.get("manga_id").unwrap(),
             
@@ -267,7 +302,7 @@ impl ChapterDB {
             volume: row.get::<&str, i32>("volume").unwrap(),
 
             last_read: row.get::<&str, i32>("last_read").unwrap(),
-            last_updated: row.get::<&str, i32>("last_upated").unwrap(),
+            last_updated: row.get::<&str, i32>("last_updated").unwrap(),
             time_spent_reading: row.get::<&str, i32>("time_spent_reading").unwrap(),
             
             pages: row.get::<&str, i32>("pages").unwrap(),
