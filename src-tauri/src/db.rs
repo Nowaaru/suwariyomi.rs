@@ -1,23 +1,23 @@
 use rusqlite::{self, Connection, OptionalExtension};
 
 pub struct Covers {
-    covers: std::vec::Vec<Cover>,
+    pub covers: std::vec::Vec<Cover>,
 }
 
 #[derive(PartialEq, Eq)]
 pub struct Cover {
-    url: String,
+    pub url: String,
 }
 
 pub struct Manga {
-    id: String,
-    name: String,
-    source: String,
-    covers: Covers,
+    pub id: String,
+    pub name: String,
+    pub source: String,
+    pub covers: Covers,
 
-    chapters: String,
-    uploaded: i32,
-    added: i32,
+    pub chapters: String,
+    pub uploaded: i32,
+    pub added: i32,
 }
 
 impl std::fmt::Display for Covers {
@@ -53,34 +53,34 @@ impl std::fmt::Display for Manga {
     }
 }
 
-struct Chapter {
-    id: String,
-    manga_id: String, // The manga it belongs to.
-    chapter: i32,
-    volume: i32,
+pub struct Chapter {
+    pub id: String,
+    pub manga_id: String, // The manga it belongs to.
+    pub chapter: i32,
+    pub volume: i32,
 
-    title: String,
+    pub title: String,
 
-    last_read: i32,
-    last_updated: i32,
-    time_spent_reading: i32,
+    pub last_read: i32,
+    pub last_updated: i32,
+    pub time_spent_reading: i32,
 
-    pages: i32,
-    count: i32,
-    scanlators: std::vec::Vec<String>,
+    pub pages: i32,
+    pub count: i32,
+    pub scanlators: std::vec::Vec<String>,
 }
 
-struct MangaDB {
+pub struct MangaDB {
     db: Connection,
 }
 
-struct ChapterDB {
+pub struct ChapterDB {
     db: Connection,
 }
 
 pub struct DBHandler {
-    manga_db: MangaDB,
-    chapter_db: ChapterDB,
+    pub manga_db: MangaDB,
+    pub chapter_db: ChapterDB,
 }
 
 impl MangaDB {
@@ -289,37 +289,9 @@ pub fn init(mut _path: &std::path::PathBuf) -> Result<DBHandler, crate::errors::
 
     let manga_handler = MangaDB::new(None);
     let chapter_handler = ChapterDB::new(None);
-    manga_handler.insert(Manga {
-        name: "Fuzoroi no Renri".to_string(),
-        source: "MangaDex".to_string(),
-        id: "153779b6-0d55-4681-99ba-f42ca58de385".to_string(),
-        covers: Covers {
-            covers: vec![
-                Cover { 
-                    url: "https://mangadex.org/covers/153779b6-0d55-4681-99ba-f42ca58de385/7355c533-0e1f-407f-b100-5639eeef21f9.jpg"
-                        .to_string() 
-                }
-            ]
-        },
-        chapters: "".to_string(),
-        added: 0,
-        uploaded: 0,
-    }).expect("Failed to insert.");
-
-    match manga_handler.get_from_id("1".to_string()) {
-        Ok(Some(val)) => {
-            println!("{}", val);
-        }
-        Ok(None) => {
-            println!("Apparently.. no value was found.")
-        }
-        Err(val) => {
-             println!("An error occured: {}", val)
-        }
-    }
 
     Ok(DBHandler {
         manga_db: manga_handler,
-         chapter_db: chapter_handler,
+        chapter_db: chapter_handler,
     })
 }
