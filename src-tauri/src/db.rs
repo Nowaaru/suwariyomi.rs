@@ -1,5 +1,3 @@
-use std::{convert::Infallible, error::Error};
-
 use rusqlite::{self, Connection, OptionalExtension, Row};
 
 pub struct Covers {
@@ -141,6 +139,31 @@ fn generate_manga_from_row(row: &Row) -> Manga {
     }
 }
 
+fn generate_chapter_from_row(row: &Row) -> Chapter {
+    Chapter {
+        id: row.get("id").unwrap(),
+        manga_id: row.get("manga_id").unwrap(),
+
+        title: row.get::<&str, std::string::String>("title").unwrap(),
+
+        chapter: row.get::<&str, i32>("chapter").unwrap(),
+        volume: row.get::<&str, i32>("volume").unwrap(),
+
+        last_read: row.get::<&str, i32>("last_read").unwrap(),
+        last_updated: row.get::<&str, i32>("last_updated").unwrap(),
+        time_spent_reading: row.get::<&str, i32>("time_spent_reading").unwrap(),
+
+        pages: row.get::<&str, i32>("pages").unwrap(),
+        count: row.get::<&str, i32>("count").unwrap(),
+
+        scanlators: row.get::<&str, std::string::String>("scanlators")
+            .unwrap()
+            .split("$$")
+            .map(|v| v.to_string())
+            .collect::< std::vec::Vec<String> >()
+    }
+}
+
 impl MangaDB {
     pub fn new(path: Option<std::path::PathBuf>) -> Self {
         // Make tables if not present.
@@ -224,13 +247,25 @@ impl MangaDB {
             .optional()
     }
 
-    pub fn get_all(&self, source: String) -> Result<std::vec::Vec<Manga>, rusqlite::Error> {
-        let mut prepared_rows = self.db.prepare("SELECT * FROM Library WHERE source = ?1")?;
-        let iter = prepared_rows.query_map([source], |row| Ok(
-            generate_manga_from_row(row)
-        ))?;
+    pub fn get_all(&self, source: Option<String>) -> Result<std::vec::Vec<Manga>, rusqlite::Error> {
+        // FIXME: this shit
+        // oh lord. here we go again.
 
-        Ok(iter.map(|v| v.unwrap() ).collect::<std::vec::Vec<Manga>>())
+        if let Some(source) = source {
+            let mut prepared_rows = self.db.prepare("SELECT * FROM Library WHERE source = ?1")?;
+            let iter = prepared_rows.query_map([source], |row| Ok(
+                    generate_manga_from_row(row)
+                    ))?;
+
+            Ok(iter.map(|v| v.unwrap() ).collect::<std::vec::Vec<Manga>>())
+        } else {
+            let mut prepared_rows = self.db.prepare("SELECT * FROM Library")?;
+            let iter = prepared_rows.query_map([], |row| Ok(
+                    generate_manga_from_row(row)
+            ))?;
+
+            Ok(iter.map(|v| v.unwrap() ).collect::<std::vec::Vec<Manga>>())
+        }
     }
 }
 
@@ -307,28 +342,39 @@ impl ChapterDB {
     }
 
     pub fn get(&self, chapter_id: String, manga_id: String) -> Result<Option<Chapter>, rusqlite::Error> {
-         self.db.query_row("SELECT * FROM Chapters WHERE id = ?1 AND manga_id = ?2", [chapter_id, manga_id], | row | Ok(Chapter {
-            id: row.get("id").unwrap(),
-            manga_id: row.get("manga_id").unwrap(),
-            
-            title: row.get::<&str, std::string::String>("title").unwrap(),
+         self.db.query_row("SELECT * FROM Chapters WHERE id = ?1 AND manga_id = ?2", [chapter_id, manga_id], | row | Ok ( generate_chapter_from_row(row) ) ).optional()
+    }
 
-            chapter: row.get::<&str, i32>("chapter").unwrap(),
-            volume: row.get::<&str, i32>("volume").unwrap(),
+    pub fn get_all(&self, manga_id: Option<String>) -> Result<std::vec::Vec<Chapter>, rusqlite::Error> {
+        // FIXME: turn iter repetition into a function
+        // fuckin christ this code is dog shitty ass
 
-            last_read: row.get::<&str, i32>("last_read").unwrap(),
-            last_updated: row.get::<&str, i32>("last_updated").unwrap(),
-            time_spent_reading: row.get::<&str, i32>("time_spent_reading").unwrap(),
-            
-            pages: row.get::<&str, i32>("pages").unwrap(),
-            count: row.get::<&str, i32>("count").unwrap(),
+        let mut prepared_rows;
+        if let Some(manga_id) = manga_id {
+            prepared_rows = self.db.prepare("SELECT * FROM Chapters WHERE manga_id = ?1")?;
 
-            scanlators: row.get::<&str, std::string::String>("scanlators")
-                .unwrap()
-                .split("$$")
-                .map(|v| v.to_string())
-                .collect::< std::vec::Vec<String> >()
-        })).optional()
+            match prepared_rows.query_map(
+                [manga_id],
+                |row| Ok(
+                        generate_chapter_from_row(row)
+                      )
+            ) {
+                Ok(iter) => Ok(iter.map(|v| v.unwrap() ).collect::<std::vec::Vec<Chapter>>()),
+                Err(why) => Err(why)
+            }
+       } else {
+            prepared_rows = self.db.prepare("SELECT * FROM Chapters")?;
+
+            match prepared_rows.query_map(
+                [],
+                |row| Ok(
+                        generate_chapter_from_row(row)
+                      )
+            ) {
+                Ok(iter) => Ok(iter.map(|v| v.unwrap() ).collect::<std::vec::Vec<Chapter>>()),
+                Err(why) => Err(why)
+            }
+       }
     }
 }
 

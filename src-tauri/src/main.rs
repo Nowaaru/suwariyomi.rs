@@ -68,11 +68,9 @@ async fn main() {
                     }).expect("Failed to insert manga.");
                 };
 
-                match handler.manga_db.get_all("MangaDex".to_string()) {
+                match handler.manga_db.get_all(None) {
                     Ok(v) => {
-                        for manga in v {
-                            println!("{}", manga);
-                        }
+                        println!("{}", v.len());
                     },
                     Err(y) => println!("{}", y)
                 };
