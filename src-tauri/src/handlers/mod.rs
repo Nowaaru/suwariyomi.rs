@@ -31,15 +31,21 @@ pub fn get_manga(id: String, source: String) -> Result<Option<Manga>, rusqlite::
 }
 
 #[tauri::command]
-pub fn insert_manga(manga: Manga) {
+pub fn insert_manga(manga: Manga) -> Result<(), rusqlite::Error> {
     let db = MangaDB::new(None);
-    db.insert(manga);
+    match db.insert(manga) {
+        Ok(_) => Ok(()),
+        Err(why) => Err(why),
+    }
 }
 
 #[tauri::command]
-pub fn remove_manga(id: String, source: String) -> Result<Option<usize>, rusqlite::Error> {
+pub fn remove_manga(id: String, source: String) -> Result<(), rusqlite::Error> {
     let db = MangaDB::new(None);
-    db.delete(id, source)
+    match db.delete(id, source) {
+        Ok(_) => Ok(()),
+        Err(why) => Err(why)
+    }
 }
 
 #[tauri::command]
@@ -55,9 +61,21 @@ pub fn get_chapter(chapter_id: String, manga_id: String) -> Result<Option<Chapte
 }
 
 #[tauri::command]
-pub fn remove_chapter(manga_id: String, chapter_id: String) {
+pub fn insert_chapter(chapter: Chapter) -> Result<(), rusqlite::Error> {
     let db = ChapterDB::new(None);
-    db.delete(manga_id, chapter_id)
+    match db.insert(chapter) { // TODO: tbh just turn all this shit into a function
+        Ok(_) => Ok(()),
+        Err(why) => Err(why)
+    }
+}
+
+#[tauri::command]
+pub fn remove_chapter(manga_id: String, chapter_id: String) -> Result<(), rusqlite::Error> {
+    let db = ChapterDB::new(None);
+    match db.delete(manga_id, chapter_id) {
+        Ok(_) => Ok(()),
+        Err(why) => Err(why)
+    }
 }
 
 #[tauri::command]
