@@ -233,9 +233,9 @@ impl MangaDB {
         )
     }
 
-    pub fn delete(&self, id: String) -> Result<Option<usize>, rusqlite::Error> {
+    pub fn delete(&self, id: String, source: String) -> Result<Option<usize>, rusqlite::Error> {
         self.db
-            .execute("DELETE * FROM LIBRARY WHERE id = ?1", [id])
+            .execute("DELETE * FROM LIBRARY WHERE id = ?1 AND source = ?2 ", [id, source])
             .optional()
     }
 
@@ -375,6 +375,12 @@ impl ChapterDB {
                 Err(why) => Err(why)
             }
        }
+    }
+
+    pub fn delete(&self, manga_id: String, id: String) -> Result<Option<usize>, rusqlite::Error> {
+        self.db
+            .execute("DELETE * FROM Chapters WHERE manga_id = ?1 AND id = ?2", [manga_id, id])
+            .optional()
     }
 }
 
