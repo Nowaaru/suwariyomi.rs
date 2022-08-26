@@ -18,6 +18,8 @@ pub fn splash_close(window: tauri::Window) -> Result<(), errors::InternalError> 
     }
 }
 
+// TODO: figure out a way to have a db be global
+
 #[tauri::command]
 pub fn get_all_manga(source: Option<String>) -> Result<std::vec::Vec<Manga>, rusqlite::Error> {
     let db = MangaDB::new(None);
@@ -49,6 +51,12 @@ pub fn remove_manga(id: String, source: String) -> Result<(), rusqlite::Error> {
 }
 
 #[tauri::command]
+pub fn clear_manga() -> Result<(), rusqlite::Error> {
+    let db = MangaDB::new(None);
+    db.clear()
+}
+
+#[tauri::command]
 pub fn get_all_chapters(manga_id: Option<String>) -> Result<std::vec::Vec<Chapter>, rusqlite::Error> {
     let db = ChapterDB::new(None);
     db.get_all(manga_id)
@@ -76,6 +84,12 @@ pub fn remove_chapter(manga_id: String, chapter_id: String) -> Result<(), rusqli
         Ok(_) => Ok(()),
         Err(why) => Err(why)
     }
+}
+
+#[tauri::command]
+pub fn clear_chapters() -> Result<(), rusqlite::Error> {
+    let db = ChapterDB::new(None);
+    db.clear()
 }
 
 #[tauri::command]
