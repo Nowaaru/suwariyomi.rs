@@ -267,6 +267,13 @@ impl MangaDB {
             Ok(iter.map(|v| v.unwrap() ).collect::<std::vec::Vec<Manga>>())
         }
     }
+
+    pub fn clear(&self) -> Result<(), rusqlite::Error> {
+        match self.db.execute("DELETE * FROM Library", []) {
+            Ok(..) => Ok(()),
+            Err(y) => Err(y)
+        }
+    }
 }
 
 impl ChapterDB {
@@ -381,6 +388,13 @@ impl ChapterDB {
         self.db
             .execute("DELETE * FROM Chapters WHERE manga_id = ?1 AND id = ?2", [manga_id, id])
             .optional()
+    }
+
+    pub fn clear(&self) -> Result<(), rusqlite::Error> {
+        match self.db.execute("DELETE * FROM Chapters", []) {
+            Ok(..) => Ok(()),
+            Err(y) => Err(y)
+        }
     }
 }
 
