@@ -5,6 +5,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 // Page Imports
 import BaseClass from "pages/main";
 import Library from "pages/library";
+import View from "pages/view";
 import SplashScreen from "pages/splash";
 
 // Utiltiy
@@ -31,7 +32,8 @@ export default function App() {
             <ChakraProvider theme={extendTheme(DefaultThemeDark)}>
                 <BrowserRouter>
                     <Routes>
-                        <Route path="/" element={<Library />} />
+                        <Route path="/" element={<View />} />
+                        <Route path="view" element={<View />} />
                         <Route path="splash" element={<SplashScreen />} />
                     </Routes>
                 </BrowserRouter>
