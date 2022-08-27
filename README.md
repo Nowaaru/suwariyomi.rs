@@ -24,7 +24,9 @@
     -   Thinking of a more floaty design compared to Suwariyomi's rough, rigid,
         and serious design.
 
--   [ ] Return to backend, implement database support for Manga.
+-   [x] Return to backend, implement database support for Manga.
+
+-   [ ] Implement manga view page
 
 -   [ ] Implement CBZ file import handshake for frontend and backend.
 
@@ -37,6 +39,10 @@
 -   [ ] Boss Key
 
     -   Help those frisky ones get out of a pickle.
+
+-   [ ] Statistics Window
+
+    -   How boned are you?
 
 -   [ ] Customization
 
