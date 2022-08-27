@@ -3,6 +3,8 @@
     windows_subsystem = "windows"
 )]
 
+use std::path::PathBuf;
+
 use tauri::CustomMenuItem;
 use tauri::Manager;
 use tauri::{SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem};
@@ -11,6 +13,8 @@ pub mod db;
 pub mod download;
 pub mod errors;
 pub mod handlers;
+
+pub static mut DB_PATH: Option<PathBuf> = None;
 
 #[tokio::main]
 async fn main() {
@@ -48,7 +52,9 @@ async fn main() {
                 }
 
                 // Start up database handler, use for testing
-                let _handler = db::init(&path).unwrap();
+                unsafe {
+                    DB_PATH = Some(path);
+                }
             }
             Ok(())
         })
