@@ -138,7 +138,7 @@ const Library = () => {
                     maxWidth: "800px",
                     maxHeight: "125px",
                     "::before": {
-                        content: '" "',
+                        content: "' '",
                         position: "absolute",
                         width: "416px",
                         height: "2px",
