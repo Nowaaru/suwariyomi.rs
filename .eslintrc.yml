@@ -32,7 +32,8 @@ rules:
         - error
     react-hooks/exhaustive-deps:
         - warn
-    indent:
+    indent: off
+    "@typescript-eslint/indent":
         - error
         - 4
     linebreak-style:
