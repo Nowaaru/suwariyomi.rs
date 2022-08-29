@@ -12,11 +12,12 @@ const View = () => {
     // 2px white border 
     const styles = useMemo(() => StyleSheet.create({
         main: {
-            display: "block",
+            display: "flex",
             backgroundColor: "#0D1620",
             zIndex: -10,
             width: "100vw",
             height: "100vh",
+            flexDirection: "column",
         },
         top: {
             display: "flex",
@@ -42,15 +43,25 @@ const View = () => {
         },
         bg: {
             position: "relative",
-            width: "100%",
-            objectFit: "contain",
+            minWidth: "150%",
+            height: "150%",
+            right: "400px",
+            objectFit: "fill",
             overflow: "hidden",
         },
         meta: {
+            "@media (max-width: 800px)": {
+                marginLeft: "25px",
+            },
+            "@media (max-width: 900px)": {
+                marginLeft: "75px",
+            },
+            transition: "margin-left 1s ease-in-out",
             display: "flex",
             flexDirection: "row",
             zIndex: 2,
-            marginLeft: "200px",
+            marginLeft: "10%",
+            marginRight: "10%",
             maxHeight: "400px",
             flexGrow: 1,
             paddingTop: "140px",
@@ -92,6 +103,10 @@ const View = () => {
             color: "whitesmoke",
         },
         title: {
+            "@media (max-width: 1400px)": {
+                fontSize: "28px",
+            },
+            transition: "font-size 1s ease-in-out",
             fontSize: "48px",
             marginBottom: "-8px",
         },
@@ -110,7 +125,14 @@ const View = () => {
         accent: {
             color: "#f88379",
         },
-        description: {},
+        description: {
+            "@media (max-width: 900px)": {
+                fontSize: "16px",
+                maxWidth: "300px",
+            },
+            fontSize:"14px",
+            maxWidth: "600px",
+        },
         details: {
             
         },
@@ -123,21 +145,37 @@ const View = () => {
             left: 0,
         },
         buttons: {
-            marginTop: "48px",
+            "@media (max-width: 900px)": {
+                marginTop: "6px",
+                marginLeft: "0px",
+            },
+            "@media (min-width: 900px)": {
+                marginTop: "64px",
+            },
+            marginTop: "36px",
             display: "flex",
+            maxWidth: "600px",
             justifyContent: "space-evenly",
             alignItems: "center",
             flexDirection: "column",
         },
         startreading: {
+            "@media (max-width: 900px)": {
+                width: "85%",
+            },
+            transition: "width 1s ease-in-out",
             marginTop: "32px",
             height: "80px",
-            width: "600px",
+            width: "100%",
             marginBottom: "6px"
         },
         trackers: {
             width:"240px",
         },
+
+        bottom: {
+            width: "100%",
+        }
     }), []);
 
     return <div className={css(styles.main)}>
@@ -166,9 +204,7 @@ const View = () => {
                     </span>
                     <Text 
                         className={css(styles.description, styles.text)}
-                        maxWidth="600px"
                         marginTop="24px"
-                        fontSize="14px"
                         fontFamily="Cascadia Code"
                         noOfLines={4}
                     >
@@ -198,6 +234,8 @@ const View = () => {
                     </div>
                 </div>
             </div>
+        </div>
+        <div className={css(styles.bottom)}>
         </div>
     </div>;
 };
