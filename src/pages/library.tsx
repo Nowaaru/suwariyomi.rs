@@ -74,18 +74,22 @@ const Library = () => {
                     overflowX: "hidden",
                     overflowY: "auto",
 
-                    "&::-webkit-slider-thumb": {
-                        borderRadius: "10px",
-                        backgroundColor: objectAccent,
-                    },
-
-                    "&::-webkit-scrollbar-track": {
-                        borderRadius: "10px",
-                    },
-
                     "&::-webkit-scrollbar": {
                         width: "8px",
                     },
+
+                    "&::-webkit-scrollbar-track": {
+                        background: "#00000000",
+                    },
+
+                    "&::-webkit-scrollbar-thumb": {
+                        background: objectAccent,
+                        borderRadius: "2px",
+                    },
+
+                    "&::-webkit-scrollbar-thumb:hover": {
+                        background: textAccent,
+                    }
                 },
                 topStyle: {
                     position: "absolute",
