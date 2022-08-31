@@ -28,7 +28,7 @@
 
 -   [x] Implement manga view page
 
--   [ ] Implement canvas-based read page (for zooming/filters and all that good stuff)
+-   [ ] Implement canvas-based read component (for zooming/filters and all that good stuff)
 
 -   [ ] Implement reading page
 
