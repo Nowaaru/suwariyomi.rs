@@ -26,7 +26,21 @@
 
 -   [x] Return to backend, implement database support for Manga.
 
--   [ ] Implement manga view page
+-   [x] Implement manga view page
+
+-   [ ] Implement canvas-based read page (for zooming/filters and all that good stuff)
+
+-   [ ] Implement reading page
+
+-   [ ] Implement third-party sources
+
+-   [ ] Implement search page
+
+-   [ ] Integrate source functionality (chapters, title, description, so on..) with view page
+
+-   [ ] Implement settings and configuration
+    
+    - I genuinely have no clue *how* I'm going to do this without making it messy like Suwariyomi's. :(
 
 -   [ ] Implement CBZ file import handshake for frontend and backend.
 
