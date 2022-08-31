@@ -1,13 +1,23 @@
 type Image = string;
 type ScanlatorName = string;
+type int = number;
 
 export type Chapter = {
-    name?: string;
-    volume?: number;
-    chapter: number;
-    scanlators: Array<ScanlatorName>;
-    id: string;
+    id: string,
+    manga_id: string,
+    chapter: int,
+    volume: int,
 
+    title?: string,
+
+    last_read: int,
+    date_uploaded: int,
+    last_updated: int,
+    time_spent_reading: int,
+
+    pages: int,
+    count: int,
+    scanlators: Array<ScanlatorName>,
     // at minimum, the chapter and id must be defined.
 };
 
@@ -20,3 +30,22 @@ export type Manga = {
     chapters: Array<Chapter>;
     uploaded: number;
 };
+/*
+ *
+pub struct Chapter {
+    pub id: String,
+    pub manga_id: String, // The manga it belongs to.
+    pub chapter: i32,
+    pub volume: i32,
+
+    pub title: String,
+
+    pub last_read: i32,
+    pub last_updated: i32,
+    pub time_spent_reading: i32,
+
+    pub pages: i32,
+    pub count: i32,
+    pub scanlators: std::vec::Vec<String>,
+}
+*/

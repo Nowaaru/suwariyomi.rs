@@ -65,6 +65,7 @@ pub struct Chapter {
 
     pub last_read: i32,
     pub last_updated: i32,
+    pub date_uploaded: i32,
     pub time_spent_reading: i32,
 
     pub pages: i32,
@@ -81,6 +82,7 @@ impl std::fmt::Display for Chapter {
             volume,
             title,
             last_read,
+            date_uploaded,
             last_updated,
             time_spent_reading,
             pages,
@@ -95,6 +97,7 @@ impl std::fmt::Display for Chapter {
         writeln!(f, "\tvolume: {}", volume)?;
         writeln!(f, "\ttitle: {}", title)?;
         writeln!(f, "\tlast_read: {}", last_read)?;
+        writeln!(f, "\tlast_updated: {}", last_updated)?;
         writeln!(f, "\tlast_updated: {}", last_updated)?;
         writeln!(f, "\ttime_spent_reading: {}", time_spent_reading)?;
         writeln!(f, "\tpages: {}", pages)?;
@@ -150,6 +153,7 @@ fn generate_chapter_from_row(row: &Row) -> Chapter {
         volume: row.get::<&str, i32>("volume").unwrap(),
 
         last_read: row.get::<&str, i32>("last_read").unwrap(),
+        date_uploaded: row.get::<&str, i32>("date_uploaded").unwrap(),
         last_updated: row.get::<&str, i32>("last_updated").unwrap(),
         time_spent_reading: row.get::<&str, i32>("time_spent_reading").unwrap(),
 
@@ -321,6 +325,7 @@ impl ChapterDB {
             chapter,
             volume,
             last_read,
+            date_uploaded,
             last_updated,
             time_spent_reading,
             pages,
@@ -330,8 +335,8 @@ impl ChapterDB {
 
         self.db.execute(
             "INSERT INTO Chapters
-                (id, manga_id, title, chapter, volume, last_read, last_updated, time_spent_reading, pages, count, scanlators)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)",
+                (id, manga_id, title, chapter, volume, last_read, date_uploaded, last_updated, time_spent_reading, pages, count, scanlators)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12)",
              (
                  id, 
                  manga_id,
@@ -339,6 +344,7 @@ impl ChapterDB {
                  chapter,
                  volume,
                  last_read,
+                 date_uploaded,
                  last_updated,
                  time_spent_reading,
                  pages,
