@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { StyleSheet, css } from "util/aphrodite";
 
 type LightbarPropsVertical = {
@@ -28,7 +28,7 @@ type LightbarProps = (LightbarPropsVertical | LightbarPropsHorizontal) & {
     pages: number;
     current?: number;
     reversed?: boolean;
-    onTabClick?: LightbarTabProps['onClick'];
+    onTabClick?: LightbarTabProps["onClick"];
 };
 
 const LightbarTab = (props: LightbarTabProps) => {
@@ -144,16 +144,15 @@ const Lightbar = (props: LightbarProps) => {
 
     const lightbarColor = "#FFFFFF";
     const positioningParameter = useMemo(() => {
-        let finalResult: string;
         if (isVertical) {
-            if (isRight) return (finalResult = "right");
+            if (isRight) return "right";
 
-            return (finalResult = "left");
+            return "left";
         }
 
-        if (isTop) return (finalResult = "top");
+        if (isTop) return "top";
 
-        return (finalResult = "bottom");
+        return "bottom";
     }, [props]);
     const oppPosition = {
         bottom: "top",
