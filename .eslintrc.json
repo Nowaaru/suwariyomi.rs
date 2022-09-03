@@ -8,7 +8,8 @@
         "plugin:react/recommended",
         "plugin:import/recommended",
         "plugin:@typescript-eslint/recommended",
-        "plugin:react-hooks/recommended"
+        "plugin:react-hooks/recommended",
+        "prettier"
     ],
     "parser": "@typescript-eslint/parser",
     "parserOptions": {
@@ -32,7 +33,7 @@
         "react-hooks/rules-of-hooks": ["error"],
         "react-hooks/exhaustive-deps": ["warn"],
         "indent": "off",
-        "@typescript-eslint/indent": ["error", 4],
+        "@typescript-eslint/indent": "off",
         "linebreak-style": ["error", "windows"],
         "quotes": [
             "error",

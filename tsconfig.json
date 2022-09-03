@@ -23,6 +23,7 @@
             "components/*": ["src/components/*"],
             "pages/*": ["src/pages/*"],
             "util/*": ["src/util/*"],
+            "hooks/*": ["src/util/hook/*"],
             "src/*": ["src/*"],
             "aphrodite": ["src/util/aphrodite.ts"]
         }
