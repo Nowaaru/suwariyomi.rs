@@ -7,6 +7,7 @@ import BaseClass from "pages/main";
 import Library from "pages/library";
 import View from "pages/view";
 import SplashScreen from "pages/splash";
+import Reader from "pages/reader";
 
 // Utiltiy
 import DefaultThemeDark from "assets/themes/dark";
@@ -32,7 +33,7 @@ export default function App() {
             <ChakraProvider theme={extendTheme(DefaultThemeDark)}>
                 <BrowserRouter>
                     <Routes>
-                        <Route path="/" element={<View />} />
+                        <Route path="/" element={<Reader />} />
                         <Route path="view" element={<View />} />
                         <Route path="splash" element={<SplashScreen />} />
                     </Routes>
