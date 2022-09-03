@@ -17,6 +17,8 @@ type LightbarTabProps = {
     pageNumber: number,
     selected?: boolean,
     onClick?: () => void,
+
+    barPosition?: "left" | "right" | "top" | "bottom";
 };
 
 type LightbarProps = (LightbarPropsVertical | LightbarPropsHorizontal) & {
@@ -26,12 +28,28 @@ type LightbarProps = (LightbarPropsVertical | LightbarPropsHorizontal) & {
 };
 
 const LightbarTab = (props: LightbarTabProps) => {
+    const { barPosition = "bottom", selected } = props;
+    const barSizeProfile = (barPosition === "left" || barPosition === "right") ? "height" : "width";
+    const oppBarSizeProfile = barSizeProfile === "height" ? "width" : "height";
+
     const styles = useMemo(
         () =>
             StyleSheet.create({
                 lightbarTab: {
                     display: "flex",
+                    position: "relative", // to position the ::after properly
                     flexGrow: 1,
+
+                    [barPosition]: selected ? "25%" : "unset",
+                    "::after": {
+                        content: "' '",
+                        position: "absolute",
+                        [barPosition]: "0",
+                        [barSizeProfile]: "calc(100% - 2px)",
+                        [oppBarSizeProfile]: "4px",
+                        backgroundColor: "#fb8e84",
+                        boxSizing: "border-box",
+                    }
                 },
             }),
         [props]
@@ -65,6 +83,7 @@ const Lightbar = (props: LightbarProps) => {
                 lightBar: {
                     display: "flex",
                     position: "absolute",
+                    justifyContent: "center",
                     [positioningParameter]: "0",
                     [isVertical ? "width" : "height"]: "8%",
                     [isVertical ? "height" : "width"]: "100%",
