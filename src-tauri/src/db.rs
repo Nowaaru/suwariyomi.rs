@@ -169,7 +169,7 @@ fn generate_chapter_from_row(row: &Row) -> Chapter {
 }
 
 impl MangaDB {
-    pub fn new(path: Option<std::path::PathBuf>) -> Self {
+    pub fn new(path: &Option<std::path::PathBuf>) -> Self {
         // Make tables if not present.
         // let db = if path.is_none() { Connection::open_in_memory().expect("unable to open in-memory database") }
         //        else { Connection::open(path.unwrap()).expect("unable to open database") };
@@ -182,17 +182,17 @@ impl MangaDB {
         // Since arrays cannot be stored in SQL, just have covers be a JSON array. Same with
         // chapters
         match db.execute("
-                         CREATE TABLE IF NOT EXISTS Library 
+                         CREATE TABLE IF NOT EXISTS Library
                          (
-                             id TEXT NOT NULL PRIMARY KEY, 
-                             name TEXT NOT NULL, 
-                             source TEXT NOT NULL, 
-                             covers TEXT NOT NULL, 
-                             chapters TEXT NOT NULL, 
+                             id TEXT NOT NULL PRIMARY KEY,
+                             name TEXT NOT NULL,
+                             source TEXT NOT NULL,
+                             covers TEXT NOT NULL,
+                             chapters TEXT NOT NULL,
                              uploaded INT NOT NULL,
                              added INT NOT NULL
                         )
-                         ", []) 
+                         ", [])
         {
             Ok(_) => println!("Table was created."),
             Err(why) => println!("Failed: {}", why),
@@ -213,7 +213,7 @@ impl MangaDB {
             uploaded,
             added,
         } = manga;
-    
+
         let mut serialized_covers = String::new();
         for cover in covers.covers.iter() {
             let mut cover_with_separator = cover.url.clone();
@@ -222,8 +222,8 @@ impl MangaDB {
         }
 
         self.db.execute(
-            "INSERT INTO Library 
-                    (id, name, source, covers, chapters, uploaded, added) 
+            "INSERT INTO Library
+                    (id, name, source, covers, chapters, uploaded, added)
                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
             (
                 id,
@@ -281,7 +281,7 @@ impl MangaDB {
 }
 
 impl ChapterDB {
-    pub fn new(path: Option<std::path::PathBuf> ) -> Self {
+    pub fn new(path: &Option<std::path::PathBuf> ) -> Self {
         let db: Connection =
         if let Some(path) = path {
             let p2 = path.clone();
@@ -291,35 +291,35 @@ impl ChapterDB {
         };
 
         match db.execute("
-                         CREATE TABLE IF NOT EXISTS Chapters 
+                         CREATE TABLE IF NOT EXISTS Chapters
                          (
                             id TEXT NOT NULL PRIMARY KEY,
                             manga_id TEXT NOT NULL,
-                            title TEXT NOT NULL, 
+                            title TEXT NOT NULL,
                             chapter INT NOT NULL,
                             volume INT NOT NULL,
                             last_read INT NOT NULL,
                             last_updated INT NOT NULL,
                             time_spent_reading INT NOT NULL,
-                            pages INT NOT NULL, 
+                            pages INT NOT NULL,
                             count INT NOT NULL,
                             scanlators TEXT NOT NULL
-                        ) 
+                        )
                          ", []
-                        ) 
-        {            
-            Ok(_) => println!("Chapters table was created."),       
-            Err(why) => println!("Chapters failed: {}", why)         
+                        )
+        {
+            Ok(_) => println!("Chapters table was created."),
+            Err(why) => println!("Chapters failed: {}", why)
         }
 
-        Self {  
-            db 
+        Self {
+            db
         }
     }
 
     pub fn insert(&self, chapter: Chapter) -> Result<usize, rusqlite::Error> {
         let Chapter {
-            id, 
+            id,
             manga_id,
             title,
             chapter,
@@ -338,7 +338,7 @@ impl ChapterDB {
                 (id, manga_id, title, chapter, volume, last_read, date_uploaded, last_updated, time_spent_reading, pages, count, scanlators)
              VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12)",
              (
-                 id, 
+                 id,
                  manga_id,
                  title,
                  chapter,
@@ -409,8 +409,8 @@ pub fn init(mut _path: &std::path::PathBuf) -> Result<DBHandler, crate::errors::
     // For now, open the database in memory for testing purposes.
     // path.push("sw.db");
 
-    let manga_handler = MangaDB::new(None);
-    let chapter_handler = ChapterDB::new(None);
+    let manga_handler = MangaDB::new(&None);
+    let chapter_handler = ChapterDB::new(&None);
 
     Ok(DBHandler {
         manga_db: manga_handler,

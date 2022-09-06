@@ -14,7 +14,9 @@ pub mod download;
 pub mod errors;
 pub mod handlers;
 
-pub static mut DB_PATH: Option<PathBuf> = None;
+pub fn get_db_path() -> Option<PathBuf> {
+    None
+}
 
 #[tokio::main]
 async fn main() {
@@ -49,11 +51,6 @@ async fn main() {
             if let Some(path) = app_data {
                 if !path.exists() && std::fs::create_dir(&path).is_err() {
                     panic!("unable to create path {:?}", path.to_str().unwrap());
-                }
-
-                // Start up database handler, use for testing
-                unsafe {
-                    DB_PATH = Some(path);
                 }
             }
             Ok(())

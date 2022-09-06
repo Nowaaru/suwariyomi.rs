@@ -12,14 +12,21 @@
     },
     "tauri": {
         "allowlist": {
+            "http": {
+                "all": true,
+                "request": true,
+                "scope": ["https://**", "http://**"]
+            },
             "fs": {
+                "all": true,
                 "readFile": true,
                 "writeFile": true,
                 "removeFile": true,
 
                 "createDir": true,
                 "removeDir": true,
-                "readDir": true
+                "readDir": true,
+                "scope": ["C:/Users/zacky/Documents/**"]
             }
         },
         "bundle": {
