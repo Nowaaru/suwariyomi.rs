@@ -196,6 +196,7 @@ const Lightbar = (props: LightbarProps) => {
             // I expect pages to not be zero-indexed for this case
             lightbarTabs.push(
                 <LightbarTab
+                    key={`tab-${i}`}
                     barPosition={positioningParameter}
                     pageNumber={i}
                     selected={i === current}
