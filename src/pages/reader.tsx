@@ -61,6 +61,31 @@ const MangaPageTest = () => {
     }, [pages, currentPage]);
 
     useEffect(() => {
+        if (!currentPageNumber) return;
+        const onKeyPress = (e: KeyboardEvent) => {
+            const { code } = e;
+            const codeMaps: Record<string, number> = {
+                ArrowRight: 1,
+                ArrowLeft: -1,
+                D: 1,
+                A: -1,
+                PageDown: 1,
+                PageUp: -1,
+                ArrowDown: 1,
+                ArrowUp: -1,
+            };
+
+            if (codeMaps[code]) {
+                const y = pages.current[_.clamp(currentPageNumber - 1 + codeMaps[code], 0, pages.current.length - 1)];
+                setCurrentPage(y);
+            }
+        };
+
+        window.addEventListener("keydown", onKeyPress);
+        return () => window.removeEventListener("keydown", onKeyPress);
+    });
+
+    useEffect(() => {
         setPageSources(test_getPages());
         pages.current = test_getPages().map((n) => ({
             url: n,
