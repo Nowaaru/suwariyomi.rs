@@ -33,7 +33,7 @@ export default function App() {
             <ChakraProvider theme={extendTheme(DefaultThemeDark)}>
                 <BrowserRouter>
                     <Routes>
-                        <Route path="/" element={<Library />} />
+                        <Route path="/" element={<Reader />} />
                         <Route path="reader" element={<Reader />} />
                         <Route path="view" element={<View />} />
                         <Route path="splash" element={<SplashScreen />} />
