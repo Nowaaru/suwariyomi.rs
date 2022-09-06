@@ -11,10 +11,12 @@ import {
 } from "@chakra-ui/react";
 import {
     DownloadIcon,
+    InfoIcon,
     RepeatIcon,
     SettingsIcon,
     TimeIcon,
 } from "@chakra-ui/icons";
+import { Link } from "react-router-dom";
 
 const backgroundColor_high = "rgb(18, 30, 42)";
 const backgroundColor_low = "#0D1620";
@@ -89,7 +91,7 @@ const Library = () => {
 
                     "&::-webkit-scrollbar-thumb:hover": {
                         background: textAccent,
-                    }
+                    },
                 },
                 topStyle: {
                     position: "absolute",
@@ -298,6 +300,12 @@ const Library = () => {
                 <LibraryButton aria-label="Settings" icon={<SettingsIcon />} />
                 <LibraryButton aria-label="History" icon={<TimeIcon />} />
                 <LibraryButton aria-label="Download" icon={<DownloadIcon />} />
+                <Link to="reader">
+                    <LibraryButton
+                        aria-label="[testing] Go to Reader"
+                        icon={<InfoIcon />}
+                    />
+                </Link>
             </ButtonGroup>
             <hr className={css(styles.line)} />
             <LibrarySource
