@@ -1,6 +1,4 @@
-import { CanvasHTMLAttributes, useEffect, useRef, useState } from "react";
 import { StyleSheet, css } from "aphrodite";
-import useForceUpdate from "hooks/forceupdate";
 import _ from "lodash";
 
 type float = number;
