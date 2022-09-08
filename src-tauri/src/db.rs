@@ -53,9 +53,9 @@ pub struct Manga {
     pub id: String,
     pub name: String,
     pub source: String,
-    pub covers: Covers,
+    pub covers: std::vec::Vec<Cover>,
 
-    pub chapters: Chapters,
+    pub chapters: std::vec::Vec<String>,
     pub uploaded: i32,
     pub added: i32,
 }
@@ -79,7 +79,7 @@ impl std::fmt::Display for Manga {
         } = self;
 
         // TODO: Make this multiline
-        write!(f, "Manga {{\n\tid: {}\n\tname: {}\n\tsource: {}\n\tcovers: {}\n\n\tchapters: [ {:?} ]\n\tuploaded: {}\n\tadded: {}\n}}", id, name, source, covers, chapters, uploaded, added)
+        write!(f, "Manga {{\n\tid: {}\n\tname: {}\n\tsource: {}\n\tcovers: {:?}\n\n\tchapters: [ {:?} ]\n\tuploaded: {}\n\tadded: {}\n}}", id, name, source, covers, chapters, uploaded, added)
     }
 }
 
@@ -179,8 +179,8 @@ fn generate_manga_from_row(row: &Row) -> Manga {
         name: row.get("name").unwrap(),
 
         source: row.get("source").unwrap(),
-        covers: serde_json::from_str::<Covers>(row.get::<&str, std::string::String>("covers").unwrap().as_str()).unwrap(),
-        chapters: serde_json::from_str::<Chapters>(row.get::<&str, std::string::String>("chapters").unwrap().as_str()).unwrap(),
+        covers: serde_json::from_str::<std::vec::Vec<Cover>>(row.get::<&str, std::string::String>("covers").unwrap().as_str()).unwrap(),
+        chapters: serde_json::from_str::<std::vec::Vec<String>>(row.get::<&str, std::string::String>("chapters").unwrap().as_str()).unwrap(),
         uploaded: row.get("uploaded").unwrap(),
         added: row.get("added").unwrap(),
     }
