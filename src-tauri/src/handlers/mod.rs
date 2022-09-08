@@ -1,8 +1,15 @@
+use std::{fs, path::PathBuf, error::Error};
 use crate::{
-    db::{Manga, MangaDB, ChapterDB, Chapter},
-    errors, get_db_path
+    db::{Chapter, ChapterDB, Manga, MangaDB, Mangas, Chapters},
+    errors::{self, InternalError},
+    get_db_path,
 };
-use tauri::Manager;
+
+use tauri::{
+    api::path::{resolve_path, BaseDirectory},
+    Env, Manager,
+};
+
 #[tauri::command]
 pub fn splash_close(window: tauri::Window) -> Result<(), errors::InternalError> {
     if let Some(splashscreen) = window.get_window("splashscreen") {
@@ -18,6 +25,24 @@ pub fn splash_close(window: tauri::Window) -> Result<(), errors::InternalError> 
     }
 }
 
+pub fn stringify_result<T,E>(r: Result<T, E>) -> Result<T, String>
+        where E: Error
+{
+    match r {
+        Ok(y) => Ok(y),
+        Err(e) => Err(e.to_string())
+    }
+}
+
+pub fn stringify_result_none<T,E>(r: Result<T, E>) -> Result<(), String>
+        where E: Error
+{
+    match r {
+        Ok(..) => Ok(()),
+        Err(e) => Err(e.to_string())
+    }
+}
+
 pub fn get_manga_db() -> MangaDB {
     MangaDB::new(&get_db_path())
 }
@@ -27,75 +52,110 @@ pub fn get_chapter_db() -> ChapterDB {
 }
 
 #[tauri::command]
-pub fn get_all_manga(source: Option<String>) -> Result<std::vec::Vec<Manga>, rusqlite::Error> {
+pub fn get_all_manga(source: Option<String>) -> Result<Mangas, String> {
     let db = get_manga_db();
-    db.get_all(source)
-}
-
-#[tauri::command]
-pub fn get_manga(id: String, source: String) -> Result<Option<Manga>, rusqlite::Error> {
-    let db = get_manga_db();
-    db.get(id, source)
-}
-
-#[tauri::command]
-pub fn insert_manga(manga: Manga) -> Result<(), rusqlite::Error> {
-    let db = get_manga_db();
-    match db.insert(manga) {
-        Ok(_) => Ok(()),
-        Err(why) => Err(why),
+    match db.get_all(source) {
+        Ok(mangas) => Ok(Mangas { mangas }),
+        Err(y) => Err(y.to_string()),
     }
 }
 
 #[tauri::command]
-pub fn remove_manga(id: String, source: String) -> Result<(), rusqlite::Error> {
+pub fn get_manga(id: String, source: String) -> Result<Option<Manga>, String> {
     let db = get_manga_db();
-    match db.delete(id, source) {
-        Ok(_) => Ok(()),
-        Err(why) => Err(why)
-    }
+    stringify_result(db.get(id, source))
 }
 
 #[tauri::command]
-pub fn clear_manga() -> Result<(), rusqlite::Error> {
+pub fn insert_manga(manga: Manga) -> Result<usize, String> {
     let db = get_manga_db();
-    db.clear()
+    stringify_result(db.insert(manga))
 }
 
 #[tauri::command]
-pub fn get_all_chapters(manga_id: Option<String>) -> Result<std::vec::Vec<Chapter>, rusqlite::Error> {
-    let db = get_chapter_db();
-    db.get_all(manga_id)
+pub fn remove_manga(id: String, source: String) -> Result<(), String> {
+    let db = get_manga_db();
+    stringify_result_none(db.delete(id, source))
 }
 
 #[tauri::command]
-pub fn get_chapter(chapter_id: String, manga_id: String) -> Result<Option<Chapter>, rusqlite::Error> {
-    let db = get_chapter_db();
-    db.get(chapter_id, manga_id)
+pub fn clear_manga() -> Result<(), String> {
+    let db = get_manga_db();
+    stringify_result_none(db.clear())
 }
 
 #[tauri::command]
-pub fn insert_chapter(chapter: Chapter) -> Result<(), rusqlite::Error> {
+pub fn get_all_chapters(
+    manga_id: Option<String>,
+) -> Result<Chapters, String> {
     let db = get_chapter_db();
-    match db.insert(chapter) { // TODO: tbh just turn all this shit into a function
-        Ok(_) => Ok(()),
-        Err(why) => Err(why)
+    match db.get_all(manga_id) {
+        Ok(chapters) => Ok(Chapters { chapters }),
+        Err(y) => Err(y.to_string()),
     }
 }
 
 #[tauri::command]
-pub fn remove_chapter(manga_id: String, chapter_id: String) -> Result<(), rusqlite::Error> {
+pub fn get_chapter(
+    chapter_id: String,
+    manga_id: String,
+) -> Result<Option<Chapter>, String> {
     let db = get_chapter_db();
-    match db.delete(manga_id, chapter_id) {
-        Ok(_) => Ok(()),
-        Err(why) => Err(why)
-    }
+    stringify_result(db.get(chapter_id, manga_id))
 }
 
 #[tauri::command]
-pub fn clear_chapters() -> Result<(), rusqlite::Error> {
+pub fn insert_chapter(chapter: Chapter) -> Result<(), String> {
     let db = get_chapter_db();
-    db.clear()
+    stringify_result_none(db.insert(chapter))
+}
+
+#[tauri::command]
+pub fn remove_chapter(manga_id: String, chapter_id: String) -> Result<(), String> {
+    let db = get_chapter_db();
+    stringify_result_none(db.delete(manga_id, chapter_id))
+}
+
+#[tauri::command]
+pub fn clear_chapters() -> Result<(), String> {
+    let db = get_chapter_db();
+    stringify_result_none(db.clear())
+}
+
+#[tauri::command]
+pub fn get_sources() -> Result<Vec<PathBuf>, InternalError> {
+    let app_context = tauri::generate_context!();
+    let sources_path = resolve_path(
+        app_context.config(),
+        app_context.package_info(),
+        &Env::default(),
+        "sources/",
+        Some(BaseDirectory::Config),
+    );
+    if let Ok(path) = sources_path {
+        match fs::try_exists(&path) {
+            Ok(exists) => {
+                if !exists {
+                    return Err(InternalError::new("sources directory does not exist"));
+                }
+
+                let mut all_sources: Vec<PathBuf> = vec![];
+                if let Ok(itr) = fs::read_dir(path) {
+                    itr.for_each(|val| match val {
+                        Ok(val) => all_sources.push(val.path()),
+                        Err(..) => (),
+                    });
+
+                    return Ok(all_sources);
+                } else {
+                    return Err(InternalError::new("unable to read sources directory"));
+                }
+            }
+            Err(y) => Err(InternalError::new(y.to_string().as_str())),
+        }
+    } else {
+        Err(InternalError::new("unable to get sources dir"))
+    }
 }
 
 #[tauri::command]

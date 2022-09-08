@@ -1,3 +1,4 @@
+#![feature(fs_try_exists)]
 #![cfg_attr(
     all(not(debug_assertions), target_os = "windows"),
     windows_subsystem = "windows"
@@ -48,6 +49,8 @@ async fn main() {
             // Setup files in filesystem
             let app_config = app.config();
             let app_data = tauri::api::path::app_dir(&app_config);
+            println!("{}", app_data.as_ref().unwrap().display());
+
             if let Some(path) = app_data {
                 if !path.exists() && std::fs::create_dir(&path).is_err() {
                     panic!("unable to create path {:?}", path.to_str().unwrap());
@@ -69,7 +72,21 @@ async fn main() {
                 window.show().expect("Could not show window.");
             }
         })
-        .invoke_handler(tauri::generate_handler![handlers::splash_close])
+        .invoke_handler(tauri::generate_handler![
+            handlers::splash_close,
+            handlers::get_all_manga,
+            handlers::get_manga,
+            handlers::insert_manga,
+            handlers::remove_manga,
+            handlers::clear_manga,
+            handlers::get_all_chapters,
+            handlers::get_chapter,
+            handlers::insert_chapter,
+            handlers::remove_chapter,
+            handlers::clear_chapters,
+            handlers::get_sources,
+            handlers::return_to_tray,
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
