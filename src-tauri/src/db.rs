@@ -1,23 +1,32 @@
 use rusqlite::{self, Connection, OptionalExtension, Row};
+use serde::{Deserialize, Serialize};
 
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(transparent)]
+pub struct Scanlators {
+    pub scanlators: std::vec::Vec<String>,
+}
+
+impl std::fmt::Display for Scanlators {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Scanlators [")?;
+        for scanlator in &self.scanlators {
+            write!(f, " {} ", scanlator.as_str())?;
+        }
+
+        write!(f, "]")
+    }
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(transparent)]
 pub struct Covers {
     pub covers: std::vec::Vec<Cover>,
 }
 
-#[derive(PartialEq, Eq)]
+#[derive(PartialEq, Eq, Debug, Deserialize, Serialize)]
 pub struct Cover {
     pub url: String,
-}
-
-pub struct Manga {
-    pub id: String,
-    pub name: String,
-    pub source: String,
-    pub covers: Covers,
-
-    pub chapters: String,
-    pub uploaded: i32,
-    pub added: i32,
 }
 
 impl std::fmt::Display for Covers {
@@ -25,17 +34,36 @@ impl std::fmt::Display for Covers {
         write!(f, "Covers {{ ")?;
 
         self.covers.iter().for_each(|val| {
-            write!(f, "{} ", val.url).unwrap();
+            write!(f, " {} ", val.url).unwrap();
         });
 
         write!(f, "}}")
     }
 }
 
+
 impl std::fmt::Display for Cover {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "Cover {{ url: {} }}", self.url)
     }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct Manga {
+    pub id: String,
+    pub name: String,
+    pub source: String,
+    pub covers: Covers,
+
+    pub chapters: Chapters,
+    pub uploaded: i32,
+    pub added: i32,
+}
+
+#[derive(Serialize, Deserialize)]
+#[serde(transparent)]
+pub struct Mangas {
+    pub mangas: Vec<Manga>,
 }
 
 impl std::fmt::Display for Manga {
@@ -51,10 +79,35 @@ impl std::fmt::Display for Manga {
         } = self;
 
         // TODO: Make this multiline
-        write!(f, "Manga {{\n\tid: {}\n\tname: {}\n\tsource: {}\n\tcovers: {}\n\n\tchapters: [ {} ]\n\tuploaded: {}\n\tadded: {}\n}}", id, name, source, covers, chapters, uploaded, added)
+        write!(f, "Manga {{\n\tid: {}\n\tname: {}\n\tsource: {}\n\tcovers: {}\n\n\tchapters: [ {:?} ]\n\tuploaded: {}\n\tadded: {}\n}}", id, name, source, covers, chapters, uploaded, added)
     }
 }
 
+// impl serde::Serialize for Manga {
+//     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+//         where
+//             S: serde::Serializer {
+
+//         let mut serialized_struct = serializer.serialize_struct("Manga", 7)?;
+//         serialized_struct.serialize_field("id", &self.id);
+//         serialized_struct.serialize_field("name", &self.name);
+//         serialized_struct.serialize_field("source", &self.source);
+//         serialized_struct.serialize_field("covers", &self.covers);
+//         serialized_struct.serialize_field("chapters", &self.chapters);
+//         serialized_struct.serialize_field("uploaded", &self.uploaded);
+//         serialized_struct.serialize_field("added", &self.added);
+
+//         serialized_struct.end()
+//     }
+// }
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(transparent)]
+pub struct Chapters {
+    pub chapters: Vec<Chapter>
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Chapter {
     pub id: String,
     pub manga_id: String, // The manga it belongs to.
@@ -70,7 +123,7 @@ pub struct Chapter {
 
     pub pages: i32,
     pub count: i32,
-    pub scanlators: std::vec::Vec<String>,
+    pub scanlators: Scanlators,
 }
 
 impl std::fmt::Display for Chapter {
@@ -98,11 +151,11 @@ impl std::fmt::Display for Chapter {
         writeln!(f, "\ttitle: {}", title)?;
         writeln!(f, "\tlast_read: {}", last_read)?;
         writeln!(f, "\tlast_updated: {}", last_updated)?;
-        writeln!(f, "\tlast_updated: {}", last_updated)?;
+        writeln!(f, "\tdate_uploaded: {}", date_uploaded)?;
         writeln!(f, "\ttime_spent_reading: {}", time_spent_reading)?;
         writeln!(f, "\tpages: {}", pages)?;
         writeln!(f, "\tcount: {}", count)?;
-        writeln!(f, "\tscanlators: [ {} ]", scanlators.join(" "))?;
+        writeln!(f, "\tscanlators: {scanlators}")?;
         write!(f, "}}")
     }
 }
@@ -126,17 +179,8 @@ fn generate_manga_from_row(row: &Row) -> Manga {
         name: row.get("name").unwrap(),
 
         source: row.get("source").unwrap(),
-        covers: Covers {
-            covers: row
-                .get::<&str, std::string::String>("covers")
-                .unwrap()
-                .split("$$")
-                .map(|url| Cover {
-                    url: url.to_string(),
-                })
-            .collect::<std::vec::Vec<Cover>>(),
-        },
-        chapters: row.get("chapters").unwrap(),
+        covers: serde_json::from_str::<Covers>(row.get::<&str, std::string::String>("covers").unwrap().as_str()).unwrap(),
+        chapters: serde_json::from_str::<Chapters>(row.get::<&str, std::string::String>("chapters").unwrap().as_str()).unwrap(),
         uploaded: row.get("uploaded").unwrap(),
         added: row.get("added").unwrap(),
     }
@@ -160,11 +204,10 @@ fn generate_chapter_from_row(row: &Row) -> Chapter {
         pages: row.get::<&str, i32>("pages").unwrap(),
         count: row.get::<&str, i32>("count").unwrap(),
 
-        scanlators: row.get::<&str, std::string::String>("scanlators")
-            .unwrap()
-            .split("$$")
+        scanlators: serde_json::from_str::<Scanlators>(row.get::<&str, std::string::String>("scanlators").unwrap().as_str()).unwrap()
+            /*.split("$$")
             .map(|v| v.to_string())
-            .collect::< std::vec::Vec<String> >()
+            .collect::< std::vec::Vec<String> >() */
     }
 }
 
@@ -214,13 +257,6 @@ impl MangaDB {
             added,
         } = manga;
 
-        let mut serialized_covers = String::new();
-        for cover in covers.covers.iter() {
-            let mut cover_with_separator = cover.url.clone();
-            cover_with_separator.push_str("$$");
-            serialized_covers.push_str(cover_with_separator.as_str());
-        }
-
         self.db.execute(
             "INSERT INTO Library
                     (id, name, source, covers, chapters, uploaded, added)
@@ -229,8 +265,8 @@ impl MangaDB {
                 id,
                 name,
                 source,
-                serialized_covers,
-                chapters,
+                serde_json::to_string(&covers).unwrap(),
+                serde_json::to_string(&chapters).unwrap(),
                 uploaded,
                 added,
             ),
@@ -300,6 +336,7 @@ impl ChapterDB {
                             volume INT NOT NULL,
                             last_read INT NOT NULL,
                             last_updated INT NOT NULL,
+                            date_uploaded INT NOT NULL,
                             time_spent_reading INT NOT NULL,
                             pages INT NOT NULL,
                             count INT NOT NULL,
@@ -349,7 +386,7 @@ impl ChapterDB {
                  time_spent_reading,
                  pages,
                  count,
-                 scanlators.join("$$"),
+                 serde_json::to_string(&scanlators).unwrap()
             )
         )
     }
