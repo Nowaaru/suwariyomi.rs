@@ -67,8 +67,15 @@ pub fn get_manga(id: String, source: String) -> Result<Option<Manga>, String> {
 }
 
 #[tauri::command]
+pub fn get_mangas(source: String, ids: std::vec::Vec<String>) -> Result<std::vec::Vec<Manga>, String> {
+    let db = get_manga_db();
+    stringify_result(db.get_multiple(source, ids))
+}
+
+#[tauri::command]
 pub fn insert_manga(manga: Manga) -> Result<usize, String> {
     let db = get_manga_db();
+    println!("{manga}");
     stringify_result(db.insert(manga))
 }
 
@@ -105,6 +112,12 @@ pub fn get_chapter(
 }
 
 #[tauri::command]
+pub fn get_chapters(manga_id: String, ids: std::vec::Vec<String>) -> Result<std::vec::Vec<Chapter>, String> {
+    let db = get_chapter_db();
+    stringify_result(db.get_multiple(manga_id, ids))
+}
+
+#[tauri::command]
 pub fn insert_chapter(chapter: Chapter) -> Result<(), String> {
     let db = get_chapter_db();
     stringify_result_none(db.insert(chapter))
@@ -132,6 +145,7 @@ pub fn get_sources() -> Result<Vec<PathBuf>, InternalError> {
         "sources/",
         Some(BaseDirectory::Config),
     );
+
     if let Ok(path) = sources_path {
         match fs::try_exists(&path) {
             Ok(exists) => {
