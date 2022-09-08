@@ -4,7 +4,7 @@
         "beforeBuildCommand": "npm run build",
         "beforeDevCommand": "npm run dev",
         "devPath": "http://localhost:5173",
-        "distDir": "../dist"
+        "distDir": "../src"
     },
     "package": {
         "productName": "suwariyomi.rs",
@@ -17,6 +17,9 @@
                 "request": true,
                 "scope": ["https://**", "http://**"]
             },
+            "path": {
+                "all": true
+            },
             "fs": {
                 "all": true,
                 "readFile": true,
@@ -25,8 +28,7 @@
 
                 "createDir": true,
                 "removeDir": true,
-                "readDir": true,
-                "scope": ["C:/Users/zacky/Documents/**"]
+                "readDir": true
             }
         },
         "bundle": {
@@ -44,8 +46,8 @@
                 "icons/icon.icns",
                 "icons/icon.ico"
             ],
-            "identifier": "com.tauri.dev",
-            "longDescription": "",
+            "identifier": "com.suwariyomirs.swrs",
+            "longDescription": "A manga reader that was once was, resurrected by the Rustaceans. Inspired by Tachiyomi.",
             "macOS": {
                 "entitlements": null,
                 "exceptionDomain": "",
@@ -54,7 +56,7 @@
                 "signingIdentity": null
             },
             "resources": [],
-            "shortDescription": "",
+            "shortDescription": "A manga reader inspired by Tachiyomi.",
             "targets": "all",
             "windows": {
                 "certificateThumbprint": null,
