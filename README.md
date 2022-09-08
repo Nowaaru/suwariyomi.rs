@@ -62,6 +62,8 @@
 
   - How boned are you?
 
+- [ ] Use crate `serde_rusqlite` instead of whatever awful solution I have for databases
+
 - [ ] Customization
 
   - [ ] Themes
