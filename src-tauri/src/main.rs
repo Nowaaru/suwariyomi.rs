@@ -8,7 +8,10 @@ use std::path::PathBuf;
 
 use tauri::CustomMenuItem;
 use tauri::Manager;
-use tauri::{SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem};
+use tauri::{
+    api::path::{resolve_path, BaseDirectory},
+    SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem,
+};
 
 pub mod db;
 pub mod download;
@@ -67,11 +70,17 @@ async fn main() {
             // Setup files in filesystem
             let app_config = app.config();
             let app_data = tauri::api::path::app_dir(&app_config);
-            println!("{}", app_data.as_ref().unwrap().display());
 
             if let Some(path) = app_data {
                 if !path.exists() && std::fs::create_dir(&path).is_err() {
                     panic!("unable to create path {:?}", path.to_str().unwrap());
+                }
+
+                // try creating sources directory
+                let sources_dir = path.clone().join("sources/");
+                println!("{} {}", &sources_dir.display(), &sources_dir.exists());
+                if !sources_dir.exists() && std::fs::create_dir(&sources_dir).is_err() {
+                    panic!("unable to create path {:?}", sources_dir.to_str().unwrap());
                 }
             }
             Ok(())
