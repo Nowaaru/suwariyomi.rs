@@ -16,7 +16,25 @@ pub mod errors;
 pub mod handlers;
 
 pub fn get_db_path() -> Option<PathBuf> {
-    None
+    let return_none = false;
+    if return_none {
+        return None;
+    }
+
+    let app_context = tauri::generate_context!();
+    let db_path = resolve_path(
+        app_context.config(),
+        app_context.package_info(),
+        &tauri::Env::default(),
+        "suwariyomi.db3",
+        Some(BaseDirectory::Config),
+    );
+
+    if let Ok(db_path) = db_path {
+        return Some(db_path);
+    }
+
+    panic!("unable to get db path");
 }
 
 #[tokio::main]
