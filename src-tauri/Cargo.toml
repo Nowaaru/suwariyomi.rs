@@ -2,12 +2,12 @@
 name = "suwariyomi-rs"
 version = "0.2.0"
 description = "A rusty manga reader."
-authors = ["you"]
-license = ""
-repository = ""
+authors = ["Nowaaru"]
+license = "Apache-2.0"
+repository = "https://github.com/Nowaaru/suwariyomi.rs"
 default-run = "suwariyomi-rs"
 edition = "2021"
-rust-version = "1.57"
+rust-version = "1.63"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -15,22 +15,23 @@ rust-version = "1.57"
 tauri-build = { version = "1.0.4", features = [] }
 
 [dependencies]
-tauri = { version = "1.0.5", features = ["clipboard", "devtools", "fs-all", "fs-extract-api", "http-all", "http-api", "icon-ico", "reqwest-client", "system-tray"] }
+tauri = { version = "1.0.5", features = ["clipboard", "devtools", "fs-all", "fs-extract-api", "http-all", "http-api", "icon-ico", "path-all", "reqwest-client", "system-tray"] }
 reqwest = { version = "0.11", features = ["json", "stream"] }
 serde = { version = "1.0", features = ["derive"] }
 tokio = { version = "1.20.1", features = ["full"] }
 bindet = { version = "0.3.2", features = ["mime"] }
-rusqlite = {version = "0.28.0", features = ["bundled"] }
+rusqlite = { version = "0.28.0", features = ["bundled"] }
 futures-util = "0.3.23"
 serde_json = "1.0"
 error = "0.1.9"
 mime = "0.3.16"
 bytes = "1.2.1"
+serde_rusqlite = "0.31.0"
 
 [features]
 # by default Tauri runs in production mode
 # when `tauri dev` runs it is executed with `cargo run --no-default-features` if `devPath` is an URL
-default = [ "custom-protocol" ]
+default = ["custom-protocol"]
 # this feature is used used for production builds where `devPath` points to the filesystem
 # DO NOT remove this
-custom-protocol = [ "tauri/custom-protocol" ]
+custom-protocol = ["tauri/custom-protocol"]
