@@ -1,4 +1,6 @@
-use rusqlite::{self, Connection, OptionalExtension, Row};
+use std::rc::Rc;
+
+use rusqlite::{self, Connection, OptionalExtension, Row, vtab::array::load_module};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -287,6 +289,17 @@ impl MangaDB {
             .optional()
     }
 
+    pub fn get_multiple(&self, source: String, ids: std::vec::Vec<String>) -> Result<std::vec::Vec<Manga>, rusqlite::Error> {
+        load_module(&self.db).unwrap();
+        let mut prepared_rows = self.db.prepare("SELECT * FROM Library where source = ?1 AND id IN rarray(?2)")?;
+        let values_iter: Vec<rusqlite::types::Value> = ids.into_iter().map(rusqlite::types::Value::from).collect();
+        let iter = prepared_rows.query_map((source, Rc::new(values_iter)), |row| {
+                Ok(generate_manga_from_row(row))
+            })?;
+
+        Ok(iter.map(|res| res.unwrap()).collect::<std::vec::Vec<Manga>>())
+    }
+
     pub fn get_all(&self, source: Option<String>) -> Result<std::vec::Vec<Manga>, rusqlite::Error> {
         // FIXME: this shit
         // oh lord. here we go again.
@@ -309,7 +322,7 @@ impl MangaDB {
     }
 
     pub fn clear(&self) -> Result<(), rusqlite::Error> {
-        match self.db.execute("DELETE * FROM Library", []) {
+        match self.db.execute("DELETE FROM Library", []) {
             Ok(..) => Ok(()),
             Err(y) => Err(y)
         }
@@ -395,6 +408,17 @@ impl ChapterDB {
          self.db.query_row("SELECT * FROM Chapters WHERE id = ?1 AND manga_id = ?2", [chapter_id, manga_id], | row | Ok ( generate_chapter_from_row(row) ) ).optional()
     }
 
+    pub fn get_multiple(&self, manga_id: String, ids: std::vec::Vec<String>) -> Result<std::vec::Vec<Chapter>, rusqlite::Error> {
+        load_module(&self.db).unwrap();
+        let mut prepared_rows = self.db.prepare("SELECT * FROM Chapters where manga_id = ?1 AND id IN rarray(?2)")?;
+        let values_iter: Vec<rusqlite::types::Value> = ids.into_iter().map(rusqlite::types::Value::from).collect();
+        let iter = prepared_rows.query_map((manga_id, Rc::new(values_iter)), |row| {
+                Ok(generate_chapter_from_row(row))
+            })?;
+
+        Ok(iter.map(|res| res.unwrap()).collect::<std::vec::Vec<Chapter>>())
+    }
+
     pub fn get_all(&self, manga_id: Option<String>) -> Result<std::vec::Vec<Chapter>, rusqlite::Error> {
         // FIXME: turn iter repetition into a function
         // fuckin christ this code is dog shitty ass
@@ -434,7 +458,7 @@ impl ChapterDB {
     }
 
     pub fn clear(&self) -> Result<(), rusqlite::Error> {
-        match self.db.execute("DELETE * FROM Chapters", []) {
+        match self.db.execute("DELETE FROM Chapters", []) {
             Ok(..) => Ok(()),
             Err(y) => Err(y)
         }
