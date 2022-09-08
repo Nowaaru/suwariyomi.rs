@@ -1,5 +1,8 @@
-type Image = string;
-type ScanlatorName = string;
+type CoverUrl = string
+type Cover = { url: CoverUrl };
+type ChapterId = string;
+type Scanlator = string;
+type Scanlators = { scanlators: Array<Scanlator> }
 type int = number;
 
 export type Chapter = {
@@ -15,20 +18,20 @@ export type Chapter = {
     last_updated: int,
     time_spent_reading: int,
 
-    pages: int,
-    count: int,
-    scanlators: Array<ScanlatorName>,
-    // at minimum, the chapter and id must be defined.
+    pages: int, // pages you've read
+    count: int, // the count of all the pages
+    scanlators: Scanlators,
 };
 
 export type Manga = {
     id: string;
     name: string;
     source: string;
-    covers: Array<Image>;
+    covers: Array<Cover>;
 
-    chapters: Array<Chapter>;
+    chapters: Array<ChapterId>;
     uploaded: number;
+    added: number;
 };
 /*
  *
