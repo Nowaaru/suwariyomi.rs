@@ -1,4 +1,4 @@
-# suwariyomi.rs :crab
+# suwariyomi.rs :crab:
 
 `suwariyomi.rs` is a Manga reader created in TypeScript and Rust using the framework Tauri; inspired by the manga reader Tachiyomi.
 
