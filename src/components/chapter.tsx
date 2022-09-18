@@ -64,12 +64,12 @@ const Chapter = (props: ChapterProps) => {
         []
     );
 
-    const isUnread = Math.min(chapter.pages, chapter.count) === 0;
+    const isUnread = Math.min(chapter.pages, chapter.total ?? 0) === 0;
     const isCompleted = isChapterCompleted(chapter); // In case of final scanlator pages, allow wiggle room.
     const readOrContinue = isUnread ? "Read" : "Continue";
     const pageDisplay = isUnread
         ? "Unread"
-        : `Page ${chapter.pages}/${chapter.count}`;
+        : `Page ${chapter.pages}/${chapter.total}`;
 
     return (
         <div className={css(styles.chapter)}>
