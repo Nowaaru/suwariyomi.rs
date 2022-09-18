@@ -1,6 +1,6 @@
 import { StyleSheet, css, rgba } from "util/aphrodite";
 import LibrarySource from "components/librarysource";
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { motion, Variants } from "framer-motion";
 import _ from "lodash";
 import {
@@ -17,6 +17,9 @@ import {
     TimeIcon,
 } from "@chakra-ui/icons";
 import { Link } from "react-router-dom";
+import SourceHandler, { Source } from "util/sources";
+import { MangaDB } from "util/db";
+import { Manga } from "types/manga";
 
 const backgroundColor_high = "rgb(18, 30, 42)";
 const backgroundColor_low = "#0D1620";
@@ -210,6 +213,36 @@ const Library = () => {
         []
     );
 
+    const [loadedSources, setLoadedSources] = useState<Array<Source>>([]);
+    const [sourceManga, setSourceManga] = useState<
+        Record<string, Array<Manga>>
+    >({});
+    useEffect(() => {
+        SourceHandler.sourcesArray.forEach((promise) => {
+            promise.then((source) => {
+                if (loadedSources.find((y) => y.id === source.id)) return false;
+
+                const newSources = [...loadedSources, source];
+                MangaDB.get_all(source.id).then((mangas) =>
+                    setSourceManga({ ...sourceManga, [source.id]: mangas })
+                );
+
+                setLoadedSources(newSources);
+            });
+        });
+    }, [loadedSources]);
+
+    const librarySourceComponentArray = useMemo(() => {
+        return loadedSources.map((source) => (
+            <LibrarySource
+                sourceIcon={source.icon}
+                sourceName={source.id}
+                key={source.id}
+                sourceManga={sourceManga[source.id] ?? []}
+            />
+        ));
+    }, [loadedSources, sourceManga]);
+
     const [displayRandomize, setDisplayRandomize] = useState(false);
     const randomMangaToUseForNames = useMemo(
         () => [
@@ -224,9 +257,11 @@ const Library = () => {
         ],
         []
     );
+
     const [selectedMangaIndex, __setMangaIndex] = useState(
         _.sample(randomMangaToUseForNames)
     );
+
     const updateRandomManga = useCallback(() => {
         __setMangaIndex(_.sample(randomMangaToUseForNames));
     }, [__setMangaIndex, randomMangaToUseForNames]);
@@ -308,24 +343,7 @@ const Library = () => {
                 </Link>
             </ButtonGroup>
             <hr className={css(styles.line)} />
-            <LibrarySource
-                sourceIcon="https://mangadex.org/favicon.ico"
-                sourceName="MangaDex"
-                sourceManga={[...Array(100).keys()].map(() => ({
-                    id: Math.random(),
-                    name: "Watashi no Yuri wa Oshigoto desu!",
-                    source: "MangaDex",
-                    covers: [
-                        "https://mangadex.org/covers/12f92897-ad75-4c54-baed-b2834a9d8082/5d891dc0-1af9-4725-a003-64858d54bce9.jpg",
-                    ],
-
-                    added: new Date(),
-                    updated: Date.now() - 3450000,
-
-                    chapters: [],
-                    uploaded: Math.round(Date.now() * 0.95),
-                }))}
-            />
+            {librarySourceComponentArray}
         </div>
     );
 };
