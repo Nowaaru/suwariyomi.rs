@@ -1,6 +1,9 @@
 import { StyleSheet, css } from "aphrodite";
-import { useMemo } from "react";
-import Chapter from "components/chapter";
+import { useEffect, useMemo, useState } from "react";
+import { Chapter, Manga } from "types/manga";
+import { MangaDB } from "util/db";
+
+import SourceHandler from "util/sources";
 import _ from "lodash";
 
 import {
@@ -10,14 +13,21 @@ import {
     Tag,
     TagLabel,
     Progress,
+    CircularProgress,
+    CircularProgressLabel,
+    ButtonGroup,
 } from "@chakra-ui/react";
 import {
-    chapterLastUpdated,
     compileChapterText,
     compileChapterTitle,
     formatDate,
     isChapterCompleted,
 } from "util/textutil";
+
+import MangaComponent from "components/manga";
+import ChapterComponent from "components/chapter";
+import { stripHtml } from "string-strip-html";
+import { useSearchParams } from "react-router-dom";
 
 // TODO: Automatically scroll to the last-read chapter
 // TODO: When starting to read a chapter, look at the scanlators
@@ -82,11 +92,12 @@ const View = () => {
                 },
                 bg: {
                     position: "relative",
-                    minWidth: "150%",
-                    height: "150%",
-                    right: "400px",
+                    minWidth: "180%",
+                    minHeight: "180%",
+                    transform: "translateX(-25%) translateY(-50%)",
                     objectFit: "fill",
                     overflow: "hidden",
+                    filter: "brightness(0.2)",
                 },
                 meta: {
                     "@media (max-width: 800px)": {
@@ -107,9 +118,9 @@ const View = () => {
                 },
                 cover: {
                     position: "relative",
-                    width: "275px",
+                    maxWidth: "271px",
+                    maxHeight: "384px",
                     height: "fit-content",
-                    maxHeight: "435px",
                     borderWidth: "2px",
                     borderColor: "#FFF",
                     borderRadius: "6px",
@@ -209,6 +220,11 @@ const View = () => {
                     width: "100%",
                     marginBottom: "6px",
                 },
+
+                addtolibrary: {
+                    width: "240px",
+                },
+
                 trackers: {
                     width: "240px",
                 },
@@ -319,301 +335,382 @@ const View = () => {
                         background: "#f88379",
                     },
                 },
+
+                loadingPage: {
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    verticalAlign: "middle",
+                },
             }),
         []
     );
 
-    const rawChapterData = useMemo(() => {
-        const y = [];
-        for (let i = 32; i > 0; i--) {
-            const maxPages = 15; // _.random(0, 72);
-            const curRead = 15; //_.random(0, maxPages);
-            y.push({
-                id: `0000-0000-00${String(i).padStart(2, "0")}`,
-                manga_id: "1111-1111-1111",
-                volume: 1 + Math.floor(i / 4),
-                chapter: i,
+    const [queryParams] = useSearchParams();
+    const [mangaSource, setMangaSource] = useState<string | null>();
+    const [mangaId, setMangaId] = useState<string | null>();
 
-                last_read: Date.now() * 0.95,
-                date_uploaded: Date.now() * ((65 + i) / 100),
-                last_updated: Date.now() * 0.75,
-                time_spent_reading: 44083134,
+    const [mangaData, setMangaData] = useState<Manga | null>(null);
+    const [rawChapterData, setChapterData] = useState<Array<Chapter> | null>(
+        null
+    );
+    const sourceHandler = useMemo(() => {
+        if (!mangaSource) return undefined;
+        return SourceHandler.querySource(mangaSource);
+    }, [mangaSource]);
 
-                pages: curRead,
-                count: maxPages,
-                scanlators: ["Gouma-Den"],
-            });
-        }
+    useEffect(() => {
+        const source = queryParams.get("source");
+        const id = queryParams.get("id");
 
-        return y;
-    }, []);
+        setMangaSource(source);
+        setMangaId(id ?? mangaId);
+    }, [queryParams]);
+
+    useEffect(() => {
+        if (!mangaId || !mangaSource) return;
+        if (mangaData) return;
+
+        // first, determine whether the manga is in-cache.
+        MangaDB.get(mangaId, mangaSource)
+            .then((foundManga) => {
+                if (!foundManga)
+                    return sourceHandler?.then((handler) =>
+                        handler?.getManga(mangaId).then((data) => {
+                            if (!data) setMangaData(null);
+                            MangaDB.insert(data)
+                                .then(() =>
+                                    console.log(
+                                        "Successfully added manga to cache."
+                                    )
+                                )
+                                .catch(console.error);
+                            setMangaData(data ?? null);
+                        })
+                    );
+
+                console.log("found it!");
+                setMangaData(foundManga as Manga);
+            })
+            .catch(console.error);
+    }, [mangaId, sourceHandler, mangaData, mangaSource]);
+
+    useEffect(() => {
+        if (!sourceHandler) return;
+        if (!mangaId) return;
+
+        sourceHandler?.then((handler) =>
+            handler
+                ?.getChapters(mangaId)
+                .then((unchangedData) =>
+                    unchangedData
+                        .filter(({ lang }) => lang === "en")
+                        .sort(
+                            ({ chapter: aChapter }, { chapter: bChapter }) =>
+                                bChapter - aChapter
+                        )
+                )
+                .then(setChapterData)
+        );
+    }, [mangaId, sourceHandler]);
 
     const chapterElements = useMemo(() => {
-        return rawChapterData.map((e) => <Chapter key={e.id} chapter={e} />);
+        if (!rawChapterData) return [];
+
+        return rawChapterData.map((e) => (
+            <ChapterComponent key={e.id} chapter={e as Chapter} />
+        ));
     }, [rawChapterData]);
 
-    const possibleTags = useMemo(
-        () => [
-            "Gore",
-            "Sexual Violence",
-            "4-Koma",
-            "Adaptation",
-            "Anthology",
-            "Oneshot",
-            "Doujinshi",
-            "Action",
-            "Adventure",
-            "Comedy",
-            "Crime",
-            "Drama",
-            "Fantasy",
-            "Historical",
-            "Horror",
-            "Isekai",
-            "Magical Girls",
-            "Mecha",
-            "Medical",
-            "Mystery",
-            "Philosophical",
-            "Psychological",
-            "Romance",
-            "Sci-Fi",
-            "Slice of Life",
-            "Sports",
-            "Superhero",
-            "Thriller",
-            "Tragedy",
-            "Wuxia",
-        ],
-        []
-    );
+    const [time, setTime] = useState(0);
+    useEffect(() => {
+        if (mangaData && rawChapterData) {
+            if (time > 0) setTime(0);
+            return;
+        }
+        const interval = setInterval(() => {
+            setTime((curTime) => curTime + 1);
+        }, 1000);
 
-    const firstUnreadChapter = rawChapterData
-        .filter((x) => !isChapterCompleted(x))
-        .map((y) => ({ i: y, ch: y.chapter }))
-        .sort((a, b) => a.ch - b.ch)[0];
-    const chapterPre =
-        firstUnreadChapter?.i.pages > 0 ? "Continue Reading" : "Start Reading";
-    const chapterDisplay = firstUnreadChapter
-        ? `${chapterPre} ${compileChapterTitle(
-              firstUnreadChapter.i,
-              false,
-              true
-          )}`
-        : undefined;
-    const readingButtonDisplay = firstUnreadChapter
-        ? chapterDisplay
-        : "All chapters completed.";
+        return () => clearInterval(interval);
+    }, [time, mangaData, rawChapterData]);
 
-    // Calculate progress percentage
-    // Iterate over every chapter; this is mapped to pages/count.
-    const percentage =
-        Math.floor((_.clamp(
-            Math.floor(
-                rawChapterData
-                    .map((x) => x.pages / (x.count || 1))
-                    .reduce((acc, v) => acc + v, 0)
-            ),
-            0,
-            100
-        ) /
-            rawChapterData.length) *
-        100);
-    return (
-        <div className={css(styles.main)}>
-            <div className={css(styles.top)}>
-                <div className={css(styles.bgwrapper)}>
-                    <img
-                        src="https://s4.anilist.co/file/anilistcdn/media/manga/banner/100584-a1AUafu5CSlg.jpg"
-                        className={css(styles.bg)}
-                    />
-                </div>
-                <hr className={css(styles.line, styles.lineabsolute)} />
-                <div className={css(styles.meta)}>
-                    <div className={css(styles.cover)}>
-                        <Tooltip label="Click to go to the manga's webpage.">
-                            <button className={css(styles.badge)}>
-                                <img src="https://www.mangadex.org/favicon.ico" />
-                            </button>
-                        </Tooltip>
+    if (mangaData && Array.isArray(rawChapterData)) {
+        const firstUnreadChapter = rawChapterData
+            .filter((x) => !isChapterCompleted(x))
+            .map((y) => ({ i: y, ch: y.chapter }))
+            .sort((a, b) => a.ch - b.ch)[0];
+        const chapterPre =
+            firstUnreadChapter?.i.pages > 0
+                ? "Continue Reading"
+                : "Start Reading";
+        const chapterDisplay = firstUnreadChapter
+            ? `${chapterPre} ${compileChapterTitle(
+                  firstUnreadChapter.i,
+                  false,
+                  true
+              )}`
+            : undefined;
+        const readingButtonDisplay = firstUnreadChapter
+            ? chapterDisplay
+            : "All chapters completed.";
+
+        // Calculate progress percentage
+        // Iterate over every chapter; this is mapped to pages/count.
+        const percentage = Math.floor(
+            (_.clamp(
+                Math.floor(
+                    rawChapterData
+                        .map((x) =>
+                            x.pages > 0 && x.total > 0 ? x.pages / x.total : 0
+                        )
+                        .reduce((acc, v) => acc + v, 0)
+                ),
+                0,
+                100
+            ) /
+                rawChapterData.length) *
+                100
+        );
+
+        const isAdded = mangaData.added && mangaData.added !== -1;
+        const lastUpdated = formatDate(
+            rawChapterData.reduce((acc, v) => {
+                return v.last_updated > acc ? v.last_updated : acc;
+            }, -1)
+        );
+        const lastRead = formatDate(
+            rawChapterData.map((y) => y.last_read).sort((a, b) => b - a)[0]
+        );
+
+        return (
+            <div className={css(styles.main)}>
+                <div className={css(styles.top)}>
+                    <div className={css(styles.bgwrapper)}>
                         <img
-                            src="https://s4.anilist.co/file/anilistcdn/media/manga/cover/large/nx100584-nsNlmE5aTDhe.jpg"
-                            className={css(styles.coverimg)}
+                            src={mangaData.covers[0]}
+                            className={css(styles.bg)}
                         />
                     </div>
-                    <div className={css(styles.details)}>
-                        <h1 className={css(styles.title, styles.text)}>
-                            Sewayaki Kitsune no Senko-san
-                        </h1>
-                        <span className={css(styles.text, styles.author)}>
-                            by{" "}
-                            <Tooltip label="Click to search this artist.">
-                                <a
-                                    className={css(
-                                        styles.accent,
-                                        styles.mainauthor
-                                    )}
-                                >
-                                    Rimukoro
-                                </a>
+                    <hr className={css(styles.line, styles.lineabsolute)} />
+                    <div className={css(styles.meta)}>
+                        <div className={css(styles.cover)}>
+                            <Tooltip label="Click to go to the manga's webpage.">
+                                <button className={css(styles.badge)}>
+                                    <img src="https://www.mangadex.org/favicon.ico" />
+                                </button>
                             </Tooltip>
-                        </span>
-                        <Text
-                            className={css(styles.description, styles.text)}
-                            marginTop="24px"
-                            fontFamily="Cascadia Code"
-                            noOfLines={4}
-                        >
-                            {`The everyday life of Nakano, a salaryman working for an exploitative company, is suddenly intruded upon by the Kitsune, Senko-san (800 Years Old - Young Wife). Whether it be cooking, cleaning, or a special service...She'll heal his exhaustion with her tender care.`}
-                        </Text>
-                        <div className={css(styles.buttons)}>
-                            <Tooltip
-                                label={
-                                    firstUnreadChapter &&
-                                    firstUnreadChapter.i.pages > 0
-                                        ? `Page ${firstUnreadChapter.i.pages}/${firstUnreadChapter.i.count}`
-                                        : undefined
+                            <img
+                                src={mangaData.covers[0]}
+                                className={css(styles.coverimg)}
+                            />
+                        </div>
+                        <div className={css(styles.details)}>
+                            <h1 className={css(styles.title, styles.text)}>
+                                {mangaData.name}
+                            </h1>
+                            <span className={css(styles.text, styles.author)}>
+                                by{" "}
+                                <Tooltip label="Click to search this artist.">
+                                    <a
+                                        className={css(
+                                            styles.accent,
+                                            styles.mainauthor
+                                        )}
+                                    >
+                                        {mangaData.authors.join(", ")}
+                                    </a>
+                                </Tooltip>
+                            </span>
+                            <Text
+                                className={css(styles.description, styles.text)}
+                                marginTop="24px"
+                                fontFamily="Cascadia Code"
+                                noOfLines={4}
+                            >
+                                {
+                                    stripHtml(
+                                        mangaData.description ??
+                                            "No description provided."
+                                    ).result
                                 }
-                                placement="top"
-                                hasArrow
-                            >
-                                <Button
-                                    backgroundColor={"#fb8e84"}
-                                    color="whitesmoke"
-                                    _hover={{
-                                        bg: "#f88379",
-                                    }}
-                                    className={css(styles.startreading)}
-                                    disabled={!firstUnreadChapter}
+                            </Text>
+                            <div className={css(styles.buttons)}>
+                                <Tooltip
+                                    label={
+                                        firstUnreadChapter &&
+                                        firstUnreadChapter.i.pages > 0
+                                            ? `Page ${firstUnreadChapter.i.pages}/${firstUnreadChapter.i.total}`
+                                            : undefined
+                                    }
+                                    placement="top"
+                                    hasArrow
                                 >
-                                    {readingButtonDisplay}
-                                </Button>
-                            </Tooltip>
-                            <Button
-                                backgroundColor={"#fb8e84"}
-                                color="whitesmoke"
-                                _hover={{
-                                    bg: "#f88379",
-                                }}
-                                className={css(styles.trackers)}
-                            >
-                                Configure Trackers
-                            </Button>
+                                    <Button
+                                        backgroundColor={"#fb8e84"}
+                                        color="whitesmoke"
+                                        _hover={{
+                                            bg: "#f88379",
+                                        }}
+                                        className={css(styles.startreading)}
+                                        disabled={!firstUnreadChapter}
+                                    >
+                                        {readingButtonDisplay}
+                                    </Button>
+                                </Tooltip>
+                                <ButtonGroup>
+                                    <Button
+                                        backgroundColor={"#fb8e84"}
+                                        color="whitesmoke"
+                                        _hover={{
+                                            bg: "#f88379",
+                                        }}
+                                        className={css(styles.addtolibrary)}
+                                        onClick={() => {
+                                            const newManga = {
+                                                ...mangaData,
+                                                added: isAdded
+                                                    ? -1
+                                                    : Date.now(),
+                                            };
+
+                                            MangaDB.insert(newManga)
+                                                .then(() =>
+                                                    console.log("updated")
+                                                )
+                                                .catch(console.error);
+
+                                            setMangaData(newManga);
+                                        }}
+                                    >
+                                        {isAdded
+                                            ? "Remove from Library"
+                                            : "Add to Library"}
+                                    </Button>
+                                    <Button
+                                        backgroundColor={"#fb8e84"}
+                                        color="whitesmoke"
+                                        _hover={{
+                                            bg: "#f88379",
+                                        }}
+                                        className={css(styles.trackers)}
+                                    >
+                                        Configure Trackers
+                                    </Button>
+                                </ButtonGroup>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div className={css(styles.bottom)}>
-                <div className={css(styles.metabottom)}>
-                    <div className={css(styles.tagscontainer)}>
-                        <span> Tags </span>
-                        <div className={css(styles.tags)}>
-                            {(() => {
-                                const finalizedArray = [];
-                                for (
-                                    let i = 0;
-                                    i < _.random(0, possibleTags.length - 1);
-                                    i++
-                                ) {
-                                    finalizedArray.push(
-                                        possibleTags.splice(
-                                            possibleTags.indexOf(
-                                                _.sample(possibleTags) ?? ""
-                                            ),
-                                            1
-                                        )[0]
-                                    );
-                                }
-
-                                return finalizedArray.map((v) => (
+                <div className={css(styles.bottom)}>
+                    <div className={css(styles.metabottom)}>
+                        <div className={css(styles.tagscontainer)}>
+                            <span> Tags </span>
+                            <div className={css(styles.tags)}>
+                                {mangaData.tags.map((key) => (
                                     <Tag
                                         backgroundColor="#fb8e84"
                                         color="white"
                                         className={css(styles.tag)}
-                                        key={v}
+                                        key={key}
                                     >
-                                        {v}
+                                        {key}
                                     </Tag>
-                                ));
-                            })()}
-                        </div>
-                        <hr className={css(styles.line)} />
-                        <div
-                            className={css(
-                                styles.flex,
-                                styles.column,
-                                styles.lastreadcontainer
-                            )}
-                        >
-                            <span>Last Read</span>
-                            <span>
-                                {formatDate(
-                                    rawChapterData
-                                        .map((y) => y.last_read)
-                                        .sort((a, b) => b - a)[0]
-                                )}
-                            </span>
-                        </div>
-                        <div
-                            className={css(
-                                styles.flex,
-                                styles.column,
-                                styles.lastupdatedcontainer
-                            )}
-                        >
-                            <span>Last Updated</span>
-                            <span>
-                                {formatDate(
-                                    rawChapterData
-                                        .map(chapterLastUpdated)
-                                        .reduce((acc, v) => {
-                                            return v > acc ? v : acc;
-                                        }, -1)
-                                )}
-                            </span>
-                        </div>
-                        <div
-                            className={css(
-                                styles.flex,
-                                styles.column,
-                                styles.progresscontainer
-                            )}
-                        >
-                            <span>Progress</span>
-                            <Tooltip
-                                isDisabled={percentage !== 100}
-                                label="Congratulations!"
-                            >
-                                <div
-                                    className={css(
-                                        styles.progress,
-                                        styles.row,
-                                        styles.flex
-                                    )}
-                                >
-                                    <Progress
-                                        height="8px"
-                                        marginTop="8px"
-                                        borderRadius="8px"
-                                        backgroundColor="#00000022"
-                                        value={percentage}
-                                        className={css(styles.bar)}
-                                        hasStripe={percentage === 100}
-                                        sx={{
-                                            "& div": {
-                                                backgroundColor: "#fb8e84",
-                                            },
-                                        }}
-                                    />
-                                    <span className={css(styles.progresstext)}>
-                                        {percentage}%
-                                    </span>
-                                </div>
-                            </Tooltip>
+                                ))}
+                            </div>
+                            {isAdded ? (
+                                <>
+                                    <hr className={css(styles.line)} />
+                                    {lastRead !== -1 ? (
+                                        <div
+                                            className={css(
+                                                styles.flex,
+                                                styles.column,
+                                                styles.lastreadcontainer
+                                            )}
+                                        >
+                                            <span>Last Read</span>
+                                            <span>{lastRead}</span>
+                                        </div>
+                                    ) : null}
+
+                                    {lastUpdated !== -1 ? (
+                                        <div
+                                            className={css(
+                                                styles.flex,
+                                                styles.column,
+                                                styles.lastupdatedcontainer
+                                            )}
+                                        >
+                                            <span>Last Updated</span>
+                                            <span>{lastUpdated}</span>
+                                        </div>
+                                    ) : null}
+                                    <div
+                                        className={css(
+                                            styles.flex,
+                                            styles.column,
+                                            styles.progresscontainer
+                                        )}
+                                    >
+                                        <span>Progress</span>
+                                        <Tooltip
+                                            isDisabled={percentage !== 100}
+                                            label="Congratulations!"
+                                        >
+                                            <div
+                                                className={css(
+                                                    styles.progress,
+                                                    styles.row,
+                                                    styles.flex
+                                                )}
+                                            >
+                                                <Progress
+                                                    height="8px"
+                                                    marginTop="8px"
+                                                    borderRadius="8px"
+                                                    backgroundColor="#00000022"
+                                                    value={percentage}
+                                                    className={css(styles.bar)}
+                                                    hasStripe={
+                                                        percentage === 100
+                                                    }
+                                                    sx={{
+                                                        "& div": {
+                                                            backgroundColor:
+                                                                "#fb8e84",
+                                                        },
+                                                    }}
+                                                />
+                                                <span
+                                                    className={css(
+                                                        styles.progresstext
+                                                    )}
+                                                >
+                                                    {percentage}%
+                                                </span>
+                                            </div>
+                                        </Tooltip>
+                                    </div>
+                                </>
+                            ) : null}
                         </div>
                     </div>
+                    <div className={css(styles.chapters)}>
+                        {chapterElements}
+                    </div>
                 </div>
-                <div className={css(styles.chapters)}>{chapterElements}</div>
+            </div>
+        );
+    }
+
+    // UI for loading, time elapsed
+    return (
+        <div className={css(styles.main)}>
+            <div className={css(styles.loadingPage)}>
+                <CircularProgress>
+                    <CircularProgressLabel>{time}s...</CircularProgressLabel>
+                </CircularProgress>
             </div>
         </div>
     );
