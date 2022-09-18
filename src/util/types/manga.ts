@@ -1,8 +1,9 @@
 type CoverUrl = string
-type Cover = { url: CoverUrl };
 type ChapterId = string;
+type Author = string;
 type Scanlator = string;
-type Scanlators = { scanlators: Array<Scanlator> }
+type Tag = string;
+type Scanlators = Array<Scanlator>;
 type int = number;
 
 export type Chapter = {
@@ -18,18 +19,23 @@ export type Chapter = {
     last_updated: int,
     time_spent_reading: int,
 
-    pages: int, // pages you've read
-    count: int, // the count of all the pages
+    pages: int,
+    total: int,
+    lang: string,
     scanlators: Scanlators,
 };
 
 export type Manga = {
     id: string;
     name: string;
+    description: string;
     source: string;
-    covers: Array<Cover>;
 
+    covers: Array<CoverUrl>;
+    authors: Array<Author>;
     chapters: Array<ChapterId>;
+    tags: Array<Tag>
+
     uploaded: number;
     added: number;
 };
