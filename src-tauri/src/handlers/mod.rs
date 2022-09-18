@@ -50,6 +50,12 @@ pub fn splash_close(window: tauri::Window) -> Result<(), errors::InternalError> 
         Err(crate::errors::InternalError::new("No splash-screen found."))
     }
 }
+
+#[tauri::command]
+pub fn path_exists(path: String) -> bool {
+    Path::new(path.as_str()).exists()
+}
+
 #[tauri::command]
 pub fn get_all_manga(source: Option<String>) -> Result<Mangas, String> {
     let db = get_manga_db();

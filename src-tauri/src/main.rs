@@ -4,6 +4,7 @@
     windows_subsystem = "windows"
 )]
 
+use std::path::Path;
 use std::path::PathBuf;
 
 use tauri::CustomMenuItem;
@@ -29,7 +30,7 @@ pub fn get_db_path() -> Option<PathBuf> {
         app_context.config(),
         app_context.package_info(),
         &tauri::Env::default(),
-        "suwariyomi.db3",
+        Path::new("com.suwariyomirs.swrs\\suwariyomi.db3").as_os_str().to_str().unwrap(),
         Some(BaseDirectory::Config),
     );
 
@@ -101,6 +102,7 @@ async fn main() {
         })
         .invoke_handler(tauri::generate_handler![
             handlers::splash_close,
+            handlers::path_exists,
             handlers::get_all_manga,
             handlers::get_manga,
             handlers::get_mangas,
