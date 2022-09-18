@@ -17,7 +17,7 @@
         "@emotion/css": "^11.10.0",
         "@emotion/react": "^11.10.0",
         "@emotion/styled": "^11.10.0",
-        "@tauri-apps/api": "^1.0.2",
+        "@tauri-apps/api": "^1.1.0",
         "date-fns": "^2.29.2",
         "eslint-plugin-jest": "^26.8.2",
         "framer-motion": "^7.1.1",
@@ -29,11 +29,12 @@
         "react-konva": "^18.2.1",
         "react-router": "^6.3.0",
         "react-router-dom": "^6.3.0",
+        "string-strip-html": "^11.6.4",
         "use-image": "^1.0.12",
         "vite-plugin-swc-react-refresh": "^2.0.0"
     },
     "devDependencies": {
-        "@tauri-apps/cli": "^1.0.5",
+        "@tauri-apps/cli": "^1.1.1",
         "@testing-library/jest-dom": "^5.16.5",
         "@testing-library/react": "^13.3.0",
         "@testing-library/user-event": "^14.4.3",
