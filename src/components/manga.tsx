@@ -1,6 +1,7 @@
 import { StyleSheet, css } from "aphrodite";
 import { Text } from "@chakra-ui/react";
 import type { Manga as MangaType } from "types/manga";
+import { Link } from "react-router-dom";
 
 type MangaProps = {
     manga: MangaType;
@@ -32,7 +33,7 @@ const Manga = (props: MangaProps) => {
             ":hover": {
                 boxShadow: "0px 0px 16px #000000",
                 cursor: "pointer",
-            }
+            },
         },
         title: {
             color: "whitesmoke",
@@ -44,21 +45,27 @@ const Manga = (props: MangaProps) => {
     });
 
     const { manga } = props;
-    const { covers, name } = manga;
+    const { id, source, covers, name } = manga;
+
+    const linkParams = `/view?source=${source}&id=${id}`;
     return (
         <div className={css(styles.main)}>
-            <div className={css(styles.imagecontainer)}>
-                <img className={css(styles.image)} src={covers[0]} />
-            </div>
-            <Text
-                noOfLines={2}
-                maxWidth="200px"
-                color="whitesmoke"
-                marginTop="8px"
-                marginBottom="12px"
-            >
-                {name}
-            </Text>
+            <Link to={linkParams}>
+                <div className={css(styles.imagecontainer)}>
+                    <img className={css(styles.image)} src={covers[0]} />
+                </div>
+            </Link>
+            <Link to={linkParams}>
+                <Text
+                    noOfLines={2}
+                    maxWidth="200px"
+                    color="whitesmoke"
+                    marginTop="8px"
+                    marginBottom="12px"
+                >
+                    {name}
+                </Text>
+            </Link>
         </div>
     );
 };
