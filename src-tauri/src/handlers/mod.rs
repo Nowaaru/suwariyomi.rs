@@ -1,4 +1,4 @@
-use std::{fs, path::PathBuf, error::Error};
+use std::{fs, path::{PathBuf, Path}, error::Error};
 use crate::{
     db::{Chapter, ChapterDB, Manga, MangaDB, Mangas, Chapters},
     errors::{self, InternalError},
@@ -9,21 +9,6 @@ use tauri::{
     api::path::{resolve_path, BaseDirectory},
     Env, Manager,
 };
-
-#[tauri::command]
-pub fn splash_close(window: tauri::Window) -> Result<(), errors::InternalError> {
-    if let Some(splashscreen) = window.get_window("splashscreen") {
-        match splashscreen.close() {
-            Ok(()) => Ok(()),
-            Err(why) => Err(crate::errors::InternalError::new(&*format!(
-                "Splashscreen failed to close: {}",
-                why
-            ))),
-        }
-    } else {
-        Err(crate::errors::InternalError::new("No splash-screen found."))
-    }
-}
 
 pub fn stringify_result<T,E>(r: Result<T, E>) -> Result<T, String>
         where E: Error
@@ -51,6 +36,20 @@ pub fn get_chapter_db() -> ChapterDB {
     ChapterDB::new(&get_db_path())
 }
 
+#[tauri::command]
+pub fn splash_close(window: tauri::Window) -> Result<(), errors::InternalError> {
+    if let Some(splashscreen) = window.get_window("splashscreen") {
+        match splashscreen.close() {
+            Ok(()) => Ok(()),
+            Err(why) => Err(crate::errors::InternalError::new(&*format!(
+                "Splashscreen failed to close: {}",
+                why
+            ))),
+        }
+    } else {
+        Err(crate::errors::InternalError::new("No splash-screen found."))
+    }
+}
 #[tauri::command]
 pub fn get_all_manga(source: Option<String>) -> Result<Mangas, String> {
     let db = get_manga_db();
