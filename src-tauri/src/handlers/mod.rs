@@ -142,7 +142,7 @@ pub fn get_sources() -> Result<Vec<PathBuf>, InternalError> {
         app_context.config(),
         app_context.package_info(),
         &Env::default(),
-        "sources/",
+        Path::new("com.suwariyomirs.swrs\\sources").as_os_str().to_str().unwrap(),
         Some(BaseDirectory::Config),
     );
 
