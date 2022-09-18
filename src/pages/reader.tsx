@@ -31,7 +31,7 @@ type MangaData = {
     chapterId: string;
 };
 
-const MangaPageTest = () => {
+const Reader = () => {
     const futurePagesToLoad = 4;
     const [pageSources, setPageSources] = useState<Array<string>>([]);
     const pages = useRef<Array<Page>>([]);
@@ -191,4 +191,4 @@ const MangaPageTest = () => {
     );
 };
 
-export default MangaPageTest;
+export default Reader;
