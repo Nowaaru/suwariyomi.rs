@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(transparent)]
 pub struct Scanlators {
-    pub scanlators: std::vec::Vec<String>,
+    pub scanlators: Vec<String>,
 }
 
 impl std::fmt::Display for Scanlators {
@@ -23,7 +23,7 @@ impl std::fmt::Display for Scanlators {
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(transparent)]
 pub struct Covers {
-    pub covers: std::vec::Vec<Cover>,
+    pub covers: Vec<Cover>,
 }
 
 #[derive(PartialEq, Eq, Debug, Deserialize, Serialize)]
@@ -54,12 +54,16 @@ impl std::fmt::Display for Cover {
 pub struct Manga {
     pub id: String,
     pub name: String,
+    pub description: String,
     pub source: String,
-    pub covers: std::vec::Vec<Cover>,
 
-    pub chapters: std::vec::Vec<String>,
-    pub uploaded: i32,
-    pub added: i32,
+    pub covers: Vec<String>,
+    pub authors: Vec<String>,
+    pub chapters: Vec<String>,
+    pub tags: Vec<String>,
+
+    pub uploaded: i64,
+    pub added: i64,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -73,15 +77,18 @@ impl std::fmt::Display for Manga {
         let Manga {
             id,
             name,
+            description,
             source,
             covers,
             chapters,
+            authors,
+            tags,
             uploaded,
             added,
         } = self;
 
         // TODO: Make this multiline
-        write!(f, "Manga {{\n\tid: {}\n\tname: {}\n\tsource: {}\n\tcovers: {:?}\n\n\tchapters: [ {:?} ]\n\tuploaded: {}\n\tadded: {}\n}}", id, name, source, covers, chapters, uploaded, added)
+        write!(f, "Manga {{\n\tid: {}\n\tname: {}\n\tdescription: {}\n\tsource: {}\n\tcovers: {:?}\n\n\tchapters: {:?}\n\tauthors: {:?}\n\ttags: {:?}\n\tuploaded: {}\n\tadded: {}\n}}", id, name, description, source, covers, chapters, authors, tags,  uploaded, added)
     }
 }
 
@@ -118,13 +125,14 @@ pub struct Chapter {
 
     pub title: String,
 
-    pub last_read: i32,
-    pub last_updated: i32,
-    pub date_uploaded: i32,
-    pub time_spent_reading: i32,
+    pub last_read: i64,
+    pub last_updated: i64,
+    pub date_uploaded: i64,
+    pub time_spent_reading: i64,
 
     pub pages: i32,
-    pub count: i32,
+    pub total: i32,
+    pub lang: String,
     pub scanlators: Scanlators,
 }
 
@@ -141,7 +149,8 @@ impl std::fmt::Display for Chapter {
             last_updated,
             time_spent_reading,
             pages,
-            count,
+            total,
+            lang,
             scanlators
         } = self;
 
@@ -156,7 +165,8 @@ impl std::fmt::Display for Chapter {
         writeln!(f, "\tdate_uploaded: {}", date_uploaded)?;
         writeln!(f, "\ttime_spent_reading: {}", time_spent_reading)?;
         writeln!(f, "\tpages: {}", pages)?;
-        writeln!(f, "\tcount: {}", count)?;
+        writeln!(f, "\ttotal: {}", total)?;
+        writeln!(f, "\tlang: {}", lang)?;
         writeln!(f, "\tscanlators: {scanlators}")?;
         write!(f, "}}")
     }
@@ -179,10 +189,14 @@ fn generate_manga_from_row(row: &Row) -> Manga {
     Manga {
         id: row.get("id").unwrap(),
         name: row.get("name").unwrap(),
-
+        description: row.get("description").unwrap(),
         source: row.get("source").unwrap(),
-        covers: serde_json::from_str::<std::vec::Vec<Cover>>(row.get::<&str, std::string::String>("covers").unwrap().as_str()).unwrap(),
-        chapters: serde_json::from_str::<std::vec::Vec<String>>(row.get::<&str, std::string::String>("chapters").unwrap().as_str()).unwrap(),
+
+        covers: serde_json::from_str(row.get::<&str, String>("covers").unwrap().as_str()).unwrap(),
+        authors: serde_json::from_str(row.get::<&str, String>("authors").unwrap().as_str()).unwrap(),
+        chapters: serde_json::from_str(row.get::<&str, String>("chapters").unwrap().as_str()).unwrap(),
+        tags: serde_json::from_str(row.get::<&str, String>("tags").unwrap().as_str()).unwrap(),
+
         uploaded: row.get("uploaded").unwrap(),
         added: row.get("added").unwrap(),
     }
@@ -193,23 +207,24 @@ fn generate_chapter_from_row(row: &Row) -> Chapter {
         id: row.get("id").unwrap(),
         manga_id: row.get("manga_id").unwrap(),
 
-        title: row.get::<&str, std::string::String>("title").unwrap(),
+        title: row.get::<&str, String>("title").unwrap(),
 
         chapter: row.get::<&str, i32>("chapter").unwrap(),
         volume: row.get::<&str, i32>("volume").unwrap(),
 
-        last_read: row.get::<&str, i32>("last_read").unwrap(),
-        date_uploaded: row.get::<&str, i32>("date_uploaded").unwrap(),
-        last_updated: row.get::<&str, i32>("last_updated").unwrap(),
-        time_spent_reading: row.get::<&str, i32>("time_spent_reading").unwrap(),
+        last_read: row.get::<&str, i64>("last_read").unwrap(),
+        date_uploaded: row.get::<&str, i64>("date_uploaded").unwrap(),
+        last_updated: row.get::<&str, i64>("last_updated").unwrap(),
+        time_spent_reading: row.get::<&str, i64>("time_spent_reading").unwrap(),
 
         pages: row.get::<&str, i32>("pages").unwrap(),
-        count: row.get::<&str, i32>("count").unwrap(),
+        total: row.get::<&str, i32>("total").unwrap(),
 
-        scanlators: serde_json::from_str::<Scanlators>(row.get::<&str, std::string::String>("scanlators").unwrap().as_str()).unwrap()
+        lang: row.get::<&str, String>("lang").unwrap(),
+        scanlators: serde_json::from_str::<Scanlators>(row.get::<&str, String>("scanlators").unwrap().as_str()).unwrap()
             /*.split("$$")
             .map(|v| v.to_string())
-            .collect::< std::vec::Vec<String> >() */
+            .collect::< Vec<String> >() */
     }
 }
 
@@ -224,8 +239,6 @@ impl MangaDB {
             Connection::open(path).unwrap_or_else(|_| panic!("unable to open database from path {}", p2.to_str().unwrap()))
         } else { Connection::open_in_memory().expect("unable to open in-memory database") };
 
-        // Since arrays cannot be stored in SQL, just have covers be a JSON array. Same with
-        // chapters
         match db.execute("
                          CREATE TABLE IF NOT EXISTS Library
                          (
@@ -233,7 +246,12 @@ impl MangaDB {
                              name TEXT NOT NULL,
                              source TEXT NOT NULL,
                              covers TEXT NOT NULL,
+
                              chapters TEXT NOT NULL,
+                             description TEXT NOT NULL,
+                             authors TEXT NOT NULL,
+                             tags TEXT NOT NULL,
+
                              uploaded INT NOT NULL,
                              added INT NOT NULL
                         )
@@ -253,6 +271,9 @@ impl MangaDB {
             id,
             name,
             source,
+            description,
+            authors,
+            tags,
             covers,
             chapters,
             uploaded,
@@ -260,9 +281,9 @@ impl MangaDB {
         } = manga;
 
         self.db.execute(
-            "INSERT INTO Library
-                    (id, name, source, covers, chapters, uploaded, added)
-                VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
+            "REPLACE INTO Library
+                    (id, name, source, covers, chapters, uploaded, added, description, authors, tags)
+                VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)",
             (
                 id,
                 name,
@@ -271,6 +292,9 @@ impl MangaDB {
                 serde_json::to_string(&chapters).unwrap(),
                 uploaded,
                 added,
+                description,
+                serde_json::to_string(&authors).unwrap(),
+                serde_json::to_string(&tags).unwrap(),
             ),
         )
     }
@@ -289,7 +313,7 @@ impl MangaDB {
             .optional()
     }
 
-    pub fn get_multiple(&self, source: String, ids: std::vec::Vec<String>) -> Result<std::vec::Vec<Manga>, rusqlite::Error> {
+    pub fn get_multiple(&self, source: String, ids: Vec<String>) -> Result<std::vec::Vec<Manga>, rusqlite::Error> {
         load_module(&self.db).unwrap();
         let mut prepared_rows = self.db.prepare("SELECT * FROM Library where source = ?1 AND id IN rarray(?2)")?;
         let values_iter: Vec<rusqlite::types::Value> = ids.into_iter().map(rusqlite::types::Value::from).collect();
@@ -297,10 +321,10 @@ impl MangaDB {
                 Ok(generate_manga_from_row(row))
             })?;
 
-        Ok(iter.map(|res| res.unwrap()).collect::<std::vec::Vec<Manga>>())
+        Ok(iter.map(|res| res.unwrap()).collect::<Vec<Manga>>())
     }
 
-    pub fn get_all(&self, source: Option<String>) -> Result<std::vec::Vec<Manga>, rusqlite::Error> {
+    pub fn get_all(&self, source: Option<String>) -> Result<Vec<Manga>, rusqlite::Error> {
         // FIXME: this shit
         // oh lord. here we go again.
 
@@ -310,14 +334,14 @@ impl MangaDB {
                     generate_manga_from_row(row)
                     ))?;
 
-            Ok(iter.map(|v| v.unwrap() ).collect::<std::vec::Vec<Manga>>())
+            Ok(iter.map(|v| v.unwrap() ).collect::<Vec<Manga>>())
         } else {
             let mut prepared_rows = self.db.prepare("SELECT * FROM Library")?;
             let iter = prepared_rows.query_map([], |row| Ok(
                     generate_manga_from_row(row)
             ))?;
 
-            Ok(iter.map(|v| v.unwrap() ).collect::<std::vec::Vec<Manga>>())
+            Ok(iter.map(|v| v.unwrap() ).collect::<Vec<Manga>>())
         }
     }
 
@@ -344,16 +368,20 @@ impl ChapterDB {
                          (
                             id TEXT NOT NULL PRIMARY KEY,
                             manga_id TEXT NOT NULL,
-                            title TEXT NOT NULL,
                             chapter INT NOT NULL,
                             volume INT NOT NULL,
-                            last_read INT NOT NULL,
+
+                            title TEXT NOT NULL,
+
                             last_updated INT NOT NULL,
-                            date_uploaded INT NOT NULL,
+                            last_read INT NOT NULL,
                             time_spent_reading INT NOT NULL,
+                            date_uploaded INT NOT NULL,
+
                             pages INT NOT NULL,
-                            count INT NOT NULL,
+                            total INT NOT NULL,
                             scanlators TEXT NOT NULL
+                            lang TEXT NOT NULL
                         )
                          ", []
                         )
@@ -379,14 +407,15 @@ impl ChapterDB {
             last_updated,
             time_spent_reading,
             pages,
-            count,
+            total,
+            lang,
             scanlators
         } = chapter;
 
         self.db.execute(
-            "INSERT INTO Chapters
-                (id, manga_id, title, chapter, volume, last_read, date_uploaded, last_updated, time_spent_reading, pages, count, scanlators)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12)",
+            "REPLACE INTO Chapters
+                (id, manga_id, title, chapter, volume, last_read, date_uploaded, last_updated, time_spent_reading, pages, total, scanlators, lang)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13)",
              (
                  id,
                  manga_id,
@@ -398,8 +427,9 @@ impl ChapterDB {
                  last_updated,
                  time_spent_reading,
                  pages,
-                 count,
-                 serde_json::to_string(&scanlators).unwrap()
+                 total,
+                 serde_json::to_string(&scanlators).unwrap(),
+                 lang,
             )
         )
     }
@@ -408,7 +438,7 @@ impl ChapterDB {
          self.db.query_row("SELECT * FROM Chapters WHERE id = ?1 AND manga_id = ?2", [chapter_id, manga_id], | row | Ok ( generate_chapter_from_row(row) ) ).optional()
     }
 
-    pub fn get_multiple(&self, manga_id: String, ids: std::vec::Vec<String>) -> Result<std::vec::Vec<Chapter>, rusqlite::Error> {
+    pub fn get_multiple(&self, manga_id: String, ids: Vec<String>) -> Result<std::vec::Vec<Chapter>, rusqlite::Error> {
         load_module(&self.db).unwrap();
         let mut prepared_rows = self.db.prepare("SELECT * FROM Chapters where manga_id = ?1 AND id IN rarray(?2)")?;
         let values_iter: Vec<rusqlite::types::Value> = ids.into_iter().map(rusqlite::types::Value::from).collect();
@@ -416,10 +446,10 @@ impl ChapterDB {
                 Ok(generate_chapter_from_row(row))
             })?;
 
-        Ok(iter.map(|res| res.unwrap()).collect::<std::vec::Vec<Chapter>>())
+        Ok(iter.map(|res| res.unwrap()).collect::<Vec<Chapter>>())
     }
 
-    pub fn get_all(&self, manga_id: Option<String>) -> Result<std::vec::Vec<Chapter>, rusqlite::Error> {
+    pub fn get_all(&self, manga_id: Option<String>) -> Result<Vec<Chapter>, rusqlite::Error> {
         // FIXME: turn iter repetition into a function
         // fuckin christ this code is dog shitty ass
 
@@ -433,7 +463,7 @@ impl ChapterDB {
                         generate_chapter_from_row(row)
                       )
             ) {
-                Ok(iter) => Ok(iter.map(|v| v.unwrap() ).collect::<std::vec::Vec<Chapter>>()),
+                Ok(iter) => Ok(iter.map(|v| v.unwrap() ).collect::<Vec<Chapter>>()),
                 Err(why) => Err(why)
             }
        } else {
@@ -445,7 +475,7 @@ impl ChapterDB {
                         generate_chapter_from_row(row)
                       )
             ) {
-                Ok(iter) => Ok(iter.map(|v| v.unwrap() ).collect::<std::vec::Vec<Chapter>>()),
+                Ok(iter) => Ok(iter.map(|v| v.unwrap() ).collect::<Vec<Chapter>>()),
                 Err(why) => Err(why)
             }
        }
