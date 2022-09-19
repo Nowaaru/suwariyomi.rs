@@ -3,7 +3,8 @@ import { useEffect, useMemo, useState } from "react";
 import { Chapter, Manga } from "types/manga";
 import { MangaDB } from "util/db";
 
-import SourceHandler from "util/sources";
+import SourceHandler, { Source } from "util/sources";
+import CircularProgress from "components/circularprogress";
 import _ from "lodash";
 
 import {
@@ -11,9 +12,7 @@ import {
     Text,
     Button,
     Tag,
-    TagLabel,
     Progress,
-    CircularProgress,
     CircularProgressLabel,
     ButtonGroup,
 } from "@chakra-ui/react";
@@ -27,7 +26,7 @@ import {
 import MangaComponent from "components/manga";
 import ChapterComponent from "components/chapter";
 import { stripHtml } from "string-strip-html";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 
 // TODO: Automatically scroll to the last-read chapter
 // TODO: When starting to read a chapter, look at the scanlators
@@ -304,6 +303,12 @@ const View = () => {
                     marginLeft: "32px",
                 },
 
+                backbutton: {
+                    top: "20px",
+                    left: "15px",
+                    position: "sticky",
+                },
+
                 chapters: {
                     maxWidth: "800px",
                     width: "50%",
@@ -341,6 +346,8 @@ const View = () => {
                     justifyContent: "center",
                     alignItems: "center",
                     verticalAlign: "middle",
+                    width: "100vw",
+                    height: "100vh",
                 },
             }),
         []
@@ -354,9 +361,13 @@ const View = () => {
     const [rawChapterData, setChapterData] = useState<Array<Chapter> | null>(
         null
     );
-    const sourceHandler = useMemo(() => {
+    const [sourceHandler, setHandler] = useState<Source | null>(null);
+
+    useEffect(() => {
         if (!mangaSource) return undefined;
-        return SourceHandler.querySource(mangaSource);
+        SourceHandler.querySource(mangaSource).then((source) =>
+            source ? setHandler(source) : null
+        );
     }, [mangaSource]);
 
     useEffect(() => {
@@ -364,30 +375,29 @@ const View = () => {
         const id = queryParams.get("id");
 
         setMangaSource(source);
-        setMangaId(id ?? mangaId);
+        setMangaId((mangaId) => id ?? mangaId);
     }, [queryParams]);
 
     useEffect(() => {
         if (!mangaId || !mangaSource) return;
+        if (!sourceHandler) return;
         if (mangaData) return;
 
         // first, determine whether the manga is in-cache.
         MangaDB.get(mangaId, mangaSource)
             .then((foundManga) => {
                 if (!foundManga)
-                    return sourceHandler?.then((handler) =>
-                        handler?.getManga(mangaId).then((data) => {
-                            if (!data) setMangaData(null);
-                            MangaDB.insert(data)
-                                .then(() =>
-                                    console.log(
-                                        "Successfully added manga to cache."
-                                    )
+                    return sourceHandler.getManga(mangaId).then((data) => {
+                        if (!data) setMangaData(null);
+                        MangaDB.insert(data)
+                            .then(() =>
+                                console.log(
+                                    "Successfully added manga to cache."
                                 )
-                                .catch(console.error);
-                            setMangaData(data ?? null);
-                        })
-                    );
+                            )
+                            .catch(console.error);
+                        setMangaData(data ?? null);
+                    });
 
                 console.log("found it!");
                 setMangaData(foundManga as Manga);
@@ -399,41 +409,31 @@ const View = () => {
         if (!sourceHandler) return;
         if (!mangaId) return;
 
-        sourceHandler?.then((handler) =>
-            handler
-                ?.getChapters(mangaId)
-                .then((unchangedData) =>
-                    unchangedData
-                        .filter(({ lang }) => lang === "en")
-                        .sort(
-                            ({ chapter: aChapter }, { chapter: bChapter }) =>
-                                bChapter - aChapter
-                        )
-                )
-                .then(setChapterData)
-        );
+        sourceHandler
+            ?.getChapters(mangaId)
+            .then((unchangedData) =>
+                unchangedData
+                    .filter(({ lang }) => lang === "en")
+                    .sort(
+                        ({ chapter: aChapter }, { chapter: bChapter }) =>
+                            bChapter - aChapter
+                    )
+            )
+            .then(setChapterData);
     }, [mangaId, sourceHandler]);
 
     const chapterElements = useMemo(() => {
         if (!rawChapterData) return [];
+        if (!sourceHandler) return [];
 
         return rawChapterData.map((e) => (
-            <ChapterComponent key={e.id} chapter={e as Chapter} />
+            <ChapterComponent
+                key={e.id}
+                chapter={e as Chapter}
+                source={sourceHandler.id}
+            />
         ));
-    }, [rawChapterData]);
-
-    const [time, setTime] = useState(0);
-    useEffect(() => {
-        if (mangaData && rawChapterData) {
-            if (time > 0) setTime(0);
-            return;
-        }
-        const interval = setInterval(() => {
-            setTime((curTime) => curTime + 1);
-        }, 1000);
-
-        return () => clearInterval(interval);
-    }, [time, mangaData, rawChapterData]);
+    }, [rawChapterData, sourceHandler]);
 
     if (mangaData && Array.isArray(rawChapterData)) {
         const firstUnreadChapter = rawChapterData
@@ -492,12 +492,25 @@ const View = () => {
                             className={css(styles.bg)}
                         />
                     </div>
+                    <Link to="/library">
+                        <Button
+                            className={css(styles.backbutton)}
+                            borderRadius={2}
+                            backgroundColor={"#fb8e84"}
+                            color="whitesmoke"
+                            _hover={{
+                                bg: "#f88379",
+                            }}
+                        >
+                            Back
+                        </Button>
+                    </Link>
                     <hr className={css(styles.line, styles.lineabsolute)} />
                     <div className={css(styles.meta)}>
                         <div className={css(styles.cover)}>
                             <Tooltip label="Click to go to the manga's webpage.">
                                 <button className={css(styles.badge)}>
-                                    <img src="https://www.mangadex.org/favicon.ico" />
+                                    <img src={sourceHandler?.icon} />
                                 </button>
                             </Tooltip>
                             <img
@@ -708,9 +721,7 @@ const View = () => {
     return (
         <div className={css(styles.main)}>
             <div className={css(styles.loadingPage)}>
-                <CircularProgress>
-                    <CircularProgressLabel>{time}s...</CircularProgressLabel>
-                </CircularProgress>
+                <CircularProgress showTimeElapsed display="flex" />
             </div>
         </div>
     );

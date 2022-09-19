@@ -15,6 +15,7 @@ import {
     RepeatIcon,
     SettingsIcon,
     TimeIcon,
+    ViewIcon,
 } from "@chakra-ui/icons";
 import { Link } from "react-router-dom";
 import SourceHandler, { Source } from "util/sources";
@@ -224,7 +225,12 @@ const Library = () => {
 
                 const newSources = [...loadedSources, source];
                 MangaDB.get_all(source.id).then((mangas) =>
-                    setSourceManga({ ...sourceManga, [source.id]: mangas })
+                    setSourceManga({
+                        ...sourceManga,
+                        [source.id]: mangas.filter(
+                            (manga) => manga.added !== -1
+                        ),
+                    })
                 );
 
                 setLoadedSources(newSources);
@@ -335,10 +341,16 @@ const Library = () => {
                 <LibraryButton aria-label="Settings" icon={<SettingsIcon />} />
                 <LibraryButton aria-label="History" icon={<TimeIcon />} />
                 <LibraryButton aria-label="Download" icon={<DownloadIcon />} />
-                <Link to="reader">
+                <Link to="/reader?source=MangaDex&manga=0cfadedb-99cf-4fe5-b117-dc624da32225&chapter=2113cf4b-0afd-46fa-8245-3280db357919">
                     <LibraryButton
                         aria-label="[testing] Go to Reader"
                         icon={<InfoIcon />}
+                    />
+                </Link>
+                <Link to={`/view?source=MangaDex&id=e02f32f7-66d6-4eda-818e-a7e4e2c198a1/`}>
+                    <LibraryButton
+                        aria-label="[testing] Go to View"
+                        icon={<ViewIcon />}
                     />
                 </Link>
             </ButtonGroup>

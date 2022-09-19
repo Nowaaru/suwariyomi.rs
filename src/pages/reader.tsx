@@ -1,10 +1,12 @@
 import MangaPage from "components/mangapage";
 import Lightbar from "components/lightbar";
-import { CircularProgress } from "@chakra-ui/react";
 import { StyleSheet, css } from "aphrodite";
 import { useRef, useEffect, useMemo, useState, useCallback } from "react";
 import { fetch, ResponseType } from "@tauri-apps/api/http";
 import _ from "lodash";
+import SourceHandler, { Source } from "util/sources";
+import CircularProgress from "components/circularprogress";
+import { useSearchParams } from "react-router-dom";
 
 const test_getPages = () => {
     const arr = [];
@@ -26,19 +28,22 @@ type Page = {
 };
 
 type MangaData = {
-    mangaId: string;
-    sourceId: string;
-    chapterId: string;
+    mangaId: string | null;
+    sourceId: string | null;
+    chapterId: string | null;
 };
 
 const Reader = () => {
     const futurePagesToLoad = 4;
     const [pageSources, setPageSources] = useState<Array<string>>([]);
     const pages = useRef<Array<Page>>([]);
+
+    const [queryParams] = useSearchParams();
+    const [sourceHandler, setSourceHandler] = useState<Source | null>(null);
     const [mangaData, setMangaData] = useState<MangaData>({
-        mangaId: "pissballs",
-        sourceId: "cockdick",
-        chapterId: "0000-0000-0000",
+        mangaId: queryParams.get("manga"),
+        sourceId: queryParams.get("source"),
+        chapterId: queryParams.get("chapter"),
     });
 
     const [currentPage, setCurrentPage] = useState<Page | null>(null);
@@ -76,7 +81,14 @@ const Reader = () => {
             };
 
             if (codeMaps[code]) {
-                const y = pages.current[_.clamp(currentPageNumber - 1 + codeMaps[code], 0, pages.current.length - 1)];
+                const y =
+                    pages.current[
+                        _.clamp(
+                            currentPageNumber - 1 + codeMaps[code],
+                            0,
+                            pages.current.length - 1
+                        )
+                    ];
                 setCurrentPage(y);
             }
         };
@@ -86,20 +98,35 @@ const Reader = () => {
     });
 
     useEffect(() => {
-        setPageSources(test_getPages());
-        pages.current = test_getPages().map((n) => ({
-            url: n,
-            blob: new Blob(),
-
-            didError: false,
-            isDownloading: false,
-            completed: false,
-
-            contentSize: -1,
-        }));
-
-        setCurrentPage(pages.current[0]);
+        if (!mangaData.sourceId) return;
+        SourceHandler.querySource(mangaData.sourceId).then((foundSource) =>
+            setSourceHandler(foundSource ?? null)
+        );
     }, [mangaData]);
+
+    useEffect(() => {
+        if (!sourceHandler || !mangaData.chapterId || !mangaData.mangaId)
+            return;
+
+        sourceHandler
+            .getPages(mangaData.mangaId, mangaData.chapterId)
+            .then((newPagesArray) => {
+                console.log(newPagesArray);
+                setPageSources(newPagesArray);
+                pages.current = newPagesArray.map((n) => ({
+                    url: n,
+                    blob: new Blob(),
+
+                    didError: false,
+                    isDownloading: false,
+                    completed: false,
+
+                    contentSize: -1,
+                }));
+
+                setCurrentPage(pages.current[0]);
+            });
+    }, [mangaData, sourceHandler]);
 
     useEffect(() => {
         if (!currentPageNumber) return;
@@ -126,31 +153,43 @@ const Reader = () => {
                 return;
 
             const setError = () =>
-                pages.current[foundPageIndex] = Object.assign(associatedPageObject, {
-                    didError: true,
-                    completed: false,
-                    isDownloading: false,
-                    contentSize: -1,
-                }) as Page;
+                (pages.current[foundPageIndex] = Object.assign(
+                    associatedPageObject,
+                    {
+                        didError: true,
+                        completed: false,
+                        isDownloading: false,
+                        contentSize: -1,
+                    }
+                ) as Page);
 
-            pages.current[foundPageIndex] = Object.assign(associatedPageObject, { isDownloading: true }) as Page;
+            pages.current[foundPageIndex] = Object.assign(
+                associatedPageObject,
+                { isDownloading: true }
+            ) as Page;
+
+            console.log(`now loading: ${page}`);
             fetch(page, {
                 method: "GET",
                 responseType: ResponseType.Binary,
                 timeout: 10,
             }).then((response) => {
                 if (!response.ok) setError();
+                console.log(`done loading: ${page}`);
                 const newBlob = new Blob( // SHOUTOUTS TO TAURI APPS' MELLENIO AND GIBBY FOR THEIR HELP
                     [new Uint8Array(response.data as Array<number>)],
                     { type: response.headers["content-type"] }
                 );
 
-                pages.current[foundPageIndex] = Object.assign(associatedPageObject, {
-                    blob: newBlob,
-                    contentSize: response.headers["content-length"],
-                    isDownloading: false,
-                    completed: true,
-                }) as Page;
+                pages.current[foundPageIndex] = Object.assign(
+                    associatedPageObject,
+                    {
+                        blob: newBlob,
+                        contentSize: response.headers["content-length"],
+                        isDownloading: false,
+                        completed: true,
+                    }
+                ) as Page;
 
                 if (associatedPageObject.url === currentPage?.url) {
                     setCurrentPage(associatedPageObject as Page);
@@ -161,6 +200,21 @@ const Reader = () => {
 
     const currentMangaPage = useMemo(() => {
         if (!currentPageNumber) return;
+        if (!currentPage?.completed && !currentPage?.didError)
+            return (
+                <div
+                    style={{
+                        width: "100vw",
+                        height: "100vh",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        verticalAlign: "middle",
+                    }}
+                >
+                    <CircularProgress display="flex" />
+                </div>
+            );
 
         return (
             <MangaPage
@@ -171,7 +225,11 @@ const Reader = () => {
     }, [currentPageNumber, currentPage]);
 
     const styles = StyleSheet.create({
-        reader: {},
+        reader: {
+            backgroundColor: "#0D1620",
+            width: "100vw",
+            height: "100vh",
+        },
     });
 
     return (
