@@ -13,6 +13,8 @@ export abstract class Source {
 
     public abstract getMangaUrl(mangaId: string): string;
 
+    public abstract getPages(mangaId: string, chapterId: string): Promise<Array<string>>;
+
     public abstract getChapters(mangaId: string): Promise<Array<Chapter>>;
 
     public abstract search(): Promise<Array<Manga>>;
