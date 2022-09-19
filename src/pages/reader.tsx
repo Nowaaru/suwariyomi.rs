@@ -7,6 +7,7 @@ import _ from "lodash";
 import SourceHandler, { Source } from "util/sources";
 import CircularProgress from "components/circularprogress";
 import { useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 type Page = {
     url: string;
@@ -27,12 +28,13 @@ type MangaData = {
 
 const Reader = () => {
     const futurePagesToLoad = 4;
+    const Navigate = useNavigate();
     const [pageSources, setPageSources] = useState<Array<string>>([]);
     const pages = useRef<Array<Page>>([]);
 
     const [queryParams] = useSearchParams();
     const [sourceHandler, setSourceHandler] = useState<Source | null>(null);
-    const [mangaData, setMangaData] = useState<MangaData>({
+    const [mangaData] = useState<MangaData>({
         mangaId: queryParams.get("manga"),
         sourceId: queryParams.get("source"),
         chapterId: queryParams.get("chapter"),
@@ -71,6 +73,9 @@ const Reader = () => {
                 ArrowDown: 1,
                 ArrowUp: -1,
             };
+
+            if (code === "Backspace")
+                return Navigate(`/view?source=${mangaData.sourceId}&id=${mangaData.mangaId}`);
 
             if (codeMaps[code]) {
                 const y =
