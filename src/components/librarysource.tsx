@@ -68,7 +68,7 @@ const LibrarySource = (props: LibrarySourceProps) => {
             borderRadius: "4px",
             padding: "16px",
             overflow: "hidden",
-            justifyContent: "space-evenly",
+            justifyContent: "flex-start",
             alignItems: "space-evenly",
         },
         mangacount: {
