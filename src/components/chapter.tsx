@@ -1,16 +1,23 @@
 import { StyleSheet, css } from "aphrodite";
 import { format } from "date-fns";
 import { Button, Tooltip } from "@chakra-ui/react";
-import { useMemo } from "react";
-import { Chapter as MangaChapter } from "types/manga";
-import { compileChapterTitle, formatDate, isChapterCompleted } from "util/textutil";
+import { useEffect, useMemo } from "react";
+import { Chapter as MangaChapter, Manga } from "types/manga";
+import {
+    compileChapterTitle,
+    formatDate,
+    isChapterCompleted,
+} from "util/textutil";
+import {useNavigate} from "react-router";
+import {MangaDB} from "util/db";
 
 type ChapterProps = {
     chapter: MangaChapter;
+    source: string;
 };
 
 const Chapter = (props: ChapterProps) => {
-    const { chapter } = props;
+    const { chapter, source } = props;
     const styles = useMemo(
         () =>
             StyleSheet.create({
@@ -64,8 +71,10 @@ const Chapter = (props: ChapterProps) => {
         []
     );
 
-    const isUnread = Math.min(chapter.pages, chapter.total ?? 0) === 0;
+    const Navigate = useNavigate();
+    const isUnread = Math.min(chapter.pages, chapter.total ?? 0) <= 0;
     const isCompleted = isChapterCompleted(chapter); // In case of final scanlator pages, allow wiggle room.
+
     const readOrContinue = isUnread ? "Read" : "Continue";
     const pageDisplay = isUnread
         ? "Unread"
@@ -77,15 +86,19 @@ const Chapter = (props: ChapterProps) => {
                 <span className={css(styles.title)}>
                     {compileChapterTitle(chapter)}
                 </span>
-                <span className={css(styles.scanlators)}>Gouma-Den</span>
+                <span className={css(styles.scanlators)}>
+                    {chapter.scanlators.join(", ")}
+                </span>
                 <span className={css(styles.date)}>
                     {formatDate(chapter.date_uploaded)}
                 </span>
             </div>
             <div className={css(styles.interactable)}>
                 <Tooltip label={isCompleted ? "Completed" : pageDisplay}>
-                    <Button sx={styles.read._value as Record<string, string>}>
-                        {isCompleted ? "Reread" : readOrContinue }
+                    <Button onClick={() => {
+                        Navigate(`/reader?manga=${chapter.manga_id}&chapter=${chapter.id}&source=${source}`);
+                    }} sx={styles.read._value as Record<string, string>}>
+                        {isCompleted ? "Reread" : readOrContinue}
                     </Button>
                 </Tooltip>
             </div>
