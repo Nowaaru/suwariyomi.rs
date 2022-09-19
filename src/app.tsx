@@ -29,6 +29,7 @@ export default function App() {
                 <BrowserRouter>
                     <Routes>
                         <Route path="/" element={<Library />} />
+                        <Route path="/library" element={<Library />} />
                         <Route path="reader" element={<Reader />} />
                         <Route path="view" element={<View />} />
                         <Route path="splash" element={<SplashScreen />} />
