@@ -8,14 +8,6 @@ import SourceHandler, { Source } from "util/sources";
 import CircularProgress from "components/circularprogress";
 import { useSearchParams } from "react-router-dom";
 
-const test_getPages = () => {
-    const arr = [];
-    for (let i = 1; i < 8; i++)
-        arr.push(`http://localhost:3000/?file=${i}.png`);
-
-    return arr;
-};
-
 type Page = {
     url: string;
     blob: Blob;
