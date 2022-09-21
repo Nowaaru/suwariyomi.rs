@@ -4,6 +4,7 @@ import { Chapter, Manga } from "types/manga";
 import { MangaDB } from "util/db";
 
 import SourceHandler, { Source } from "util/sources";
+import { useNavigate } from "react-router-dom";
 import CircularProgress from "components/circularprogress";
 import _ from "lodash";
 
@@ -37,6 +38,8 @@ import { Link, useSearchParams } from "react-router-dom";
 const View = () => {
     // manga shit 275x435
     // 2px white border
+
+    const Navigate = useNavigate();
     const styles = useMemo(
         () =>
             StyleSheet.create({
@@ -566,6 +569,12 @@ const View = () => {
                                             bg: "#f88379",
                                         }}
                                         className={css(styles.startreading)}
+                                        onClick={() => {
+                                            if (firstUnreadChapter)
+                                                return Navigate(
+                                                    `/reader?source=${mangaData.source}&manga=${mangaData.id}&chapter=${firstUnreadChapter.i.id}`
+                                                );
+                                        }}
                                         disabled={!firstUnreadChapter}
                                     >
                                         {readingButtonDisplay}
