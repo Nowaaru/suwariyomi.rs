@@ -8,6 +8,7 @@ import SourceHandler, { Source } from "util/sources";
 import CircularProgress from "components/circularprogress";
 import { useSearchParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import { Button } from "@chakra-ui/react";
 
 type Page = {
     url: string;
@@ -75,7 +76,9 @@ const Reader = () => {
             };
 
             if (code === "Backspace")
-                return Navigate(`/view?source=${mangaData.sourceId}&id=${mangaData.mangaId}`);
+                return Navigate(
+                    `/view?source=${mangaData.sourceId}&id=${mangaData.mangaId}`
+                );
 
             if (codeMaps[code]) {
                 const y =
@@ -165,39 +168,51 @@ const Reader = () => {
                 { isDownloading: true }
             ) as Page;
 
-            console.log(`now loading: ${page}`);
             fetch(page, {
                 method: "GET",
                 responseType: ResponseType.Binary,
                 timeout: 10,
-            }).then((response) => {
-                if (!response.ok) setError();
-                console.log(`done loading: ${page}`);
-                const newBlob = new Blob( // SHOUTOUTS TO TAURI APPS' MELLENIO AND GIBBY FOR THEIR HELP
-                    [new Uint8Array(response.data as Array<number>)],
-                    { type: response.headers["content-type"] }
-                );
+            })
+                .then((response) => {
+                    if (!response.ok) setError();
+                    console.log(`done loading: ${page}`);
+                    const newBlob = new Blob( // SHOUTOUTS TO TAURI APPS' MELLENIO AND GIBBY FOR THEIR HELP
+                        [new Uint8Array(response.data as Array<number>)],
+                        { type: response.headers["content-type"] }
+                    );
 
-                pages.current[foundPageIndex] = Object.assign(
-                    associatedPageObject,
-                    {
-                        blob: newBlob,
-                        contentSize: response.headers["content-length"],
-                        isDownloading: false,
-                        completed: true,
+                    pages.current[foundPageIndex] = Object.assign(
+                        associatedPageObject,
+                        {
+                            blob: newBlob,
+                            contentSize: response.headers["content-length"],
+                            isDownloading: false,
+                            completed: true,
+                        }
+                    ) as Page;
+
+                    if (associatedPageObject.url === currentPage?.url) {
+                        setCurrentPage(associatedPageObject as Page);
                     }
-                ) as Page;
+                })
+                .catch(() => {
+                    const erroredPage = Object.assign(associatedPageObject, {
+                        isDownloading: false,
+                        completed: false,
+                        didError: true,
+                    }) as Page;
 
-                if (associatedPageObject.url === currentPage?.url) {
-                    setCurrentPage(associatedPageObject as Page);
-                }
-            });
+                    pages.current[foundPageIndex] = erroredPage;
+                    setCurrentPage(erroredPage);
+                });
         });
     }, [pageSources, currentPage?.url, currentPageNumber]);
 
     const currentMangaPage = useMemo(() => {
         if (!currentPageNumber) return;
-        if (!currentPage?.completed && !currentPage?.didError)
+        if (!currentPage?.completed && !currentPage?.didError) {
+            const currentPage = pages.current[currentPageNumber - 1];
+            console.log(currentPage.isDownloading);
             return (
                 <div
                     style={{
@@ -209,10 +224,14 @@ const Reader = () => {
                         verticalAlign: "middle",
                     }}
                 >
-                    <CircularProgress display="flex" />
+                    {currentPage?.didError ? (
+                        <Button display="flex">Retry</Button>
+                    ) : (
+                        <CircularProgress display="flex" />
+                    )}
                 </div>
             );
-
+        }
         return (
             <MangaPage
                 fit="comfortable"
