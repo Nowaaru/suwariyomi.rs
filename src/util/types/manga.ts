@@ -9,6 +9,7 @@ type int = number;
 export type Chapter = {
     id: string,
     manga_id: string,
+    source: string,
     chapter: int,
     volume: int,
 
