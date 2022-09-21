@@ -1,7 +1,9 @@
-use std::rc::Rc;
+use std::{error::Error, rc::Rc};
 
-use rusqlite::{self, Connection, OptionalExtension, Row, vtab::array::load_module};
+use rusqlite::{self, vtab::array::load_module, Connection, OptionalExtension, Row};
 use serde::{Deserialize, Serialize};
+
+use crate::errors::InternalError;
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(transparent)]
@@ -42,7 +44,6 @@ impl std::fmt::Display for Covers {
         write!(f, "}}")
     }
 }
-
 
 impl std::fmt::Display for Cover {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -113,13 +114,14 @@ impl std::fmt::Display for Manga {
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct Chapters {
-    pub chapters: Vec<Chapter>
+    pub chapters: Vec<Chapter>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Chapter {
     pub id: String,
-    pub manga_id: String, // The manga it belongs to.
+    pub manga_id: String,
+    pub source: String,
     pub chapter: i32,
     pub volume: i32,
 
@@ -133,7 +135,7 @@ pub struct Chapter {
     pub pages: i32,
     pub total: i32,
     pub lang: String,
-    pub scanlators: Scanlators,
+    pub scanlators: Vec<String>,
 }
 
 impl std::fmt::Display for Chapter {
@@ -151,12 +153,14 @@ impl std::fmt::Display for Chapter {
             pages,
             total,
             lang,
-            scanlators
+            scanlators,
+            source,
         } = self;
 
         writeln!(f, "Chapter {{")?;
         writeln!(f, "\tid: {}", id)?;
         writeln!(f, "\tmanga_id: {}", manga_id)?;
+        writeln!(f, "\tsource: {}", source)?;
         writeln!(f, "\tchapter: {}", chapter)?;
         writeln!(f, "\tvolume: {}", volume)?;
         writeln!(f, "\ttitle: {}", title)?;
@@ -167,7 +171,7 @@ impl std::fmt::Display for Chapter {
         writeln!(f, "\tpages: {}", pages)?;
         writeln!(f, "\ttotal: {}", total)?;
         writeln!(f, "\tlang: {}", lang)?;
-        writeln!(f, "\tscanlators: {scanlators}")?;
+        writeln!(f, "\tscanlators: {:#?}", scanlators)?;
         write!(f, "}}")
     }
 }
@@ -185,47 +189,48 @@ pub struct DBHandler {
     pub chapter_db: ChapterDB,
 }
 
-fn generate_manga_from_row(row: &Row) -> Manga {
-    Manga {
-        id: row.get("id").unwrap(),
-        name: row.get("name").unwrap(),
-        description: row.get("description").unwrap(),
-        source: row.get("source").unwrap(),
+fn generate_manga_from_row(row: &Row) -> Result<Manga, rusqlite::Error> {
+    Ok(Manga {
+        id: row.get("id")?,
+        name: row.get("name")?,
+        description: row.get("description")?,
+        source: row.get("source")?,
 
-        covers: serde_json::from_str(row.get::<&str, String>("covers").unwrap().as_str()).unwrap(),
-        authors: serde_json::from_str(row.get::<&str, String>("authors").unwrap().as_str()).unwrap(),
-        chapters: serde_json::from_str(row.get::<&str, String>("chapters").unwrap().as_str()).unwrap(),
-        tags: serde_json::from_str(row.get::<&str, String>("tags").unwrap().as_str()).unwrap(),
+        covers: serde_json::from_str(row.get::<&str, String>("covers")?.as_str()).unwrap(),
+        authors: serde_json::from_str(row.get::<&str, String>("authors")?.as_str()).unwrap(),
+        chapters: serde_json::from_str(row.get::<&str, String>("chapters")?.as_str()).unwrap(),
+        tags: serde_json::from_str(row.get::<&str, String>("tags")?.as_str()).unwrap(),
 
-        uploaded: row.get("uploaded").unwrap(),
-        added: row.get("added").unwrap(),
-    }
+        uploaded: row.get("uploaded")?,
+        added: row.get("added")?,
+    })
 }
 
-fn generate_chapter_from_row(row: &Row) -> Chapter {
-    Chapter {
-        id: row.get("id").unwrap(),
-        manga_id: row.get("manga_id").unwrap(),
+fn generate_chapter_from_row(row: &Row) -> Result<Chapter, rusqlite::Error>
+{
+    Ok(Chapter {
+        id: row.get("id")?,
+        manga_id: row.get("manga_id")?,
+        source: row.get("source")?,
 
-        title: row.get::<&str, String>("title").unwrap(),
+        title: row.get::<&str, String>("title")?,
 
-        chapter: row.get::<&str, i32>("chapter").unwrap(),
-        volume: row.get::<&str, i32>("volume").unwrap(),
+        chapter: row.get::<&str, i32>("chapter")?,
+        volume: row.get::<&str, i32>("volume")?,
 
-        last_read: row.get::<&str, i64>("last_read").unwrap(),
-        date_uploaded: row.get::<&str, i64>("date_uploaded").unwrap(),
-        last_updated: row.get::<&str, i64>("last_updated").unwrap(),
-        time_spent_reading: row.get::<&str, i64>("time_spent_reading").unwrap(),
+        last_read: row.get::<&str, i64>("last_read")?,
+        date_uploaded: row.get::<&str, i64>("date_uploaded")?,
+        last_updated: row.get::<&str, i64>("last_updated")?,
+        time_spent_reading: row.get::<&str, i64>("time_spent_reading")?,
 
-        pages: row.get::<&str, i32>("pages").unwrap(),
-        total: row.get::<&str, i32>("total").unwrap(),
+        pages: row.get::<&str, i32>("pages")?,
+        total: row.get::<&str, i32>("total")?,
 
-        lang: row.get::<&str, String>("lang").unwrap(),
-        scanlators: serde_json::from_str::<Scanlators>(row.get::<&str, String>("scanlators").unwrap().as_str()).unwrap()
-            /*.split("$$")
-            .map(|v| v.to_string())
-            .collect::< Vec<String> >() */
-    }
+        lang: row.get::<&str, String>("lang")?,
+        scanlators: serde_json::from_str(
+            row.get::<&str, String>("scanlators")?.as_str(),
+        ).unwrap_or(vec![])
+    })
 }
 
 impl MangaDB {
@@ -236,10 +241,15 @@ impl MangaDB {
 
         let db = if let Some(path) = path {
             let p2 = path.clone();
-            Connection::open(path).unwrap_or_else(|_| panic!("unable to open database from path {}", p2.to_str().unwrap()))
-        } else { Connection::open_in_memory().expect("unable to open in-memory database") };
+            Connection::open(path).unwrap_or_else(|_| {
+                panic!("unable to open database from path {}", p2.to_str().unwrap())
+            })
+        } else {
+            Connection::open_in_memory().expect("unable to open in-memory database")
+        };
 
-        match db.execute("
+        match db.execute(
+            "
                          CREATE TABLE IF NOT EXISTS Library
                          (
                              id TEXT NOT NULL PRIMARY KEY,
@@ -255,15 +265,14 @@ impl MangaDB {
                              uploaded INT NOT NULL,
                              added INT NOT NULL
                         )
-                         ", [])
-        {
+                         ",
+            [],
+        ) {
             Ok(_) => println!("Table was created."),
             Err(why) => println!("Failed: {}", why),
         }
 
-        Self {
-            db
-        }
+        Self { db }
     }
 
     pub fn insert(&self, manga: Manga) -> Result<usize, rusqlite::Error> {
@@ -301,25 +310,37 @@ impl MangaDB {
 
     pub fn delete(&self, id: String, source: String) -> Result<Option<usize>, rusqlite::Error> {
         self.db
-            .execute("DELETE * FROM LIBRARY WHERE id = ?1 AND source = ?2 ", [id, source])
+            .execute(
+                "DELETE * FROM LIBRARY WHERE id = ?1 AND source = ?2 ",
+                [id, source],
+            )
             .optional()
     }
 
     pub fn get(&self, id: String, source: String) -> Result<Option<Manga>, rusqlite::Error> {
         self.db
-            .query_row("SELECT * FROM Library WHERE id = ?1 AND source = ?2", [id, source], |row| {
-                Ok(generate_manga_from_row(row))
-            })
+            .query_row(
+                "SELECT * FROM Library WHERE id = ?1 AND source = ?2",
+                [id, source],
+                |row| generate_manga_from_row(row),
+            )
             .optional()
     }
 
-    pub fn get_multiple(&self, source: String, ids: Vec<String>) -> Result<std::vec::Vec<Manga>, rusqlite::Error> {
+    pub fn get_multiple(
+        &self,
+        source: String,
+        ids: Vec<String>,
+    ) -> Result<std::vec::Vec<Manga>, rusqlite::Error> {
         load_module(&self.db).unwrap();
-        let mut prepared_rows = self.db.prepare("SELECT * FROM Library where source = ?1 AND id IN rarray(?2)")?;
-        let values_iter: Vec<rusqlite::types::Value> = ids.into_iter().map(rusqlite::types::Value::from).collect();
+        let mut prepared_rows = self
+            .db
+            .prepare("SELECT * FROM Library where source = ?1 AND id IN rarray(?2)")?;
+        let values_iter: Vec<rusqlite::types::Value> =
+            ids.into_iter().map(rusqlite::types::Value::from).collect();
         let iter = prepared_rows.query_map((source, Rc::new(values_iter)), |row| {
-                Ok(generate_manga_from_row(row))
-            })?;
+            generate_manga_from_row(row)
+        })?;
 
         Ok(iter.map(|res| res.unwrap()).collect::<Vec<Manga>>())
     }
@@ -330,44 +351,43 @@ impl MangaDB {
 
         if let Some(source) = source {
             let mut prepared_rows = self.db.prepare("SELECT * FROM Library WHERE source = ?1")?;
-            let iter = prepared_rows.query_map([source], |row| Ok(
-                    generate_manga_from_row(row)
-                    ))?;
+            let iter = prepared_rows.query_map([source], |row| generate_manga_from_row(row))?;
 
-            Ok(iter.map(|v| v.unwrap() ).collect::<Vec<Manga>>())
+            Ok(iter.map(|v| v.unwrap()).collect::<Vec<Manga>>())
         } else {
             let mut prepared_rows = self.db.prepare("SELECT * FROM Library")?;
-            let iter = prepared_rows.query_map([], |row| Ok(
-                    generate_manga_from_row(row)
-            ))?;
+            let iter = prepared_rows.query_map([], |row| generate_manga_from_row(row))?;
 
-            Ok(iter.map(|v| v.unwrap() ).collect::<Vec<Manga>>())
+            Ok(iter.map(|v| v.unwrap()).collect::<Vec<Manga>>())
         }
     }
 
     pub fn clear(&self) -> Result<(), rusqlite::Error> {
         match self.db.execute("DELETE FROM Library", []) {
             Ok(..) => Ok(()),
-            Err(y) => Err(y)
+            Err(y) => Err(y),
         }
     }
 }
 
 impl ChapterDB {
-    pub fn new(path: &Option<std::path::PathBuf> ) -> Self {
-        let db: Connection =
-        if let Some(path) = path {
+    pub fn new(path: &Option<std::path::PathBuf>) -> Self {
+        let db: Connection = if let Some(path) = path {
             let p2 = path.clone();
-            Connection::open(path).unwrap_or_else(|_| panic!( "unable to open database with path {}", p2.to_str().unwrap()))
+            Connection::open(path).unwrap_or_else(|_| {
+                panic!("unable to open database with path {}", p2.to_str().unwrap())
+            })
         } else {
             Connection::open_in_memory().expect("unable to open database")
         };
 
-        match db.execute("
+        match db.execute(
+            "
                          CREATE TABLE IF NOT EXISTS Chapters
                          (
                             id TEXT NOT NULL PRIMARY KEY,
                             manga_id TEXT NOT NULL,
+                            source TEXT NOT NULL,
                             chapter INT NOT NULL,
                             volume INT NOT NULL,
 
@@ -383,16 +403,14 @@ impl ChapterDB {
                             scanlators TEXT NOT NULL
                             lang TEXT NOT NULL
                         )
-                         ", []
-                        )
-        {
+                         ",
+            [],
+        ) {
             Ok(_) => println!("Chapters table was created."),
-            Err(why) => println!("Chapters failed: {}", why)
+            Err(why) => println!("Chapters failed: {}", why),
         }
 
-        Self {
-            db
-        }
+        Self { db }
     }
 
     pub fn insert(&self, chapter: Chapter) -> Result<usize, rusqlite::Error> {
@@ -409,13 +427,14 @@ impl ChapterDB {
             pages,
             total,
             lang,
-            scanlators
+            scanlators,
+            source,
         } = chapter;
 
         self.db.execute(
             "REPLACE INTO Chapters
-                (id, manga_id, title, chapter, volume, last_read, date_uploaded, last_updated, time_spent_reading, pages, total, scanlators, lang)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13)",
+                (id, manga_id, title, chapter, volume, last_read, date_uploaded, last_updated, time_spent_reading, pages, total, scanlators, lang, source)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14)",
              (
                  id,
                  manga_id,
@@ -430,21 +449,41 @@ impl ChapterDB {
                  total,
                  serde_json::to_string(&scanlators).unwrap(),
                  lang,
+                 source,
             )
         )
     }
 
-    pub fn get(&self, chapter_id: String, manga_id: String) -> Result<Option<Chapter>, rusqlite::Error> {
-         self.db.query_row("SELECT * FROM Chapters WHERE id = ?1 AND manga_id = ?2", [chapter_id, manga_id], | row | Ok ( generate_chapter_from_row(row) ) ).optional()
+    pub fn get(
+        &self,
+        source: String,
+        chapter_id: String,
+        manga_id: String,
+    ) -> Result<Option<Chapter>, rusqlite::Error> {
+        self.db
+            .query_row(
+                "SELECT * FROM Chapters WHERE id = ?1 AND manga_id = ?2 AND source = ?3",
+                [chapter_id, manga_id, source],
+                |row| generate_chapter_from_row(row),
+            )
+            .optional()
     }
 
-    pub fn get_multiple(&self, manga_id: String, ids: Vec<String>) -> Result<std::vec::Vec<Chapter>, rusqlite::Error> {
+    pub fn get_multiple(
+        &self,
+        source: String,
+        manga_id: String,
+        ids: Vec<String>,
+    ) -> Result<std::vec::Vec<Chapter>, rusqlite::Error> {
         load_module(&self.db).unwrap();
-        let mut prepared_rows = self.db.prepare("SELECT * FROM Chapters where manga_id = ?1 AND id IN rarray(?2)")?;
-        let values_iter: Vec<rusqlite::types::Value> = ids.into_iter().map(rusqlite::types::Value::from).collect();
-        let iter = prepared_rows.query_map((manga_id, Rc::new(values_iter)), |row| {
-                Ok(generate_chapter_from_row(row))
-            })?;
+        let mut prepared_rows = self.db.prepare(
+            "SELECT * FROM Chapters where manga_id = ?1 and source = ?2 AND id IN rarray(?2)",
+        )?;
+        let values_iter: Vec<rusqlite::types::Value> =
+            ids.into_iter().map(rusqlite::types::Value::from).collect();
+        let iter = prepared_rows.query_map((manga_id, source, Rc::new(values_iter)), |row| {
+            generate_chapter_from_row(row)
+        })?;
 
         Ok(iter.map(|res| res.unwrap()).collect::<Vec<Chapter>>())
     }
@@ -455,42 +494,37 @@ impl ChapterDB {
 
         let mut prepared_rows;
         if let Some(manga_id) = manga_id {
-            prepared_rows = self.db.prepare("SELECT * FROM Chapters WHERE manga_id = ?1")?;
+            prepared_rows = self
+                .db
+                .prepare("SELECT * FROM Chapters WHERE manga_id = ?1")?;
 
-            match prepared_rows.query_map(
-                [manga_id],
-                |row| Ok(
-                        generate_chapter_from_row(row)
-                      )
-            ) {
-                Ok(iter) => Ok(iter.map(|v| v.unwrap() ).collect::<Vec<Chapter>>()),
-                Err(why) => Err(why)
+            match prepared_rows.query_map([manga_id], |row| generate_chapter_from_row(row)) {
+                Ok(iter) => Ok(iter.map(|v| v.unwrap()).collect::<Vec<Chapter>>()),
+                Err(why) => Err(why),
             }
-       } else {
+        } else {
             prepared_rows = self.db.prepare("SELECT * FROM Chapters")?;
 
-            match prepared_rows.query_map(
-                [],
-                |row| Ok(
-                        generate_chapter_from_row(row)
-                      )
-            ) {
-                Ok(iter) => Ok(iter.map(|v| v.unwrap() ).collect::<Vec<Chapter>>()),
-                Err(why) => Err(why)
+            match prepared_rows.query_map([], |row| generate_chapter_from_row(row)) {
+                Ok(iter) => Ok(iter.map(|v| v.unwrap()).collect::<Vec<Chapter>>()),
+                Err(why) => Err(why),
             }
-       }
+        }
     }
 
     pub fn delete(&self, manga_id: String, id: String) -> Result<Option<usize>, rusqlite::Error> {
         self.db
-            .execute("DELETE * FROM Chapters WHERE manga_id = ?1 AND id = ?2", [manga_id, id])
+            .execute(
+                "DELETE * FROM Chapters WHERE manga_id = ?1 AND id = ?2",
+                [manga_id, id],
+            )
             .optional()
     }
 
     pub fn clear(&self) -> Result<(), rusqlite::Error> {
         match self.db.execute("DELETE FROM Chapters", []) {
             Ok(..) => Ok(()),
-            Err(y) => Err(y)
+            Err(y) => Err(y),
         }
     }
 }
