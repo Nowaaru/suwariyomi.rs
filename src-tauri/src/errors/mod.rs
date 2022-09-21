@@ -10,6 +10,38 @@ impl InternalError {
         }
     }
 }
+
+impl Into<rusqlite::Error> for InternalError {
+    fn into(self) -> rusqlite::Error {
+        rusqlite::Error::QueryReturnedNoRows
+    }
+}
+
+impl From<rusqlite::Error> for InternalError {
+    fn from(err: rusqlite::Error) -> Self {
+        Self {
+            message: err.to_string()
+        }
+    }
+}
+
+impl From<serde_json::Error> for InternalError {
+    fn from(err: serde_json::Error) -> Self {
+        Self {
+            message: err.to_string()
+        }
+    }
+}
+
+impl From<serde_rusqlite::Error> for InternalError {
+    fn from(err: serde_rusqlite::Error) -> Self {
+        Self {
+            message: err.to_string()
+        }
+    }
+}
+
+
 impl std::fmt::Display for InternalError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "InternalError {{\n\tmessage:{}\n}}", &self.message)
