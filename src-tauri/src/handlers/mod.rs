@@ -111,15 +111,16 @@ pub fn get_all_chapters(
 pub fn get_chapter(
     chapter_id: String,
     manga_id: String,
+    source: String,
 ) -> Result<Option<Chapter>, String> {
     let db = get_chapter_db();
-    stringify_result(db.get(chapter_id, manga_id))
+    stringify_result(db.get(source, chapter_id, manga_id))
 }
 
 #[tauri::command]
-pub fn get_chapters(manga_id: String, ids: std::vec::Vec<String>) -> Result<std::vec::Vec<Chapter>, String> {
+pub fn get_chapters(source: String, manga_id: String, ids: std::vec::Vec<String>) -> Result<std::vec::Vec<Chapter>, String> {
     let db = get_chapter_db();
-    stringify_result(db.get_multiple(manga_id, ids))
+    stringify_result(db.get_multiple(source, manga_id, ids))
 }
 
 #[tauri::command]
