@@ -128,14 +128,8 @@ const Reader = () => {
             });
     }, [mangaData, sourceHandler]);
 
-    useEffect(() => {
-        if (!currentPageNumber) return;
-        const pagesToLoad = pageSources.slice(
-            0,
-            currentPageNumber + futurePagesToLoad - 1
-        );
-
-        pagesToLoad.forEach((page) => {
+    const downloadPage = useCallback(
+        ({ pageUrl: page }: { pageUrl: string }) => {
             const foundPageIndex = pages.current.findIndex(
                 ({ url }) => url === page
             );
@@ -195,7 +189,7 @@ const Reader = () => {
                         setCurrentPage(associatedPageObject as Page);
                     }
                 })
-                .catch(() => {
+                .catch((error) => {
                     const erroredPage = Object.assign(associatedPageObject, {
                         isDownloading: false,
                         completed: false,
@@ -204,9 +198,22 @@ const Reader = () => {
 
                     pages.current[foundPageIndex] = erroredPage;
                     setCurrentPage(erroredPage);
+
+                    console.error(error);
                 });
-        });
-    }, [pageSources, currentPage?.url, currentPageNumber]);
+        },
+        [currentPage?.url]
+    );
+
+    useEffect(() => {
+        if (!currentPageNumber) return;
+        const pagesToLoad = pageSources.slice(
+            0,
+            currentPageNumber + futurePagesToLoad - 1
+        );
+
+        pagesToLoad.forEach((pageUrl) => downloadPage({ pageUrl }));
+    }, [pageSources, currentPageNumber, downloadPage]);
 
     const currentMangaPage = useMemo(() => {
         if (!currentPageNumber) return;
@@ -225,7 +232,16 @@ const Reader = () => {
                     }}
                 >
                     {currentPage?.didError ? (
-                        <Button display="flex">Retry</Button>
+                        <Button
+                            display="flex"
+                            disabled={!!currentPage}
+                            onClick={() => {
+                                if (!currentPage) return;
+                                downloadPage({ pageUrl: currentPage.url });
+                            }}
+                        >
+                            Retry
+                        </Button>
                     ) : (
                         <CircularProgress display="flex" />
                     )}
@@ -238,7 +254,7 @@ const Reader = () => {
                 blob={currentPage?.blob ?? new Blob()}
             />
         );
-    }, [currentPageNumber, currentPage]);
+    }, [currentPageNumber, downloadPage, currentPage]);
 
     const styles = StyleSheet.create({
         reader: {
