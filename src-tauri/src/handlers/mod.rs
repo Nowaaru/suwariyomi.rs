@@ -80,7 +80,6 @@ pub fn get_mangas(source: String, ids: std::vec::Vec<String>) -> Result<std::vec
 #[tauri::command]
 pub fn insert_manga(manga: Manga) -> Result<usize, String> {
     let db = get_manga_db();
-    println!("{manga}");
     stringify_result(db.insert(manga))
 }
 
