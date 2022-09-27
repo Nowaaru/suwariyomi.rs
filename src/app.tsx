@@ -8,10 +8,18 @@ import View from "pages/view";
 import SplashScreen from "pages/splash";
 import Reader from "pages/reader";
 
+import SourceHandler from "util/sources";
 
+new Promise((res) => setTimeout(res, 1000)).then(() => {
+    const sourceHandler = SourceHandler.getSource("MangaDex");
+    const myTree = generateTree(sourceHandler.filters);
+
+    sourceHandler.search(myTree).then(console.log);
+});
 
 // Utility
 import DefaultThemeDark from "assets/themes/dark";
+import { generateTree } from "util/search";
 // TODO: Instead of directly writing the routes with the target page
 //      we should use a function to setup any additional logic (i.e. redirecting),
 //      and then return the logic after all is done.

@@ -1,6 +1,7 @@
 import { fs, path } from "@tauri-apps/api";
 import { invoke } from "@tauri-apps/api/tauri";
 import { Chapter, Manga } from "types/manga";
+import { SearchFilters } from "types/search";
 
 import fetch from "util/fetch";
 
@@ -13,11 +14,16 @@ export abstract class Source {
 
     public abstract getMangaUrl(mangaId: string): string;
 
-    public abstract getPages(mangaId: string, chapterId: string): Promise<Array<string>>;
+    public abstract getPages(
+        mangaId: string,
+        chapterId: string
+    ): Promise<Array<string>>;
 
     public abstract getChapters(mangaId: string): Promise<Array<Chapter>>;
 
-    public abstract search(): Promise<Array<Manga>>;
+    public abstract search(
+        tree: Record<string, unknown>
+    ): Promise<Array<Manga>>;
 
     public abstract get id(): string;
 
@@ -29,19 +35,7 @@ export abstract class Source {
 
     public abstract get colors(): Record<string, HexColor>;
 
-    abstract _id: string;
-
-    abstract _icon: string;
-
-    abstract _tags: Promise<Array<string>>;
-
-    abstract _canDownload: boolean;
-
-    abstract _tagColors: Record<string, HexColor>;
-
-    abstract _locale: Locale | Locales;
-
-    abstract _searchFilters: Record<string, unknown>;
+    public abstract get filters(): Record<string, SearchFilters>;
 }
 
 const evalCache: Record<string, Source> = {};
@@ -49,15 +43,14 @@ async function dynamicImport(targetPath: string) {
     const myPath = await path.resolve(targetPath);
     const readFile = await fs.readTextFile(myPath);
 
-    // convert require to the same solution lol
-    readFile.replaceAll(/require\([`"'](.)[`"']\)/g, "undefined");
-
-    const URIjs = `data:text/javascript;charset=utf-8,${encodeURIComponent(
-        readFile
-    )}`;
     if (!evalCache[readFile])
         evalCache[readFile] = new (
-            await import(URIjs /* @vite-ignore */)
+            await import(
+                `data:text/javascript;charset=utf-8,${encodeURIComponent(
+                    readFile
+                )}`
+                /* @vite-ignore */
+            )
         ).default(fetch);
 
     return evalCache[readFile];
@@ -97,24 +90,27 @@ class SourceHandler {
     }
 
     public get sourcesArray() {
-        return [...this.sourceArray ];
+        return [...this.sourceArray];
     }
 
     public getSource(sourceId: keyof typeof this.sources): Source {
         return this.sources[sourceId];
     }
 
-    public async querySource(sourceId: keyof typeof this.sources): Promise<Source | undefined> {
+    public async querySource(
+        sourceId: keyof typeof this.sources
+    ): Promise<Source | undefined> {
         let sourcesQueried = 0;
         return new Promise((res, rej) => {
             this.sourceArray.forEach((source) => {
-                source.then((assumedSource) => {
-                    sourcesQueried += 1;
-                    if (assumedSource.id === sourceId)
-                        res(source);
-                    else if (sourcesQueried === this.sourceArray.length)
-                        res(undefined);
-                }).catch(rej);
+                source
+                    .then((assumedSource) => {
+                        sourcesQueried += 1;
+                        if (assumedSource.id === sourceId) res(source);
+                        else if (sourcesQueried === this.sourceArray.length)
+                            res(undefined);
+                    })
+                    .catch(rej);
             });
         });
     }
