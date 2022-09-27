@@ -14,7 +14,7 @@ new Promise((res) => setTimeout(res, 1000)).then(() => {
     const sourceHandler = SourceHandler.getSource("MangaDex");
     const myTree = generateTree(sourceHandler.filters);
 
-    sourceHandler.search(myTree).then(console.log);
+    // sourceHandler.search(myTree).then(console.log);
 });
 
 // Utility
