@@ -363,23 +363,23 @@ impl ChapterDB {
             "
                          CREATE TABLE IF NOT EXISTS Chapters
                          (
-                            id TEXT NOT NULL PRIMARY KEY,
-                            manga_id TEXT NOT NULL,
-                            source TEXT NOT NULL,
-                            chapter INT NOT NULL,
-                            volume INT NOT NULL,
+                            id                 TEXT NOT NULL PRIMARY KEY,
+                            manga_id           TEXT NOT NULL,
+                            source             TEXT NOT NULL,
+                            chapter            INT NOT NULL,
+                            volume             INT NOT NULL,
 
-                            title TEXT NOT NULL,
+                            title              TEXT NOT NULL,
 
-                            last_updated INT NOT NULL,
-                            last_read INT NOT NULL,
+                            last_updated       INT NOT NULL,
+                            last_read          INT NOT NULL,
                             time_spent_reading INT NOT NULL,
-                            date_uploaded INT NOT NULL,
+                            date_uploaded      INT NOT NULL,
 
-                            pages INT NOT NULL,
-                            total INT NOT NULL,
-                            scanlators TEXT NOT NULL,
-                            lang TEXT NOT NULL
+                            pages              INT NOT NULL,
+                            total              INT NOT NULL,
+                            scanlators         TEXT NOT NULL,
+                            lang               TEXT NOT NULL
                         )
                          ",
             [],
