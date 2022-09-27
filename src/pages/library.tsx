@@ -16,6 +16,7 @@ import {
     SettingsIcon,
     TimeIcon,
     ViewIcon,
+    SearchIcon,
 } from "@chakra-ui/icons";
 import { Link } from "react-router-dom";
 import SourceHandler, { Source } from "util/sources";
@@ -347,10 +348,18 @@ const Library = () => {
                         icon={<InfoIcon />}
                     />
                 </Link>
-                <Link to={`/view?source=MangaDex&id=e02f32f7-66d6-4eda-818e-a7e4e2c198a1/`}>
+                <Link
+                    to={`/view?source=MangaDex&id=e02f32f7-66d6-4eda-818e-a7e4e2c198a1/`}
+                >
                     <LibraryButton
                         aria-label="[testing] Go to View"
                         icon={<ViewIcon />}
+                    />
+                </Link>
+                <Link to={`/search`}>
+                    <LibraryButton
+                        aria-label="Go to Search"
+                        icon={<SearchIcon />}
                     />
                 </Link>
             </ButtonGroup>
