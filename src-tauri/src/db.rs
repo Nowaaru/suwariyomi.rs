@@ -378,7 +378,7 @@ impl ChapterDB {
 
                             pages INT NOT NULL,
                             total INT NOT NULL,
-                            scanlators TEXT NOT NULL
+                            scanlators TEXT NOT NULL,
                             lang TEXT NOT NULL
                         )
                          ",
