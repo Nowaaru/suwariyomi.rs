@@ -385,7 +385,7 @@ impl ChapterDB {
             [],
         ) {
             Ok(_) => println!("Chapters table was created."),
-            Err(why) => println!("Chapters failed: {}", why),
+            Err(why) => panic!("Loading chapters failed: {}", why),
         }
 
         Self { db }
