@@ -93,24 +93,6 @@ impl std::fmt::Display for Manga {
     }
 }
 
-// impl serde::Serialize for Manga {
-//     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-//         where
-//             S: serde::Serializer {
-
-//         let mut serialized_struct = serializer.serialize_struct("Manga", 7)?;
-//         serialized_struct.serialize_field("id", &self.id);
-//         serialized_struct.serialize_field("name", &self.name);
-//         serialized_struct.serialize_field("source", &self.source);
-//         serialized_struct.serialize_field("covers", &self.covers);
-//         serialized_struct.serialize_field("chapters", &self.chapters);
-//         serialized_struct.serialize_field("uploaded", &self.uploaded);
-//         serialized_struct.serialize_field("added", &self.added);
-
-//         serialized_struct.end()
-//     }
-// }
-
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct Chapters {
@@ -206,8 +188,7 @@ fn generate_manga_from_row(row: &Row) -> Result<Manga, rusqlite::Error> {
     })
 }
 
-fn generate_chapter_from_row(row: &Row) -> Result<Chapter, rusqlite::Error>
-{
+fn generate_chapter_from_row(row: &Row) -> Result<Chapter, rusqlite::Error> {
     Ok(Chapter {
         id: row.get("id")?,
         manga_id: row.get("manga_id")?,
@@ -227,9 +208,8 @@ fn generate_chapter_from_row(row: &Row) -> Result<Chapter, rusqlite::Error>
         total: row.get::<&str, i32>("total")?,
 
         lang: row.get::<&str, String>("lang")?,
-        scanlators: serde_json::from_str(
-            row.get::<&str, String>("scanlators")?.as_str(),
-        ).unwrap_or(vec![])
+        scanlators: serde_json::from_str(row.get::<&str, String>("scanlators")?.as_str())
+            .unwrap_or(vec![]),
     })
 }
 
