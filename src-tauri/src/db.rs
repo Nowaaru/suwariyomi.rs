@@ -472,27 +472,27 @@ impl ChapterDB {
         id: Option<String>,
         manga_id: Option<String>,
     ) -> Result<Vec<Chapter>, rusqlite::Error> {
-        let mut id_value = "*".to_string();
-        let mut source_value = "*".to_string();
-        let mut manga_id_value = "*".to_string();
+        let mut id_value = "".to_string();
+        let mut source_value = "".to_string();
+        let mut manga_id_value = "".to_string();
 
         if let Some(id) = id {
-            id_value = id
+            id_value = format!("AND id={}", id);
         };
 
         if let Some(id) = manga_id {
-            manga_id_value = id
+            manga_id_value = format!("AND manga_id={}", id);
         };
 
         if let Some(source) = source {
-            source_value = source
+            source_value = format!("AND source={}", source);
         };
 
         match self
             .db
             .prepare(
                 format!(
-                    "SELECT * FROM Chapters WHERE id={} AND manga_id={} AND source={}",
+                    "SELECT * FROM Chapters WHERE 1=1 {} {} {}",
                     id_value, manga_id_value, source_value
                 )
                 .as_str(),
