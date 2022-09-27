@@ -1,9 +1,7 @@
-use std::{error::Error, rc::Rc};
+use std::rc::Rc;
 
 use rusqlite::{self, vtab::array::load_module, Connection, OptionalExtension, Row};
 use serde::{Deserialize, Serialize};
-
-use crate::errors::InternalError;
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(transparent)]
@@ -468,27 +466,41 @@ impl ChapterDB {
         Ok(iter.map(|res| res.unwrap()).collect::<Vec<Chapter>>())
     }
 
-    pub fn get_all(&self, manga_id: Option<String>) -> Result<Vec<Chapter>, rusqlite::Error> {
-        // FIXME: turn iter repetition into a function
-        // fuckin christ this code is dog shitty ass
+    pub fn get_all(
+        &self,
+        source: Option<String>,
+        id: Option<String>,
+        manga_id: Option<String>,
+    ) -> Result<Vec<Chapter>, rusqlite::Error> {
+        let mut id_value = "*".to_string();
+        let mut source_value = "*".to_string();
+        let mut manga_id_value = "*".to_string();
 
-        let mut prepared_rows;
-        if let Some(manga_id) = manga_id {
-            prepared_rows = self
-                .db
-                .prepare("SELECT * FROM Chapters WHERE manga_id = ?1")?;
+        if let Some(id) = id {
+            id_value = id
+        };
 
-            match prepared_rows.query_map([manga_id], |row| generate_chapter_from_row(row)) {
-                Ok(iter) => Ok(iter.map(|v| v.unwrap()).collect::<Vec<Chapter>>()),
-                Err(why) => Err(why),
-            }
-        } else {
-            prepared_rows = self.db.prepare("SELECT * FROM Chapters")?;
+        if let Some(id) = manga_id {
+            manga_id_value = id
+        };
 
-            match prepared_rows.query_map([], |row| generate_chapter_from_row(row)) {
-                Ok(iter) => Ok(iter.map(|v| v.unwrap()).collect::<Vec<Chapter>>()),
-                Err(why) => Err(why),
-            }
+        if let Some(source) = source {
+            source_value = source
+        };
+
+        match self
+            .db
+            .prepare(
+                format!(
+                    "SELECT * FROM Chapters WHERE id={} AND manga_id={} AND source={}",
+                    id_value, manga_id_value, source_value
+                )
+                .as_str(),
+            )?
+            .query_map([], |row| generate_chapter_from_row(row))
+        {
+            Ok(iter) => Ok(iter.map(|v| v.unwrap()).collect::<Vec<Chapter>>()),
+            Err(why) => Err(why),
         }
     }
 
