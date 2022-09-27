@@ -25,7 +25,9 @@
             "util/*": ["src/util/*"],
             "hooks/*": ["src/util/hook/*"],
             "src/*": ["src/*"],
-            "aphrodite": ["src/util/aphrodite.ts"]
+
+            "aphrodite": ["src/util/aphrodite.ts"],
+            "ipc": ["src/util/ipc.ts"]
         }
     },
     "include": ["src"],
