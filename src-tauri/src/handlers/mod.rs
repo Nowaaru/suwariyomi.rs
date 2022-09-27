@@ -84,7 +84,7 @@ pub fn insert_manga(manga: Manga) -> Result<usize, String> {
 }
 
 #[tauri::command]
-pub fn remove_manga(id: String, source: String) -> Result<(), String> {
+pub fn remove_manga(source: String, id: String) -> Result<(), String> {
     let db = get_manga_db();
     stringify_result_none(db.delete(id, source))
 }
@@ -97,10 +97,12 @@ pub fn clear_manga() -> Result<(), String> {
 
 #[tauri::command]
 pub fn get_all_chapters(
+    source: Option<String>,
+    id: Option<String>,
     manga_id: Option<String>,
 ) -> Result<Chapters, String> {
     let db = get_chapter_db();
-    match db.get_all(manga_id) {
+    match db.get_all(source, id, manga_id) {
         Ok(chapters) => Ok(Chapters { chapters }),
         Err(y) => Err(y.to_string()),
     }
@@ -108,12 +110,12 @@ pub fn get_all_chapters(
 
 #[tauri::command]
 pub fn get_chapter(
-    chapter_id: String,
     manga_id: String,
     source: String,
+    id: String,
 ) -> Result<Option<Chapter>, String> {
     let db = get_chapter_db();
-    stringify_result(db.get(source, chapter_id, manga_id))
+    stringify_result(db.get(source, id, manga_id))
 }
 
 #[tauri::command]
@@ -129,9 +131,9 @@ pub fn insert_chapter(chapter: Chapter) -> Result<(), String> {
 }
 
 #[tauri::command]
-pub fn remove_chapter(manga_id: String, chapter_id: String) -> Result<(), String> {
+pub fn remove_chapter(manga_id: String, id: String) -> Result<(), String> {
     let db = get_chapter_db();
-    stringify_result_none(db.delete(manga_id, chapter_id))
+    stringify_result_none(db.delete(manga_id, id))
 }
 
 #[tauri::command]
