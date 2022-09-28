@@ -120,11 +120,6 @@ const SearchSource = (props: SearchSourceProps) => {
         },
     });
 
-    const [isCompleted, isSearching, didError] = [
-        status === "completed",
-        status === "searching",
-        status === "error",
-    ];
     const mangaToShow = sourceManga.slice(0, maxMangaToShow).map((manga) => {
         return <Manga key={`${manga.source}-${manga.id}`} {...{ manga }} />;
     });
