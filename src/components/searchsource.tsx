@@ -36,6 +36,11 @@ type SearchSourceProps = {
         e: ReactMouseEvent<HTMLButtonElement, MouseEvent>,
         sourceToRetryId: string
     ) => void;
+
+    onScopeChange?: (
+        e: ReactMouseEvent<HTMLButtonElement, MouseEvent>,
+        source: string
+    ) => void;
 };
 
 const SearchSource = (props: SearchSourceProps) => {
@@ -47,6 +52,7 @@ const SearchSource = (props: SearchSourceProps) => {
 
         status = Status.searching,
         onRetry = _.noop,
+        onScopeChange = _.noop,
     } = props;
     const styles = StyleSheet.create({
         main: {
@@ -199,6 +205,7 @@ const SearchSource = (props: SearchSourceProps) => {
                                         backgroundColor: "transparent",
                                     },
                                 }}
+                                onClick={(e) => onScopeChange(e, sourceName)}
                                 as={SearchIcon}
                             />
                         </Tooltip>
