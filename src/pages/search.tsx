@@ -181,7 +181,6 @@ const Search = () => {
                         <SearchIcon color="white" />
                     </InputLeftElement>
                     <Input
-                        onSubmit={() => console.log("ya")}
                         className={css(styles.searchbar)}
                         placeholder="Search here..."
                         form="search"
