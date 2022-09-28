@@ -4,7 +4,7 @@ import {
 } from "@emotion/css";
 import { CSSObject } from "@emotion/serialize";
 type Styles<T = unknown> = {
-    [K in keyof T]: (CSSObject | Styles<T[K]>) 
+    [K in keyof T]: CSSObject | Styles<T[K]>;
 };
 class Style {
     static toStyle(CSSObject: CSSObject): Style[] {
@@ -19,7 +19,7 @@ class Style {
 
     constructor(style: keyof CSSObject, value: CSSObject[keyof CSSObject]) {
         this._key = style;
-        this._value = Object.assign({label: style}, value);
+        this._value = Object.assign({ label: style }, value);
         // Assign value to dummy in case value assigns label prior
     }
 
@@ -146,10 +146,10 @@ export class Animation {
         return `${emotion_keyframes(this.json())}${
             finalizeData
                 ? ` ${finalizeData.iterations} ${
-                    finalizeData.duration || "0.5s"
-                } ${finalizeData.delay || "0s"} ${
-                    finalizeData.easing || "ease"
-                }`
+                      finalizeData.duration || "0.5s"
+                  } ${finalizeData.delay || "0s"} ${
+                      finalizeData.easing || "ease"
+                  }`
                 : ""
         }`;
     }
