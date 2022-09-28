@@ -1,7 +1,9 @@
 import type { Manga as MangaType } from "types/manga";
 import Manga from "components/manga";
 import { StyleSheet, css } from "aphrodite";
-import { Tooltip } from "@chakra-ui/react";
+import { Button, Icon, Text, Tooltip } from "@chakra-ui/react";
+
+import { ViewOffIcon } from "@chakra-ui/icons";
 
 type SearchSourceProps = {
     sourceName: string;
@@ -12,6 +14,7 @@ type SearchSourceProps = {
 };
 
 const SearchSource = (props: SearchSourceProps) => {
+    const { sourceName, sourceIcon, sourceManga, maxMangaToShow = 7 } = props;
     const styles = StyleSheet.create({
         main: {
             display: "flex",
@@ -19,6 +22,7 @@ const SearchSource = (props: SearchSourceProps) => {
             paddingLeft: "8px",
             paddingRight: "8px",
             boxSizing: "border-box",
+            marginTop: "16px",
         },
         meta: {
             display: "flex",
@@ -59,7 +63,6 @@ const SearchSource = (props: SearchSourceProps) => {
         },
         manga: {
             display: "flex",
-            flexWrap: "wrap",
             flexDirection: "row",
             backgroundColor: "rgb(18, 30, 42)",
             width: "100%",
@@ -68,9 +71,9 @@ const SearchSource = (props: SearchSourceProps) => {
             marginTop: "16px",
             borderRadius: "4px",
             padding: "16px",
-            overflow: "hidden",
-            justifyContent: "flex-start",
-            alignItems: "space-evenly",
+            overflowX: "auto",
+            overflowY: "hidden",
+            justifyContent: "space-around",
         },
         mangacount: {
             marginTop: "-4px",
@@ -78,40 +81,74 @@ const SearchSource = (props: SearchSourceProps) => {
         count: {
             color: "#f88379",
         },
+
+        seeMore: {
+            display: "flex",
+            flexDirection: "column",
+            backgroundColor: "#fb8e84",
+            borderRadius: "4px 4px 2px 2px",
+            marginLeft: "6px",
+            width: "200px",
+            height: "284px",
+
+            justifyContent: "center",
+            alignContent: "center",
+            alignItems: "center",
+        },
+
+        viewOff: {},
+
+        seeMoreText: {
+            fontFamily: "Cascadia Code",
+            marginTop: "16px",
+            color: "white",
+        },
     });
+
+    const mangaToShow = sourceManga.slice(0, maxMangaToShow).map((manga) => {
+        return <Manga key={`${manga.source}-${manga.id}`} {...{ manga }} />;
+    });
+
+    if (maxMangaToShow < sourceManga.length) {
+        mangaToShow.push(
+            <button
+                key={`${sourceName}-showMore`}
+                className={css(styles.seeMore)}
+            >
+                <ViewOffIcon
+                    color="#ffffff"
+                    width="64px"
+                    height="64px"
+                    className={css(styles.viewOff)}
+                />
+                <Text pointerEvents="none" className={css(styles.seeMoreText)}>
+                    See More
+                </Text>
+            </button>
+        );
+    }
+
     return (
         <div className={css(styles.main)}>
             <div className={css(styles.meta)}>
                 <Tooltip label="Click to search using this source.">
                     <div className={css(styles.icon)}>
-                        <img
-                            className={css(styles.img)}
-                            src={props.sourceIcon}
-                        />
+                        <img className={css(styles.img)} src={sourceIcon} />
                     </div>
                 </Tooltip>
                 <div className={css(styles.namecontainer)}>
                     <span className={css(styles.name, styles.text)}>
-                        {props.sourceName}
+                        {sourceName}
                     </span>
                     <span className={css(styles.text, styles.mangacount)}>
                         <span className={css(styles.count)}>
-                            {props.sourceManga.length}&nbsp;
+                            {sourceManga.length}&nbsp;
                         </span>
                         Manga
                     </span>
                 </div>
             </div>
-            <div className={css(styles.manga)}>
-                {props.sourceManga.map((manga) => {
-                    return (
-                        <Manga
-                            key={`${manga.source}-${manga.id}`}
-                            {...{ manga }}
-                        />
-                    );
-                })}
-            </div>
+            <div className={css(styles.manga)}>{mangaToShow}</div>
         </div>
     );
 };
