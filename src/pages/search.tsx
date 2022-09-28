@@ -160,7 +160,7 @@ const Search = () => {
 
                         setSearch((oldSearch) => {
                             oldSearch.results[handler.id] = {
-                                status: Status.error, // Status.completed,
+                                status: Status.completed,
                                 manga: searchResults,
                             };
 
