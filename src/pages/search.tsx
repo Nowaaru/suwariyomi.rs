@@ -72,7 +72,7 @@ const Search = () => {
         []
     );
 
-    const [searchCache, setSearchCache] = useState<Cache>({});
+    const searchCache = useRef<Cache>({});
     const currentSearch = useRef<Search>({
         query: queryParams.get("search") ?? "",
         scope: queryParams.get("scope") ?? null,
@@ -88,63 +88,77 @@ const Search = () => {
                 });
             } else currentSearch.current = newValue as Search;
 
+            Object.keys(currentSearch.current.results).forEach((sourceId) => {
+                const currentCache = searchCache.current;
+                const currentQuery = currentSearch.current.query;
+                const { manga: sourceManga } =
+                    currentSearch.current.results[sourceId];
+
+                if (!currentCache[currentQuery])
+                    return (currentCache[currentQuery] = {
+                        [sourceId]: sourceManga,
+                    });
+
+                currentCache[currentQuery][sourceId] = sourceManga;
+            });
+
             return forceUpdate();
         },
         [forceUpdate]
     );
 
     useEffect(() => {
-        setSearchCache({});
-    }, [currentSearch.current.scope]);
-
-    useEffect(() => {
         SourceHandler.sourcesArray.forEach(async (sourceHandler) => {
             const handler = await sourceHandler;
-            const { query: oldQuery, scope: oldScope } = currentSearch.current;
+            const {
+                query: oldQuery,
+                scope: oldScope,
+                results: oldResults,
+            } = currentSearch.current;
 
-            if (currentSearch.current.results[handler.id]) return;
-            if (
-                currentSearch.current.scope &&
-                currentSearch.current.scope !== handler.id
-            )
-                return;
+            if (oldResults[handler.id]) return;
+            if (oldScope && oldScope !== handler.id) return;
 
+            const cachedData = searchCache.current[oldQuery]?.[handler.id];
             setSearch((oldSearch) => {
                 const { results } = oldSearch;
 
                 return {
                     ...oldSearch,
                     results: {
-                        [handler.id]: {
-                            status: "searching",
-                            manga: [],
-                        },
+                        [handler.id]: cachedData
+                            ? { status: "completed", manga: cachedData }
+                            : {
+                                  status: "searching",
+                                  manga: [],
+                              },
                         ...results,
                     },
                 };
             });
 
-            handler
-                .search(
-                    currentSearch.current.query,
-                    0,
-                    generateTree(SourceHandler.defaultFilters(handler.id))
-                )
-                .then((searchResults) => {
-                    if (oldScope !== currentSearch.current.scope) return; // discard stale results
-                    if (oldQuery !== currentSearch.current.query) return;
+            if (!cachedData)
+                handler
+                    .search(
+                        currentSearch.current.query,
+                        0,
+                        generateTree(SourceHandler.defaultFilters(handler.id))
+                    )
+                    .then((searchResults) => {
+                        if (oldScope !== currentSearch.current.scope) return; // discard stale results
+                        if (oldQuery !== currentSearch.current.query) return;
 
-                    setSearch((oldSearch) => {
-                        const newSearch = { ...oldSearch };
-                        newSearch.results[handler.id] = {
-                            status: "completed",
-                            manga: searchResults,
-                        };
+                        setSearch((oldSearch) => {
+                            const newSearch = { ...oldSearch };
+                            newSearch.results[handler.id] = {
+                                status: "completed",
+                                manga: searchResults,
+                            };
 
-                        return newSearch;
-                    });
-                })
-                .catch(console.error);
+                            return newSearch;
+                        });
+                    })
+                    .catch(console.error);
         });
     });
 
