@@ -2,7 +2,7 @@ import { css, StyleSheet } from "aphrodite";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 
 import type { Manga } from "types/manga";
-import SourceHandler from "util/sources";
+import SourceHandler, { Source } from "util/sources";
 
 import { SearchIcon } from "@chakra-ui/icons";
 import {
@@ -12,7 +12,7 @@ import {
     InputGroup,
     InputLeftElement,
 } from "@chakra-ui/react";
-import SearchSource from "components/searchsource";
+import SearchSource, { Status } from "components/searchsource";
 import { useSearchParams } from "react-router-dom";
 import { generateTree } from "util/search";
 
@@ -31,7 +31,7 @@ type Search = {
     results: Record<
         string,
         {
-            status: "completed" | "error" | "searching";
+            status: Status;
             manga: Array<Manga>;
         }
     >;
@@ -107,6 +107,22 @@ const Search = () => {
         [forceUpdate]
     );
 
+    const trySearch = useCallback(
+        async (handler: Source): Promise<Array<Manga>> => {
+            return new Promise((resolve, reject) => {
+                handler
+                    .search(
+                        currentSearch.current.query,
+                        0,
+                        generateTree(SourceHandler.defaultFilters(handler.id))
+                    )
+                    .then(resolve)
+                    .catch(reject);
+            });
+        },
+        []
+    );
+
     useEffect(() => {
         SourceHandler.sourcesArray.forEach(async (sourceHandler) => {
             const handler = await sourceHandler;
@@ -120,9 +136,6 @@ const Search = () => {
             if (oldScope && oldScope !== handler.id) return;
 
             const cachedData = searchCache.current[oldQuery]?.[handler.id];
-            if (cachedData)
-                console.log("has cached data! not sending request...");
-
             setSearch((oldSearch) => {
                 const { results } = oldSearch;
 
@@ -130,38 +143,43 @@ const Search = () => {
                     ...oldSearch,
                     results: {
                         [handler.id]: cachedData
-                            ? { status: "completed", manga: cachedData }
+                            ? { status: Status.completed, manga: cachedData }
                             : {
-                                  status: "searching",
+                                  status: Status.searching,
                                   manga: [],
                               },
                         ...results,
                     },
                 };
             });
-
             if (!cachedData)
-                handler
-                    .search(
-                        currentSearch.current.query,
-                        0,
-                        generateTree(SourceHandler.defaultFilters(handler.id))
-                    )
+                trySearch(handler)
                     .then((searchResults) => {
                         if (oldScope !== currentSearch.current.scope) return; // discard stale results
                         if (oldQuery !== currentSearch.current.query) return;
 
                         setSearch((oldSearch) => {
-                            const newSearch = { ...oldSearch };
-                            newSearch.results[handler.id] = {
-                                status: "completed",
+                            oldSearch.results[handler.id] = {
+                                status: Status.error, // Status.completed,
                                 manga: searchResults,
                             };
 
-                            return newSearch;
+                            return oldSearch;
                         });
                     })
-                    .catch(console.error);
+                    .catch(() => {
+                        if (oldScope !== currentSearch.current.scope) return;
+                        if (oldQuery !== currentSearch.current.query) return;
+
+                        setSearch((oldSearch) => {
+                            oldSearch.results[handler.id] = {
+                                status: Status.error,
+                                manga: [],
+                            };
+
+                            return oldSearch;
+                        });
+                    });
         });
     });
 
@@ -219,6 +237,33 @@ const Search = () => {
                                 sourceIcon={sourceHandler.icon}
                                 sourceName={sourceHandler.id}
                                 sourceManga={storedManga}
+                                onRetry={(e, id) => {
+                                    setSearch((oldSearch) => {
+                                        oldSearch.results[id].status =
+                                            Status.searching;
+                                        return oldSearch;
+                                    });
+
+                                    trySearch(sourceHandler).then(
+                                        (searchResults) => {
+                                            setSearch((oldSearch) => {
+                                                const newSearch = {
+                                                    ...oldSearch,
+                                                };
+                                                newSearch.results[id] = {
+                                                    status: Status.completed,
+                                                    manga: searchResults,
+                                                };
+
+                                                return newSearch;
+                                            });
+                                        }
+                                    );
+                                }}
+                                status={
+                                    currentSearch.current.results[sourceId]
+                                        ?.status
+                                }
                             />
                         );
                     })
