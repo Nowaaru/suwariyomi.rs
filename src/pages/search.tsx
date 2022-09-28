@@ -13,7 +13,7 @@ import {
     InputLeftElement,
 } from "@chakra-ui/react";
 import SearchSource, { Status } from "components/searchsource";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { generateTree } from "util/search";
 
 import BackButton from "components/button";
@@ -38,6 +38,7 @@ type Search = {
 
 const Search = () => {
     const [queryParams] = useSearchParams();
+    const Navigate = useNavigate();
     const forceUpdate = useForceUpdate();
 
     const styles = useMemo(
@@ -127,7 +128,6 @@ const Search = () => {
                 currentSearch.current;
 
             if (oldResults[handler.id]) return;
-            if (oldScope && oldScope !== handler.id) return;
 
             const cachedData = searchCache.current[oldQuery]?.[handler.id];
             setSearch((oldSearch) => {
@@ -230,7 +230,7 @@ const Search = () => {
                                 sourceName={sourceHandler.id}
                                 sourceManga={storedManga}
                                 onScopeChange={(_, id) => {
-                                    console.log(id);
+                                    Navigate(`/advanced?id=${id}`);
                                 }}
                                 onRetry={(_, id) => {
                                     setSearch((oldSearch) => {
