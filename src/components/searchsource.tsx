@@ -171,6 +171,43 @@ const SearchSource = (props: SearchSourceProps) => {
 
             {(() => {
                 switch (status) {
+                    case "error":
+                        return (
+                            <div className={css(styles.box)}>
+                                <Flex
+                                    direction="column"
+                                    justifyContent="center"
+                                    alignItems="center"
+                                    color="whitesmoke"
+                                    fontFamily="Cascadia Code"
+                                    minHeight="inherit"
+                                >
+                                    <HStack
+                                        color="white"
+                                        fontFamily="Cascadia Code"
+                                    >
+                                        <Icon
+                                            width="32px"
+                                            height="32px"
+                                            as={MdOutlineSearchOff}
+                                            marginRight="4px"
+                                        />
+                                        <HStack>
+                                            <Text lineHeight="32px">
+                                                An error occured.
+                                            </Text>
+                                        </HStack>
+                                    </HStack>
+                                    <Button
+                                        onClick={(e) => onRetry(e, sourceName)}
+                                        to={null}
+                                        size="sm"
+                                    >
+                                        Retry?
+                                    </Button>
+                                </Flex>
+                            </div>
+                        );
                     case "searching":
                         return (
                             <div className={css(styles.box)}>
