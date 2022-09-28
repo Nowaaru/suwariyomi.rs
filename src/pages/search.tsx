@@ -16,7 +16,7 @@ import SearchSource from "components/searchsource";
 import { useSearchParams } from "react-router-dom";
 import { generateTree } from "util/search";
 
-import BackButton from "components/backbutton";
+import BackButton from "components/button";
 import useForceUpdate from "util/hook/forceupdate";
 
 type Cache = {
@@ -120,6 +120,9 @@ const Search = () => {
             if (oldScope && oldScope !== handler.id) return;
 
             const cachedData = searchCache.current[oldQuery]?.[handler.id];
+            if (cachedData)
+                console.log("has cached data! not sending request...");
+
             setSearch((oldSearch) => {
                 const { results } = oldSearch;
 
@@ -209,6 +212,7 @@ const Search = () => {
                         const storedManga =
                             currentSearch.current.results[sourceId]?.manga ??
                             [];
+
                         return (
                             <SearchSource
                                 key={sourceHandler.id}

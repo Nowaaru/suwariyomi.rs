@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Chapter, Manga } from "types/manga";
 import { MangaDB } from "util/db";
 
-import BackButton from "components/backbutton";
+import BackButton from "components/button";
 import CircularProgress from "components/circularprogress";
 import _ from "lodash";
 import { useNavigate } from "react-router-dom";

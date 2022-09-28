@@ -1,9 +1,15 @@
-import type { Manga as MangaType } from "types/manga";
+import { Box, Flex, Progress, Stack, Text, Tooltip } from "@chakra-ui/react";
+import { css, StyleSheet } from "aphrodite";
 import Manga from "components/manga";
-import { StyleSheet, css } from "aphrodite";
-import { Button, Icon, Text, Tooltip } from "@chakra-ui/react";
+import type { Manga as MangaType } from "types/manga";
 
 import { ViewOffIcon } from "@chakra-ui/icons";
+
+enum Status {
+    completed = "completed",
+    searching = "searching",
+    error = "error",
+}
 
 type SearchSourceProps = {
     sourceName: string;
@@ -11,10 +17,17 @@ type SearchSourceProps = {
 
     sourceManga: MangaType[];
     maxMangaToShow?: number;
+    status?: Status;
 };
 
 const SearchSource = (props: SearchSourceProps) => {
-    const { sourceName, sourceIcon, sourceManga, maxMangaToShow = 7 } = props;
+    const {
+        sourceName,
+        sourceIcon,
+        sourceManga,
+        status = "searching",
+        maxMangaToShow = 7,
+    } = props;
     const styles = StyleSheet.create({
         main: {
             display: "flex",
@@ -64,7 +77,8 @@ const SearchSource = (props: SearchSourceProps) => {
         manga: {
             display: "flex",
             flexDirection: "row",
-            backgroundColor: "rgb(18, 30, 42)",
+        },
+        box: {
             width: "100%",
             height: "fit-content",
             minHeight: "250px",
@@ -74,6 +88,7 @@ const SearchSource = (props: SearchSourceProps) => {
             overflowX: "auto",
             overflowY: "hidden",
             justifyContent: "space-around",
+            backgroundColor: "rgb(18, 30, 42)",
         },
         mangacount: {
             marginTop: "-4px",
@@ -105,6 +120,11 @@ const SearchSource = (props: SearchSourceProps) => {
         },
     });
 
+    const [isCompleted, isSearching, didError] = [
+        status === "completed",
+        status === "searching",
+        status === "error",
+    ];
     const mangaToShow = sourceManga.slice(0, maxMangaToShow).map((manga) => {
         return <Manga key={`${manga.source}-${manga.id}`} {...{ manga }} />;
     });
@@ -148,7 +168,73 @@ const SearchSource = (props: SearchSourceProps) => {
                     </span>
                 </div>
             </div>
-            <div className={css(styles.manga)}>{mangaToShow}</div>
+
+            {(() => {
+                switch (status) {
+                    case "searching":
+                        return (
+                            <div className={css(styles.box)}>
+                                <Flex
+                                    direction="column"
+                                    justifyContent="center"
+                                    width="100%"
+                                    minHeight="inherit"
+                                    alignItems="center"
+                                >
+                                    <Text
+                                        fontFamily="Cascadia Code"
+                                        fontSize="12px"
+                                        color="whitesmoke"
+                                        marginBottom="8px"
+                                    >
+                                        Searching...
+                                    </Text>
+                                    <Progress
+                                        width="50%"
+                                        height="2px"
+                                        borderRadius="4px"
+                                        isIndeterminate
+                                        hasStripe
+                                    />
+                                </Flex>
+                            </div>
+                        );
+                    case "completed":
+                    default:
+                        if (sourceManga.length > 0)
+                            return (
+                                <div className={css(styles.box, styles.manga)}>
+                                    {mangaToShow}
+                                </div>
+                            );
+
+                        return (
+                            <div className={css(styles.box)}>
+                                <Flex
+                                    direction="column"
+                                    justifyContent="center"
+                                    width="100%"
+                                    minHeight="inherit"
+                                    alignItems="center"
+                                >
+                                    <ViewOffIcon
+                                        width="96px"
+                                        height="96px"
+                                        marginBottom="6px"
+                                        color="whitesmoke"
+                                    />
+                                    <Text
+                                        fontFamily="Cascadia Code"
+                                        fontSize="12px"
+                                        color="whitesmoke"
+                                    >
+                                        No Results
+                                    </Text>
+                                </Flex>
+                            </div>
+                        );
+                }
+            })()}
         </div>
     );
 };
