@@ -1,24 +1,20 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { StyleSheet, css } from "aphrodite";
+import { css, StyleSheet } from "aphrodite";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 
-import SourceHandler from "util/sources";
-import _ from "lodash";
 import type { Manga } from "types/manga";
+import SourceHandler from "util/sources";
 
-import ipc from "ipc";
-import SearchSource from "components/searchsource";
-import { SearchFilters } from "types/search";
-import { useSearchParams } from "react-router-dom";
-import { generateTree } from "util/search";
+import { SearchIcon } from "@chakra-ui/icons";
 import {
     Divider,
-    FormControl,
     HStack,
     Input,
     InputGroup,
     InputLeftElement,
 } from "@chakra-ui/react";
-import { SearchIcon } from "@chakra-ui/icons";
+import SearchSource from "components/searchsource";
+import { useSearchParams } from "react-router-dom";
+import { generateTree } from "util/search";
 
 import BackButton from "components/backbutton";
 import useForceUpdate from "util/hook/forceupdate";
