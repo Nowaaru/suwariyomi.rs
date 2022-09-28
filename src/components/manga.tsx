@@ -19,6 +19,10 @@ const Manga = (props: MangaProps) => {
             backgroundColor: "transparent" /* "#080e17", */,
             boxSizing: "border-box",
             borderRadius: "8px",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
         },
         imagecontainer: {
             width: "100%",
@@ -41,6 +45,7 @@ const Manga = (props: MangaProps) => {
             marginBottom: "12px",
             maxHeight: "36px",
             textAlign: "start",
+            alignSelf: "flex-start",
         },
     });
 
@@ -62,6 +67,8 @@ const Manga = (props: MangaProps) => {
                     color="whitesmoke"
                     marginTop="8px"
                     marginBottom="12px"
+                    alignSelf="flex-start"
+                    fontFamily="Cascadia Code"
                 >
                     {name}
                 </Text>
