@@ -8,6 +8,7 @@ import View from "pages/view";
 import SplashScreen from "pages/splash";
 import Reader from "pages/reader";
 import Search from "pages/search";
+import AdvancedSearch from "pages/searchadvanced";
 
 import SourceHandler from "util/sources";
 
@@ -38,10 +39,11 @@ export default function App() {
                 <BrowserRouter>
                     <Routes>
                         <Route path="/" element={<Library />} />
-                        <Route path="/library" element={<Library />} />
+                        <Route path="library" element={<Library />} />
                         <Route path="reader" element={<Reader />} />
                         <Route path="view" element={<View />} />
                         <Route path="search" element={<Search />} />
+                        <Route path="advanced" element={<AdvancedSearch />} />
                         <Route path="splash" element={<SplashScreen />} />
                     </Routes>
                 </BrowserRouter>
