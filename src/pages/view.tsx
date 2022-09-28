@@ -6,6 +6,7 @@ import { MangaDB } from "util/db";
 import SourceHandler, { Source } from "util/sources";
 import { useNavigate } from "react-router-dom";
 import CircularProgress from "components/circularprogress";
+import BackButton from "components/backbutton";
 import _ from "lodash";
 
 import {
@@ -495,19 +496,7 @@ const View = () => {
                             className={css(styles.bg)}
                         />
                     </div>
-                    <Link to="/library">
-                        <Button
-                            className={css(styles.backbutton)}
-                            borderRadius={2}
-                            backgroundColor={"#fb8e84"}
-                            color="whitesmoke"
-                            _hover={{
-                                bg: "#f88379",
-                            }}
-                        >
-                            Back
-                        </Button>
-                    </Link>
+                    <BackButton className={css(styles.backbutton)} />
                     <hr className={css(styles.line, styles.lineabsolute)} />
                     <div className={css(styles.meta)}>
                         <div className={css(styles.cover)}>
