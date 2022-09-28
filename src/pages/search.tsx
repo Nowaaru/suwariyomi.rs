@@ -12,6 +12,7 @@ import { useSearchParams } from "react-router-dom";
 import { generateTree } from "util/search";
 import {
     Divider,
+    FormControl,
     HStack,
     Input,
     InputGroup,
@@ -67,6 +68,10 @@ const Search = () => {
                     width: "60% !important",
                     outlineColor: "#00000000",
                 },
+
+                hiddenSearchForm: {
+                    display: "none",
+                },
             }),
         []
     );
@@ -99,6 +104,7 @@ const Search = () => {
     useEffect(() => {
         SourceHandler.sourcesArray.forEach(async (sourceHandler) => {
             const handler = await sourceHandler;
+            const { query: oldQuery, scope: oldScope } = currentSearch.current;
 
             if (currentSearch.current.results[handler.id]) return;
             if (
@@ -129,6 +135,9 @@ const Search = () => {
                     generateTree(SourceHandler.defaultFilters(handler.id))
                 )
                 .then((searchResults) => {
+                    if (oldScope !== currentSearch.current.scope) return; // discard stale results
+                    if (oldQuery !== currentSearch.current.query) return;
+
                     setSearch((oldSearch) => {
                         const newSearch = { ...oldSearch };
                         newSearch.results[handler.id] = {
@@ -141,10 +150,30 @@ const Search = () => {
                 })
                 .catch(console.error);
         });
-    }, [currentSearch, setSearch]);
+    });
+
+    const searchBar = useRef<HTMLInputElement | null>(null);
 
     return (
         <div className={css(styles.search)}>
+            <form
+                className={css(styles.hiddenSearchForm)}
+                id="search"
+                onSubmit={(e) => {
+                    if (searchBar.current)
+                        setSearch((oldSearch) => {
+                            oldSearch.results = {};
+                            oldSearch.query = (
+                                searchBar.current?.value ?? oldSearch.query
+                            ).trim();
+
+                            return oldSearch;
+                        });
+
+                    e.stopPropagation();
+                    e.preventDefault();
+                }}
+            />
             <HStack padding="8px" spacing="25%" margin="8px">
                 <BackButton />
                 <InputGroup className={css(styles.searchgroup)}>
@@ -152,8 +181,11 @@ const Search = () => {
                         <SearchIcon color="white" />
                     </InputLeftElement>
                     <Input
+                        onSubmit={() => console.log("ya")}
                         className={css(styles.searchbar)}
                         placeholder="Search here..."
+                        form="search"
+                        ref={searchBar}
                         defaultValue={currentSearch.current.query}
                     />
                 </InputGroup>
