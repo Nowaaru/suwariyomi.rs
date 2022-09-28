@@ -1,11 +1,16 @@
-import { Box, Flex, Progress, Stack, Text, Tooltip } from "@chakra-ui/react";
+import { Flex, HStack, Icon, Progress, Text, Tooltip } from "@chakra-ui/react";
 import { css, StyleSheet } from "aphrodite";
 import Manga from "components/manga";
+import { MdOutlineSearchOff } from "react-icons/md";
 import type { Manga as MangaType } from "types/manga";
 
 import { ViewOffIcon } from "@chakra-ui/icons";
+import Button from "components/button";
+import _ from "lodash";
 
-enum Status {
+import { MouseEvent as ReactMouseEvent } from "react";
+
+export enum Status {
     completed = "completed",
     searching = "searching",
     error = "error",
@@ -18,6 +23,11 @@ type SearchSourceProps = {
     sourceManga: MangaType[];
     maxMangaToShow?: number;
     status?: Status;
+
+    onRetry?: (
+        e: ReactMouseEvent<HTMLButtonElement, MouseEvent>,
+        sourceToRetryId: string
+    ) => void;
 };
 
 const SearchSource = (props: SearchSourceProps) => {
@@ -25,8 +35,10 @@ const SearchSource = (props: SearchSourceProps) => {
         sourceName,
         sourceIcon,
         sourceManga,
-        status = "searching",
         maxMangaToShow = 7,
+
+        status = Status.searching,
+        onRetry = _.noop,
     } = props;
     const styles = StyleSheet.create({
         main: {
