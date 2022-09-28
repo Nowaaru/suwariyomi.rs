@@ -16,9 +16,10 @@ const getValue = (toQuery: SearchFilters) => {
                 toQuery.checkboxValues ?? toQuery.allowIndeterminate
                     ? {
                           checked: 1,
-                          unchecked: 0,
+                          indeterminate: 0,
+                          unchecked: -1,
                       }
-                    : { checked: 1, indeterminate: 0, unchecked: -1 };
+                    : { checked: 1, unchecked: 0 };
 
             if (toQuery.allowIndeterminate)
                 matchedValues.indeterminate = matchedValues.indeterminate ?? 0;
