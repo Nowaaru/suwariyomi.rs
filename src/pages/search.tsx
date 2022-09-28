@@ -27,7 +27,6 @@ type Cache = {
 
 type Search = {
     query: string;
-    scope: string | null;
     results: Record<
         string,
         {
@@ -75,8 +74,6 @@ const Search = () => {
     const searchCache = useRef<Cache>({});
     const currentSearch = useRef<Search>({
         query: queryParams.get("search") ?? "",
-        scope: queryParams.get("scope") ?? null,
-
         results: {},
     });
 
@@ -126,11 +123,8 @@ const Search = () => {
     useEffect(() => {
         SourceHandler.sourcesArray.forEach(async (sourceHandler) => {
             const handler = await sourceHandler;
-            const {
-                query: oldQuery,
-                scope: oldScope,
-                results: oldResults,
-            } = currentSearch.current;
+            const { query: oldQuery, results: oldResults } =
+                currentSearch.current;
 
             if (oldResults[handler.id]) return;
             if (oldScope && oldScope !== handler.id) return;
@@ -155,7 +149,6 @@ const Search = () => {
             if (!cachedData)
                 trySearch(handler)
                     .then((searchResults) => {
-                        if (oldScope !== currentSearch.current.scope) return; // discard stale results
                         if (oldQuery !== currentSearch.current.query) return;
 
                         setSearch((oldSearch) => {
@@ -168,7 +161,6 @@ const Search = () => {
                         });
                     })
                     .catch(() => {
-                        if (oldScope !== currentSearch.current.scope) return;
                         if (oldQuery !== currentSearch.current.query) return;
 
                         setSearch((oldSearch) => {
@@ -237,7 +229,10 @@ const Search = () => {
                                 sourceIcon={sourceHandler.icon}
                                 sourceName={sourceHandler.id}
                                 sourceManga={storedManga}
-                                onRetry={(e, id) => {
+                                onScopeChange={(_, id) => {
+                                    console.log(id);
+                                }}
+                                onRetry={(_, id) => {
                                     setSearch((oldSearch) => {
                                         oldSearch.results[id].status =
                                             Status.searching;
