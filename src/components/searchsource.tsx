@@ -1,10 +1,18 @@
-import { Flex, HStack, Icon, Progress, Text, Tooltip } from "@chakra-ui/react";
+import {
+    Flex,
+    HStack,
+    Icon,
+    IconButton,
+    Progress,
+    Text,
+    Tooltip,
+} from "@chakra-ui/react";
 import { css, StyleSheet } from "aphrodite";
 import Manga from "components/manga";
 import { MdOutlineSearchOff } from "react-icons/md";
 import type { Manga as MangaType } from "types/manga";
 
-import { ViewOffIcon } from "@chakra-ui/icons";
+import { SearchIcon, ViewOffIcon } from "@chakra-ui/icons";
 import Button from "components/button";
 import _ from "lodash";
 
@@ -164,9 +172,37 @@ const SearchSource = (props: SearchSourceProps) => {
                     </div>
                 </Tooltip>
                 <div className={css(styles.namecontainer)}>
-                    <span className={css(styles.name, styles.text)}>
-                        {sourceName}
-                    </span>
+                    <HStack>
+                        <span className={css(styles.name, styles.text)}>
+                            {sourceName}
+                        </span>
+                        <Tooltip label="Click to search using this source.">
+                            <IconButton
+                                transform="rotate(90deg)"
+                                aria-label="Advanced Search"
+                                cursor="pointer"
+                                backgroundColor="transparent"
+                                width="16px"
+                                height="16px"
+                                padding="0"
+                                margin="0"
+                                position="relative"
+                                top="3px"
+                                right="5%"
+                                sx={{
+                                    color: "#00000044",
+                                    transition: "color 1s",
+                                    border: "none",
+                                    marginLeft: "-28px",
+                                    ":hover": {
+                                        color: "#fb8e84",
+                                        backgroundColor: "transparent",
+                                    },
+                                }}
+                                as={SearchIcon}
+                            />
+                        </Tooltip>
+                    </HStack>
                     <span className={css(styles.text, styles.mangacount)}>
                         <span className={css(styles.count)}>
                             {sourceManga.length}&nbsp;
