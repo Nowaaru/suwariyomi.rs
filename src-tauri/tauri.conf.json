@@ -36,9 +36,7 @@
                 "createDir": true,
                 "removeDir": true,
                 "readDir": true,
-                "scope": [
-                    "*/com.suwariyomirs.swrs/sources/**"
-                ]
+                "scope": ["*/com.suwariyomirs.swrs/sources/**"]
             }
         },
         "bundle": {
