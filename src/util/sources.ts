@@ -22,6 +22,8 @@ export abstract class Source {
     public abstract getChapters(mangaId: string): Promise<Array<Chapter>>;
 
     public abstract search(
+        query: string,
+        offset: number,
         tree: Record<string, unknown>
     ): Promise<Array<Manga>>;
 
@@ -57,7 +59,7 @@ async function dynamicImport(targetPath: string) {
 }
 
 type SourceDirPath = string;
-class SourceHandler {
+export class SourceHandler {
     constructor() {
         const allSources = invoke("get_sources") as Promise<Array<string>>;
         this.sourceArray = [];
@@ -80,6 +82,8 @@ class SourceHandler {
                                 this.sources[requiredSource.id] =
                                     requiredSource;
 
+                                this.defaults[requiredSource.id] =
+                                    requiredSource.filters;
                                 resolve(requiredSource);
                             });
                         });
@@ -93,8 +97,18 @@ class SourceHandler {
         return [...this.sourceArray];
     }
 
+    public async loaded() {
+        await Promise.all(this.sourcesArray);
+    }
+
     public getSource(sourceId: keyof typeof this.sources): Source {
         return this.sources[sourceId];
+    }
+
+    public defaultFilters(
+        sourceId: keyof typeof this.sources
+    ): Record<string, SearchFilters> {
+        return this.defaults[sourceId];
     }
 
     public async querySource(
@@ -116,6 +130,7 @@ class SourceHandler {
     }
 
     private sourceArray: Array<Promise<Source>>;
+    private defaults: Record<string, Record<string, SearchFilters>> = {};
     private sources: Record<string, Source> = {};
 }
 
