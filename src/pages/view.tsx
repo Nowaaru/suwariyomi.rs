@@ -1,34 +1,30 @@
-import { StyleSheet, css } from "aphrodite";
+import { css, StyleSheet } from "aphrodite";
 import { useEffect, useMemo, useState } from "react";
 import { Chapter, Manga } from "types/manga";
 import { MangaDB } from "util/db";
 
-import SourceHandler, { Source } from "util/sources";
-import { useNavigate } from "react-router-dom";
-import CircularProgress from "components/circularprogress";
 import BackButton from "components/backbutton";
+import CircularProgress from "components/circularprogress";
 import _ from "lodash";
+import { useNavigate } from "react-router-dom";
+import SourceHandler, { Source } from "util/sources";
 
 import {
-    Tooltip,
-    Text,
     Button,
-    Tag,
-    Progress,
-    CircularProgressLabel,
     ButtonGroup,
+    Progress,
+    Tag,
+    Text,
+    Tooltip,
 } from "@chakra-ui/react";
+import ChapterComponent from "components/chapter";
+import { useSearchParams } from "react-router-dom";
+import { stripHtml } from "string-strip-html";
 import {
-    compileChapterText,
     compileChapterTitle,
     formatDate,
     isChapterCompleted,
 } from "util/textutil";
-
-import MangaComponent from "components/manga";
-import ChapterComponent from "components/chapter";
-import { stripHtml } from "string-strip-html";
-import { Link, useSearchParams } from "react-router-dom";
 
 // TODO: Automatically scroll to the last-read chapter
 // TODO: When starting to read a chapter, look at the scanlators
@@ -487,6 +483,16 @@ const View = () => {
             rawChapterData.map((y) => y.last_read).sort((a, b) => b - a)[0]
         );
 
+        const tagsDisplay = mangaData.tags.map((key) => (
+            <Tag
+                backgroundColor="#fb8e84"
+                color="white"
+                className={css(styles.tag)}
+                key={key}
+            >
+                {key}
+            </Tag>
+        ));
         return (
             <div className={css(styles.main)}>
                 <div className={css(styles.top)}>
@@ -500,11 +506,22 @@ const View = () => {
                     <hr className={css(styles.line, styles.lineabsolute)} />
                     <div className={css(styles.meta)}>
                         <div className={css(styles.cover)}>
-                            <Tooltip label="Click to go to the manga's webpage.">
-                                <button className={css(styles.badge)}>
-                                    <img src={sourceHandler?.icon} />
-                                </button>
-                            </Tooltip>
+                            {sourceHandler ? (
+                                <Tooltip label="Click to go to the manga's webpage.">
+                                    <button
+                                        onClick={() =>
+                                            open(
+                                                sourceHandler?.getMangaUrl(
+                                                    mangaData?.id
+                                                )
+                                            )
+                                        }
+                                        className={css(styles.badge)}
+                                    >
+                                        <img src={sourceHandler?.icon} />
+                                    </button>
+                                </Tooltip>
+                            ) : null}
                             <img
                                 src={mangaData.covers[0]}
                                 className={css(styles.coverimg)}
@@ -618,16 +635,18 @@ const View = () => {
                         <div className={css(styles.tagscontainer)}>
                             <span> Tags </span>
                             <div className={css(styles.tags)}>
-                                {mangaData.tags.map((key) => (
-                                    <Tag
-                                        backgroundColor="#fb8e84"
-                                        color="white"
-                                        className={css(styles.tag)}
-                                        key={key}
+                                {mangaData.tags?.length > 0 ? (
+                                    tagsDisplay
+                                ) : (
+                                    <Text
+                                        fontFamily="Cascadia Code"
+                                        color="#88888866"
+                                        fontSize="16px"
+                                        marginLeft="8px"
                                     >
-                                        {key}
-                                    </Tag>
-                                ))}
+                                        None
+                                    </Text>
+                                )}
                             </div>
                             {isAdded ? (
                                 <>
