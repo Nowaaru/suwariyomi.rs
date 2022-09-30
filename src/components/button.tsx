@@ -4,15 +4,15 @@ import { Link } from "react-router-dom";
 const Back = (props: ButtonProps & { to?: string | null }) => {
     const coreButton = (
         <Button
-            borderRadius={2}
-            backgroundColor={"#fb8e84"}
+            borderRadius="2px"
+            backgroundColor="#fb8e84"
             color="whitesmoke"
             _hover={{
                 bg: "#f88379",
             }}
             {...props}
         >
-            {props.children ?? "Back"}
+            {props.children ?? "Button"}
         </Button>
     );
 

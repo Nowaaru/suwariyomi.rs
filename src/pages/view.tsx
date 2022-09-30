@@ -502,7 +502,7 @@ const View = () => {
                             className={css(styles.bg)}
                         />
                     </div>
-                    <BackButton className={css(styles.backbutton)} />
+                    <BackButton className={css(styles.backbutton)}>Back</BackButton>
                     <hr className={css(styles.line, styles.lineabsolute)} />
                     <div className={css(styles.meta)}>
                         <div className={css(styles.cover)}>
