@@ -3,6 +3,7 @@ import { invoke } from "@tauri-apps/api/tauri";
 import { Chapter, Manga } from "types/manga";
 import { SearchFilters } from "types/search";
 
+import _ from "lodash";
 import fetch from "util/fetch";
 
 type HexColor = string;
@@ -133,5 +134,82 @@ export class SourceHandler {
     private defaults: Record<string, Record<string, SearchFilters>> = {};
     private sources: Record<string, Source> = {};
 }
+
+const assert = (
+    cond: unknown,
+    res?: string,
+    options?: { loose?: boolean; warn?: boolean; fail?: () => unknown }
+) => {
+    const { loose, warn, fail = _.noop } = options ?? {};
+    if (
+        (!loose && (cond === false || _.isNil(cond))) ||
+        (loose && (cond == false || _.isNil(cond)))
+    ) {
+        fail();
+        if (!warn) throw new Error(res);
+
+        console.warn(`[VALIDATOR] ${res}`);
+        return false;
+    }
+    return true;
+};
+
+export const MangaValidator = (manga: Manga) => {
+    assert(manga && !_.isEmpty(manga), "the manga should be defined");
+
+    const {
+        source,
+        id,
+        added,
+        authors,
+        chapters,
+        covers,
+        description,
+        name,
+        tags,
+        uploaded,
+    } = manga;
+
+    assert(source, "field 'source' should be defined");
+    assert(id, "field 'id' should be defined");
+
+    assert(
+        !_.isNaN(added) && added > -1,
+        "field 'added' should be a number greater or equal to -1"
+    );
+
+    assert(_.isArray(authors), "field 'authors' should be an array");
+    assert(
+        chapters?.every(_.isString),
+        "field 'chapters' should be an array of chapter ids (strings)"
+    );
+    assert(
+        covers?.every(_.isString),
+        "field 'chapters' should be an array of covers (strings)"
+    );
+
+    assert(
+        description,
+        "field 'description' should be a string. since this is fixed internally by the reader, do not fret!",
+        {
+            warn: true,
+            fail: () => {
+                manga.description = "";
+            },
+        }
+    );
+
+    assert(_.isString(name), "field 'name' should be a string");
+    assert(
+        tags?.every(_.isString),
+        "field 'tags' should be an array of strings"
+    );
+    assert(
+        !_.isNaN(uploaded),
+        "field 'uploaded' should be a number greater or equal to -1"
+    );
+
+    return manga;
+};
 
 export default new SourceHandler();

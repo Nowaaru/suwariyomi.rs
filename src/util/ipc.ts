@@ -1,5 +1,6 @@
 import { invoke } from "@tauri-apps/api/tauri";
 import { Chapter, Manga } from "types/manga";
+import { MangaValidator } from "./sources";
 
 const ipcFunctions = {
     path: {
@@ -22,8 +23,9 @@ const ipcFunctions = {
         },
 
         insert: async (manga: Manga): Promise<never> => {
-            return invoke("insert_manga", { manga });
+            return invoke("insert_manga", { manga: MangaValidator(manga) });
         },
+
         remove: async (id: string, source: string): Promise<never> => {
             return invoke("remove_manga", { id, source });
         },
