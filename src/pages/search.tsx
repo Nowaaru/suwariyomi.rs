@@ -11,14 +11,13 @@ import {
     Divider,
     Flex,
     HStack,
-    Icon,
     Input,
     InputGroup,
     InputLeftElement,
     Text,
 } from "@chakra-ui/react";
 
-import { MdFilterList, MdIso } from "react-icons/md";
+import { MdFilterList } from "react-icons/md";
 
 import SearchSource, { Status } from "components/searchsource";
 import { Navigate, useSearchParams } from "react-router-dom";
@@ -26,7 +25,7 @@ import { generateTree } from "util/search";
 
 import BackButton from "components/button";
 import MangaComponent from "components/manga";
-import useForceUpdate from "util/hook/forceupdate";
+import useForceUpdate from "hooks/forceupdate";
 
 type Cache = {
     [searchQuery: string]: {
