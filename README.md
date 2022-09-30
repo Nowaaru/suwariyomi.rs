@@ -102,6 +102,8 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 
 ## This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
 
+---
+
 <sup>
    ・suwariyomi.rs also stands for suwariyomi resurrected! <br />
    ・stream rav's devilfruit smoothies <u><a href=https://open.spotify.com/track/4BfvLwWWzENjV4lMV51nH0?si=41228558fd3e4142>by clicking here.</a></u>
