@@ -20,14 +20,16 @@ import {
 } from "@chakra-ui/icons";
 import { Link } from "react-router-dom";
 import SourceHandler, { Source } from "util/sources";
-import { MangaDB } from "util/db";
 import { Manga } from "types/manga";
 
+import ipc from "ipc";
 const backgroundColor_high = "rgb(18, 30, 42)";
 const backgroundColor_low = "#0D1620";
 
 const objectAccent = "#fb8e84";
 const textAccent = "#f88379";
+
+const { manga: MangaDB } = ipc;
 
 const libraryVariants: Variants = {
     hidden: {
@@ -225,7 +227,7 @@ const Library = () => {
                 if (loadedSources.find((y) => y.id === source.id)) return false;
 
                 const newSources = [...loadedSources, source];
-                MangaDB.get_all(source.id).then((mangas) =>
+                MangaDB.getAll(source.id).then((mangas) =>
                     setSourceManga({
                         ...sourceManga,
                         [source.id]: mangas.filter(
