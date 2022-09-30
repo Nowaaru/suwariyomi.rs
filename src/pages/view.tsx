@@ -1,13 +1,14 @@
 import { css, StyleSheet } from "aphrodite";
 import { useEffect, useMemo, useState } from "react";
 import { Chapter, Manga } from "types/manga";
-import { MangaDB } from "util/db";
 
 import BackButton from "components/button";
 import CircularProgress from "components/circularprogress";
 import _ from "lodash";
 import { useNavigate } from "react-router-dom";
 import SourceHandler, { Source } from "util/sources";
+
+import ipc from "ipc";
 
 import {
     Button,
@@ -25,6 +26,8 @@ import {
     formatDate,
     isChapterCompleted,
 } from "util/textutil";
+
+const { manga: MangaDB, chapters: ChapterDB } = ipc;
 
 // TODO: Automatically scroll to the last-read chapter
 // TODO: When starting to read a chapter, look at the scanlators
@@ -502,7 +505,9 @@ const View = () => {
                             className={css(styles.bg)}
                         />
                     </div>
-                    <BackButton className={css(styles.backbutton)}>Back</BackButton>
+                    <BackButton className={css(styles.backbutton)}>
+                        Back
+                    </BackButton>
                     <hr className={css(styles.line, styles.lineabsolute)} />
                     <div className={css(styles.meta)}>
                         <div className={css(styles.cover)}>
@@ -552,8 +557,9 @@ const View = () => {
                             >
                                 {
                                     stripHtml(
-                                        mangaData.description ??
-                                            "No description provided."
+                                        _.isEmpty(mangaData.description ?? "")
+                                            ? "No description provided."
+                                            : mangaData.description
                                     ).result
                                 }
                             </Text>
