@@ -1,9 +1,9 @@
-import { Button, ButtonProps } from "@chakra-ui/react";
+import { Button as CButton, ButtonProps } from "@chakra-ui/react";
 import { Link } from "react-router-dom";
 
-const Back = (props: ButtonProps & { to?: string | null }) => {
+const Button = (props: ButtonProps & { to?: string | null }) => {
     const coreButton = (
-        <Button
+        <CButton
             borderRadius="2px"
             backgroundColor="#fb8e84"
             color="whitesmoke"
@@ -13,7 +13,7 @@ const Back = (props: ButtonProps & { to?: string | null }) => {
             {...props}
         >
             {props.children ?? "Button"}
-        </Button>
+        </CButton>
     );
 
     return props.to !== null ? (
@@ -23,4 +23,4 @@ const Back = (props: ButtonProps & { to?: string | null }) => {
     );
 };
 
-export default Back;
+export default Button;
