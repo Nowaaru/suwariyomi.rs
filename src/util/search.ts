@@ -1,6 +1,10 @@
 import type { SearchFilters } from "types/search";
+import * as MdIcons from "react-icons/md";
+import * as CkIcons from "@chakra-ui/icons";
 
-const getValue = (toQuery: SearchFilters) => {
+export const AllIcons = { ...MdIcons, ...CkIcons };
+
+const getValue = (toQuery: SearchFilter) => {
     /* eslint-disable no-case-declarations */
     switch (toQuery.type) {
         case "readonly":

@@ -1,8 +1,6 @@
-import * as MdIcons from "react-icons/md";
+import { AllIcons } from "util/search";
 
-const allIcons = { ...MdIcons };
-
-type SupportedIcon = keyof typeof allIcons;
+type SupportedIcon = keyof typeof AllIcons;
 
 type HasId<T> = T & { id: string };
 
