@@ -1,31 +1,42 @@
 import { css, StyleSheet } from "aphrodite";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import {
+    MutableRefObject,
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from "react";
 
 import type { Manga } from "types/manga";
 import SourceHandler, { Source } from "util/sources";
 
-import { SearchIcon } from "@chakra-ui/icons";
+import { InfoIcon, SearchIcon } from "@chakra-ui/icons";
 import {
-    Box,
     Button,
+    ButtonProps,
     Divider,
     Flex,
     HStack,
+    Icon,
     Input,
     InputGroup,
     InputLeftElement,
+    Skeleton,
     Text,
 } from "@chakra-ui/react";
 
 import { MdFilterList } from "react-icons/md";
 
 import SearchSource, { Status } from "components/searchsource";
-import { Navigate, useSearchParams } from "react-router-dom";
+import _ from "lodash";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { generateTree } from "util/search";
 
 import BackButton from "components/button";
 import MangaComponent from "components/manga";
 import useForceUpdate from "hooks/forceupdate";
+import { LazyLoadComponent } from "react-lazy-load-image-component";
 
 type Cache = {
     [searchQuery: string]: {
@@ -45,9 +56,92 @@ type Search = {
     >;
 };
 
+const CardBase = (
+    props: {
+        className: string;
+        children?: JSX.Element | JSX.Element[];
+        leftIcon?: JSX.Element;
+        rightIcon?: JSX.Element;
+        scrollTarget?: MutableRefObject<HTMLElement | undefined | null>;
+    } & ButtonProps
+) => {
+    const {
+        className,
+        leftIcon = <InfoIcon />,
+        rightIcon,
+        children = [],
+    } = props;
+
+    const [barHidden, setHidden] = useState(false);
+    const [{ scrollDelta, scrollPosition }, setDelta] = useState<{
+        scrollDelta: number | null;
+        scrollPosition: number;
+    }>({
+        scrollDelta: 0,
+        scrollPosition: props.scrollTarget?.current?.scrollTop ?? 0,
+    });
+
+    const { current: scrollTarget } = props.scrollTarget ?? {};
+    const handleScroll = useCallback(
+        _.throttle((oldPosition: number) => {
+            if (!scrollTarget) return;
+
+            const newPosition = scrollTarget.scrollTop;
+            setDelta({
+                scrollDelta: newPosition - oldPosition,
+                scrollPosition: newPosition,
+            });
+        }, 100),
+        [scrollTarget]
+    );
+
+    useEffect(() => {
+        if (!scrollTarget) {
+            if (scrollDelta) setDelta({ scrollDelta: null, scrollPosition });
+            return;
+        }
+
+        const currentScrollPosition = scrollTarget.scrollTop;
+        const callHandler = () => handleScroll(currentScrollPosition);
+
+        scrollTarget.addEventListener("scroll", callHandler, { passive: true });
+
+        return () => {
+            scrollTarget.removeEventListener("scroll", callHandler);
+        };
+    }, [handleScroll, scrollTarget, scrollPosition, scrollDelta]);
+
+    const buttonProps = { ...props, scrollTarget: undefined };
+    const isAtTop = scrollPosition < (scrollTarget?.clientHeight ?? 1000) * 0.1;
+
+    return (
+        <Button
+            leftIcon={leftIcon}
+            rightIcon={rightIcon}
+            top={barHidden ? "-50px" : undefined}
+            backgroundColor="#f88379"
+            boxShadow={isAtTop ? "none" : "0 0 8px 2px #000000"}
+            borderRadius="2px"
+            opacity={
+                Math.sign(scrollDelta ?? 0) !== 1 ? (isAtTop ? "1" : "0") : "1"
+            }
+            transition="opacity 0.2s, top 1s, boxShadow 0.2s"
+            color="whitesmoke"
+            _hover={{
+                backgroundColor: "#fb8e84",
+            }}
+            {...buttonProps}
+        >
+            {children}
+        </Button>
+    );
+};
+
 const Search = () => {
     const [queryParams] = useSearchParams();
     const forceUpdate = useForceUpdate();
+    const Navigate = useNavigate();
+    const mainRef = useRef<HTMLDivElement | null | undefined>();
 
     const styles = useMemo(
         () =>
@@ -60,11 +154,27 @@ const Search = () => {
                     height: "100vh",
                     overflowX: "hidden",
                     overflowY: "auto",
+
+                    "&::-webkit-scrollbar": {
+                        width: "8px",
+                    },
+
+                    "&::-webkit-scrollbar-track": {
+                        background: "#00000000",
+                    },
+
+                    "&::-webkit-scrollbar-thumb": {
+                        background: "#fb8e84",
+                        borderRadius: "2px",
+                    },
+
+                    "&::-webkit-scrollbar-thumb:hover": {
+                        background: "#f88379",
+                    },
                 },
 
                 searchgroup: {
                     marginTop: "16px",
-                    marginLeft: "8px",
                 },
 
                 searchbar: {
@@ -106,9 +216,13 @@ const Search = () => {
                     alignItems: "start",
                 },
 
-                filters: {},
+                info: {},
 
-                footer: {
+                filters: {
+                    right: "0",
+                },
+
+                top: {
                     position: "sticky",
                 },
             }),
@@ -224,13 +338,15 @@ const Search = () => {
         });
     });
 
+    const Card = useMemo(() => CardBase, []);
+
     const searchBar = useRef<HTMLInputElement | null>(null);
     const currentScopedSearch = currentSearch.current.scope
         ? currentSearch.current.results[currentSearch.current.scope]
         : null;
 
     return (
-        <div className={css(styles.search)}>
+        <div className={css(styles.search)} ref={(r) => (mainRef.current = r)}>
             <form
                 className={css(styles.hiddenSearchForm)}
                 id="search"
@@ -251,9 +367,9 @@ const Search = () => {
             />
             <HStack padding="8px" spacing="25%" margin="8px">
                 <BackButton
+                    to={null}
                     onClick={() => {
-                        if (!currentSearch.current.scope)
-                            Navigate({ to: "/library" });
+                        if (!currentSearch.current.scope) Navigate("/library");
 
                         setSearch((oldSearch) => {
                             oldSearch.scope = undefined;
@@ -279,41 +395,48 @@ const Search = () => {
             <Divider borderColor="#00000099" />
             {currentScopedSearch ? (
                 <div className={css(styles.advanced)}>
-                    <HStack
-                        color="whitesmoke"
-                        marginTop="16px"
-                        marginLeft="5%"
-                        fontSize="32px"
-                        fontFamily="Cascadia Code"
-                    >
-                        <Text>Searching:</Text>
-                        <Text className={css(styles.sourceHeader)}>
-                            {currentSearch.current.scope}
-                        </Text>
-                    </HStack>
-                    <Flex className={css(styles.mangaContainer)}>
-                        {currentScopedSearch.manga.slice(0, 15).map((manga) => (
-                            <MangaComponent key={manga.id} manga={manga} />
-                        ))}
-                    </Flex>
-                    <Box
-                        marginTop="24px"
+                    <Flex
+                        paddingTop="8px"
                         paddingLeft="2.5%"
                         paddingRight="2.5%"
-                        bottom="0"
-                        paddingBottom="8px"
-                        className={css(styles.footer)}
+                        justifyContent="space-evenly"
+                        top="0"
+                        className={css(styles.top)}
                     >
-                        <Button
-                            rightIcon={<MdFilterList />}
-                            className={css(styles.filters)}
-                            backgroundColor="#fb8e84"
-                            borderRadius="2px"
-                            color="whitesmoke"
+                        <Card
+                            className={css(styles.info)}
+                            scrollTarget={mainRef}
+                            pointerEvents="none"
                         >
-                            <Text marginRight="8px">Filters</Text>
-                        </Button>
-                    </Box>
+                            <Text>Searching: MangaDex</Text>
+                        </Card>
+                        <Card
+                            className={css(styles.filters)}
+                            scrollTarget={mainRef}
+                        >
+                            <HStack>
+                                <Text>Filters</Text>
+                                <Icon as={MdFilterList} />
+                            </HStack>
+                        </Card>
+                    </Flex>
+                    <Flex className={css(styles.mangaContainer)}>
+                        {currentScopedSearch.manga
+                            .slice(0, 100)
+                            .map((manga) => (
+                                <LazyLoadComponent
+                                    placeholder={
+                                        <Skeleton
+                                            width="220px"
+                                            height="360px"
+                                        />
+                                    }
+                                    key={`${manga.source}-${manga.id}`}
+                                >
+                                    <MangaComponent manga={manga} />
+                                </LazyLoadComponent>
+                            ))}
+                    </Flex>
                 </div>
             ) : (
                 <div className={css(styles.sources)}>
@@ -337,6 +460,7 @@ const Search = () => {
                                         if (currentSearch.current.scope === id)
                                             return;
 
+                                        console.log("new scope:", id);
                                         setSearch((oldSearch) => {
                                             oldSearch.scope = id;
                                             return oldSearch;
