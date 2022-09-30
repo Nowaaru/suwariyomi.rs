@@ -13,6 +13,7 @@ import SourceHandler, { Source } from "util/sources";
 
 import { InfoIcon, SearchIcon } from "@chakra-ui/icons";
 import {
+    Box,
     Button,
     ButtonProps,
     Divider,
@@ -23,6 +24,8 @@ import {
     InputGroup,
     InputLeftElement,
     Skeleton,
+    SkeletonText,
+    Stack,
     Text,
 } from "@chakra-ui/react";
 
@@ -36,6 +39,9 @@ import { generateTree } from "util/search";
 import BackButton from "components/button";
 import MangaComponent from "components/manga";
 import useForceUpdate from "hooks/forceupdate";
+
+import CircularProgress from "components/circularprogress";
+import InfiniteScroll from "react-infinite-scroll-component";
 import { LazyLoadComponent } from "react-lazy-load-image-component";
 
 type Cache = {
@@ -65,14 +71,8 @@ const CardBase = (
         scrollTarget?: MutableRefObject<HTMLElement | undefined | null>;
     } & ButtonProps
 ) => {
-    const {
-        className,
-        leftIcon = <InfoIcon />,
-        rightIcon,
-        children = [],
-    } = props;
+    const { leftIcon = <InfoIcon />, rightIcon, children = [] } = props;
 
-    const [barHidden, setHidden] = useState(false);
     const [{ scrollDelta, scrollPosition }, setDelta] = useState<{
         scrollDelta: number | null;
         scrollPosition: number;
@@ -114,11 +114,13 @@ const CardBase = (
     const buttonProps = { ...props, scrollTarget: undefined };
     const isAtTop = scrollPosition < (scrollTarget?.clientHeight ?? 1000) * 0.1;
 
+    (Object.keys(buttonProps) as Array<keyof typeof buttonProps>)
+        .filter((k) => !_.isUndefined(k))
+        .map((nk) => buttonProps[nk]);
     return (
         <Button
             leftIcon={leftIcon}
             rightIcon={rightIcon}
-            top={barHidden ? "-50px" : undefined}
             backgroundColor="#f88379"
             boxShadow={isAtTop ? "none" : "0 0 8px 2px #000000"}
             borderRadius="2px"
@@ -137,6 +139,7 @@ const CardBase = (
     );
 };
 
+const LOADING_PER_PAGE = 100;
 const Search = () => {
     const [queryParams] = useSearchParams();
     const forceUpdate = useForceUpdate();
@@ -268,7 +271,7 @@ const Search = () => {
                 handler
                     .search(
                         currentSearch.current.query,
-                        0,
+                        currentScopedSearch?.manga?.length ?? 0,
                         generateTree(SourceHandler.defaultFilters(handler.id))
                     )
                     .then(resolve)
@@ -288,8 +291,6 @@ const Search = () => {
             } = currentSearch.current;
 
             if (oldResults[handler.id]) return;
-            if (oldScope && oldScope !== handler.id) return;
-
             const cachedData = searchCache.current[oldQuery]?.[handler.id];
             setSearch((oldSearch) => {
                 const { results } = oldSearch;
@@ -339,6 +340,10 @@ const Search = () => {
     });
 
     const Card = useMemo(() => CardBase, []);
+    const [infiniteScrollStatus, setScrollStatus] = useState({
+        loading: false,
+        hasMore: true,
+    });
 
     const searchBar = useRef<HTMLInputElement | null>(null);
     const currentScopedSearch = currentSearch.current.scope
@@ -346,10 +351,14 @@ const Search = () => {
         : null;
 
     return (
-        <div className={css(styles.search)} ref={(r) => (mainRef.current = r)}>
+        <div
+            className={css(styles.search)}
+            id="search"
+            ref={(r) => (mainRef.current = r)}
+        >
             <form
                 className={css(styles.hiddenSearchForm)}
-                id="search"
+                id="searchbar"
                 onSubmit={(e) => {
                     if (searchBar.current)
                         setSearch((oldSearch) => {
@@ -386,7 +395,7 @@ const Search = () => {
                     <Input
                         className={css(styles.searchbar)}
                         placeholder="Search here..."
-                        form="search"
+                        form="searchbar"
                         ref={searchBar}
                         defaultValue={currentSearch.current.query}
                     />
@@ -420,23 +429,141 @@ const Search = () => {
                             </HStack>
                         </Card>
                     </Flex>
-                    <Flex className={css(styles.mangaContainer)}>
-                        {currentScopedSearch.manga
-                            .slice(0, 100)
-                            .map((manga) => (
-                                <LazyLoadComponent
-                                    placeholder={
-                                        <Skeleton
-                                            width="220px"
-                                            height="360px"
-                                        />
-                                    }
-                                    key={`${manga.source}-${manga.id}`}
+                    <InfiniteScroll
+                        scrollableTarget="search"
+                        dataLength={currentScopedSearch.manga.length}
+                        endMessage={
+                            <Stack
+                                display="flex"
+                                width="100%"
+                                marginBottom="64px"
+                                marginTop="32px"
+                                alignItems="center"
+                                color="#FFFFFF22"
+                                userSelect="none"
+                            >
+                                <Text
+                                    fontSize="64px"
+                                    filter="grayscale(100%) blur(0px) brightness(200%)"
                                 >
-                                    <MangaComponent manga={manga} />
-                                </LazyLoadComponent>
-                            ))}
-                    </Flex>
+                                    🐰
+                                </Text>
+                                <Text fontFamily="Cascadia Code">
+                                    You&apos;ve finally seen it all.
+                                </Text>
+                            </Stack>
+                        }
+                        loader={
+                            infiniteScrollStatus.loading ? (
+                                <Flex
+                                    alignItems="center"
+                                    justifyContent="center"
+                                    width="100%"
+                                    height="250px"
+                                >
+                                    <CircularProgress showTimeElapsed />
+                                </Flex>
+                            ) : (
+                                <Box width="0" height="0" visibility="hidden" />
+                            )
+                        }
+                        next={() => {
+                            // check if content is already loaded first
+                            if (
+                                infiniteScrollStatus.loading ||
+                                currentScopedSearch.manga.length === 0 || // if there is no content, don't bother trying to request it
+                                !infiniteScrollStatus.hasMore ||
+                                !currentSearch.current.scope
+                            )
+                                return;
+
+                            const handler = SourceHandler.getSource(
+                                currentSearch.current.scope
+                            );
+
+                            setScrollStatus({
+                                loading: true,
+                                hasMore: true,
+                            });
+
+                            trySearch(handler).then((resultingManga) => {
+                                if (resultingManga.length <= 0)
+                                    return setScrollStatus({
+                                        loading: false,
+                                        hasMore: false,
+                                    });
+
+                                setSearch((oldSearch) => {
+                                    const oldResults =
+                                        oldSearch.results[handler.id].manga;
+
+                                    oldResults.push(
+                                        ...resultingManga.filter(
+                                            (y) =>
+                                                !oldResults.find(
+                                                    (v) => v.id === y.id
+                                                )
+                                        )
+                                    );
+                                    return oldSearch;
+                                });
+
+                                setScrollStatus({
+                                    loading: false,
+                                    hasMore: true,
+                                });
+                            });
+                        }}
+                        hasMore={infiniteScrollStatus.hasMore}
+                    >
+                        {currentScopedSearch.manga.length > 0 &&
+                        !infiniteScrollStatus.loading ? (
+                            <Flex className={css(styles.mangaContainer)}>
+                                {currentScopedSearch.manga.map((manga) => (
+                                    <LazyLoadComponent
+                                        placeholder={
+                                            <Stack marginBottom="12px">
+                                                <Skeleton
+                                                    width="220px"
+                                                    height="300px"
+                                                />
+                                                <SkeletonText
+                                                    width="200px"
+                                                    noOfLines={1}
+                                                    height="10px"
+                                                />
+                                            </Stack>
+                                        }
+                                        key={`${manga.source}-${manga.id}`}
+                                    >
+                                        <MangaComponent manga={manga} />
+                                    </LazyLoadComponent>
+                                ))}
+                            </Flex>
+                        ) : (
+                            <Stack
+                                display="flex"
+                                width="100%"
+                                height="250px"
+                                alignItems="center"
+                                justifyContent="center"
+                                color="#FFFFFF22"
+                                userSelect="none"
+                                marginBottom="64px"
+                                marginTop="32px"
+                            >
+                                <Text
+                                    fontSize="64px"
+                                    filter="grayscale(100%) blur(0px) brightness(200%)"
+                                >
+                                    ❌
+                                </Text>
+                                <Text fontFamily="Cascadia Code">
+                                    There&apos;s nothing here.
+                                </Text>
+                            </Stack>
+                        )}
+                    </InfiniteScroll>
                 </div>
             ) : (
                 <div className={css(styles.sources)}>
