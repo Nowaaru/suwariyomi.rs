@@ -9,7 +9,9 @@
         "preview": "vite preview",
         "tauri": "tauri",
         "test": "node public/clear.js && jest --silent=false",
-        "coverage": "vitest run --coverage"
+        "coverage": "vitest run --coverage",
+        "contributors:add": "all-contributors add",
+        "contributors:generate": "all-contributors generate"
     },
     "dependencies": {
         "@chakra-ui/icons": "^2.0.8",
@@ -51,6 +53,7 @@
         "@typescript-eslint/eslint-plugin": "^5.33.0",
         "@typescript-eslint/parser": "^5.33.0",
         "@vitejs/plugin-react": "^2.0.1",
+        "all-contributors-cli": "^6.22.0",
         "clear": "^0.1.0",
         "eslint": "^8.21.0",
         "eslint-config-prettier": "^8.5.0",
