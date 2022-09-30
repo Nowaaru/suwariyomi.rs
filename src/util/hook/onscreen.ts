@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, MutableRefObject } from "react";
 
 export default function useOnScreen(
-    ref: MutableRefObject<HTMLElement>
+    ref: MutableRefObject<HTMLElement | null>
 ): boolean {
     const [isIntersecting, setIntersecting] = useState(false);
 
@@ -19,7 +19,7 @@ export default function useOnScreen(
         return () => {
             observer.disconnect();
         };
-    }, []);
+    }, [observer, ref]);
 
     return isIntersecting;
 }
