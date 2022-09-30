@@ -4,6 +4,7 @@ import {
     Icon,
     IconButton,
     Progress,
+    Skeleton,
     Text,
     Tooltip,
 } from "@chakra-ui/react";
@@ -17,6 +18,7 @@ import Button from "components/button";
 import _ from "lodash";
 
 import { MouseEvent as ReactMouseEvent } from "react";
+import { LazyLoadComponent } from "react-lazy-load-image-component";
 
 export enum Status {
     completed = "completed",
@@ -147,7 +149,14 @@ const SearchSource = (props: SearchSourceProps) => {
     });
 
     const mangaToShow = sourceManga.slice(0, maxMangaToShow).map((manga) => {
-        return <Manga key={`${manga.source}-${manga.id}`} {...{ manga }} />;
+        return (
+            <LazyLoadComponent
+                placeholder={<Skeleton width="200px" height="360px" />}
+                key={`${manga.source}-${manga.id}`}
+            >
+                <Manga {...{ manga }} />
+            </LazyLoadComponent>
+        );
     });
 
     if (maxMangaToShow < sourceManga.length) {
