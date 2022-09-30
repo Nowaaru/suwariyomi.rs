@@ -6,9 +6,18 @@ type HasId<T> = T & { id: string };
 
 type HasName<T> = T & { name?: string };
 
+export enum FilterType {
+    Checkbox = "checkbox",
+    Readonly = "readonly",
+    Date = "date",
+    Select = "select",
+    Group = "group",
+    Text = "text",
+}
+
 type Checked = "checked" | "unchecked";
 type SearchFilterCheckbox = {
-    type: "checkbox";
+    type: FilterType.Checkbox;
 } & (
     | {
           allowIndeterminate: true;
@@ -17,6 +26,7 @@ type SearchFilterCheckbox = {
           checkboxValues?: {
               checked: unknown;
               indeterminate: unknown;
+              unchecked: never;
           };
           checkboxIcons?: {
               checked?: SupportedIcon;
@@ -30,6 +40,7 @@ type SearchFilterCheckbox = {
           checkboxValues?: {
               checked: unknown;
               indeterminate?: never;
+              unchecked?: never;
           };
           checkboxIcons?: {
               checked?: SupportedIcon;
@@ -39,14 +50,14 @@ type SearchFilterCheckbox = {
 );
 
 type SearchFilterDate = {
-    type: "date";
+    type: FilterType.Date;
     minDate?: Date;
     maxDate?: Date;
     selectedDate?: Date;
 };
 
 type SearchFilterSelect = {
-    type: "select";
+    type: FilterType.Select;
 } & (
     | {
           allowMultiple?: true;
@@ -56,12 +67,12 @@ type SearchFilterSelect = {
 );
 
 type SearchFilterGroup = {
-    type: "group" | "readonly";
-    fields: Array<HasId<SearchFilters>>;
+    type: FilterType.Group | FilterType.Readonly;
+    fields: Array<HasId<SearchFilter>>;
 };
 
 type SearchFilterText = {
-    type: "text";
+    type: FilterType.Text;
 
     placeholderValue?: string;
     value?: string;
@@ -75,4 +86,4 @@ export type SearchFilter = HasName<
     | SearchFilterGroup
 >;
 
-export type SearchFilters = SearchFilter | Record<string, SearchFilter>;
+export type SearchFilters = Record<string, SearchFilter>;
