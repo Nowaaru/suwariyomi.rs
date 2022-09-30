@@ -1,7 +1,8 @@
 import { StyleSheet, css } from "aphrodite";
-import { Text } from "@chakra-ui/react";
+import { Skeleton, Text } from "@chakra-ui/react";
 import type { Manga as MangaType } from "types/manga";
 import { Link } from "react-router-dom";
+import { LazyLoadImage } from "react-lazy-load-image-component";
 
 type MangaProps = {
     manga: MangaType;
@@ -27,6 +28,7 @@ const Manga = (props: MangaProps) => {
         imagecontainer: {
             width: "100%",
             height: "100%",
+            userSelect: "none",
         },
         image: {
             maxWidth: "100%",
@@ -57,7 +59,11 @@ const Manga = (props: MangaProps) => {
         <div className={css(styles.main)}>
             <Link to={linkParams}>
                 <div className={css(styles.imagecontainer)}>
-                    <img className={css(styles.image)} src={covers[0]} />
+                    <LazyLoadImage
+                        className={css(styles.image)}
+                        placeholder={<Skeleton width="200" height="267" />}
+                        src={covers[0]}
+                    />
                 </div>
             </Link>
             <Link to={linkParams}>
