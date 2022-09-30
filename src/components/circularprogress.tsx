@@ -1,10 +1,10 @@
-import { useState, useEffect, useMemo } from "react";
-import { StyleSheet, css } from "aphrodite";
 import {
     CircularProgress as CircularProgressChakra,
     CircularProgressLabel,
     CircularProgressProps,
 } from "@chakra-ui/react";
+import { css, StyleSheet } from "aphrodite";
+import { useEffect, useMemo, useState } from "react";
 
 const CircularProgress = (
     props: Omit<
