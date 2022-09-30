@@ -1,21 +1,9 @@
 import { css, StyleSheet } from "aphrodite";
-import {
-    MutableRefObject,
-    useCallback,
-    useEffect,
-    useMemo,
-    useRef,
-    useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import type { Manga } from "types/manga";
-import SourceHandler, { Source } from "util/sources";
-
-import { InfoIcon, SearchIcon } from "@chakra-ui/icons";
+import { SearchIcon } from "@chakra-ui/icons";
 import {
     Box,
-    Button,
-    ButtonProps,
     Divider,
     Flex,
     HStack,
@@ -28,11 +16,13 @@ import {
     Stack,
     Text,
 } from "@chakra-ui/react";
+import Card from "components/card";
+import type { Manga } from "types/manga";
+import SourceHandler, { Source } from "util/sources";
 
 import { MdFilterList } from "react-icons/md";
 
 import SearchSource, { Status } from "components/searchsource";
-import _ from "lodash";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { generateTree } from "util/search";
 
@@ -60,83 +50,6 @@ type Search = {
             manga: Array<Manga>;
         }
     >;
-};
-
-const CardBase = (
-    props: {
-        className: string;
-        children?: JSX.Element | JSX.Element[];
-        leftIcon?: JSX.Element;
-        rightIcon?: JSX.Element;
-        scrollTarget?: MutableRefObject<HTMLElement | undefined | null>;
-    } & ButtonProps
-) => {
-    const { leftIcon = <InfoIcon />, rightIcon, children = [] } = props;
-
-    const [{ scrollDelta, scrollPosition }, setDelta] = useState<{
-        scrollDelta: number | null;
-        scrollPosition: number;
-    }>({
-        scrollDelta: 0,
-        scrollPosition: props.scrollTarget?.current?.scrollTop ?? 0,
-    });
-
-    const { current: scrollTarget } = props.scrollTarget ?? {};
-    const handleScroll = useCallback(
-        _.throttle((oldPosition: number) => {
-            if (!scrollTarget) return;
-
-            const newPosition = scrollTarget.scrollTop;
-            setDelta({
-                scrollDelta: newPosition - oldPosition,
-                scrollPosition: newPosition,
-            });
-        }, 100),
-        [scrollTarget]
-    );
-
-    useEffect(() => {
-        if (!scrollTarget) {
-            if (scrollDelta) setDelta({ scrollDelta: null, scrollPosition });
-            return;
-        }
-
-        const currentScrollPosition = scrollTarget.scrollTop;
-        const callHandler = () => handleScroll(currentScrollPosition);
-
-        scrollTarget.addEventListener("scroll", callHandler, { passive: true });
-
-        return () => {
-            scrollTarget.removeEventListener("scroll", callHandler);
-        };
-    }, [handleScroll, scrollTarget, scrollPosition, scrollDelta]);
-
-    const buttonProps = { ...props, scrollTarget: undefined };
-    const isAtTop = scrollPosition < (scrollTarget?.clientHeight ?? 1000) * 0.1;
-
-    (Object.keys(buttonProps) as Array<keyof typeof buttonProps>)
-        .filter((k) => !_.isUndefined(k))
-        .map((nk) => buttonProps[nk]);
-    return (
-        <Button
-            leftIcon={leftIcon}
-            rightIcon={rightIcon}
-            backgroundColor="#f88379"
-            boxShadow={isAtTop ? "none" : "0 0 8px 2px #000000"}
-            borderRadius="2px"
-            opacity={
-                Math.sign(scrollDelta ?? 0) !== 1 ? (isAtTop ? "1" : "0") : "1"
-            }
-            transition="opacity 0.2s, top 1s, boxShadow 0.2s"
-            color="whitesmoke"
-            _hover={{
-                backgroundColor: "#fb8e84",
-            }}
-            {...buttonProps}
-        >
-            {children}
-        </Button>
-    );
 };
 
 const LOADING_PER_PAGE = 100;
@@ -339,7 +252,6 @@ const Search = () => {
         });
     });
 
-    const Card = useMemo(() => CardBase, []);
     const [infiniteScrollStatus, setScrollStatus] = useState({
         loading: false,
         hasMore: true,
