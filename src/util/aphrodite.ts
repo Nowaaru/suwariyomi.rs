@@ -3,10 +3,11 @@ import {
     keyframes as emotion_keyframes,
 } from "@emotion/css";
 import { CSSObject } from "@emotion/serialize";
-type Styles<T = unknown> = {
+export type Styles<T = unknown> = {
     [K in keyof T]: CSSObject | Styles<T[K]>;
 };
-class Style {
+
+export class Style {
     static toStyle(CSSObject: CSSObject): Style[] {
         return (Object.keys(CSSObject) as Array<keyof CSSObject>).reduce(
             (acc: Style[], key: keyof CSSObject) => {
