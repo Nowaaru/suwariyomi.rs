@@ -1,4 +1,4 @@
-import type { SearchFilters } from "types/search";
+import { FilterType, SearchFilter, SearchFilters} from "types/search";
 import * as MdIcons from "react-icons/md";
 import * as CkIcons from "@chakra-ui/icons";
 
@@ -7,15 +7,15 @@ export const AllIcons = { ...MdIcons, ...CkIcons };
 const getValue = (toQuery: SearchFilter) => {
     /* eslint-disable no-case-declarations */
     switch (toQuery.type) {
-        case "readonly":
-        case "group":
+        case FilterType.Readonly:
+        case FilterType.Group:
             const out: Record<string, unknown> = {};
             toQuery.fields.forEach(
                 (value, key) => (out[value.id ?? key] = getValue(value))
             );
 
             return out;
-        case "checkbox":
+        case FilterType.Checkbox:
             const matchedValues =
                 toQuery.checkboxValues ?? toQuery.allowIndeterminate
                     ? {
@@ -29,19 +29,17 @@ const getValue = (toQuery: SearchFilter) => {
                 matchedValues.indeterminate = matchedValues.indeterminate ?? 0;
 
             return matchedValues[toQuery.checked ?? "unchecked"];
-        case "date":
+        case FilterType.Date:
             return toQuery.selectedDate;
-        case "select":
+        case FilterType.Select:
             return toQuery.selected;
-        case "text":
+        case FilterType.Text:
             return toQuery.value;
-        default:
-            throw new Error(`unknown type ${toQuery.type}`);
     }
 };
 
 export const generateTree = (
-    searchFiltersBase: Record<string, SearchFilters>
+    searchFiltersBase: SearchFilters
 ) => {
     const out: Record<string, unknown> = {};
     Object.keys(searchFiltersBase).forEach(
