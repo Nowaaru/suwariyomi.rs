@@ -38,7 +38,7 @@ export abstract class Source {
 
     public abstract get colors(): Record<string, HexColor>;
 
-    public abstract get filters(): Record<string, SearchFilters>;
+    public abstract get filters(): SourceFilters;
 }
 
 const evalCache: Record<string, Source> = {};
@@ -174,7 +174,7 @@ export const MangaValidator = (manga: Manga) => {
     assert(id, "field 'id' should be defined");
 
     assert(
-        !_.isNaN(added) & added > -1,
+        !_.isNaN(added) && added > -1,
         "field 'added' should be a number greater or equal to -1"
     );
 
