@@ -106,9 +106,7 @@ export class SourceHandler {
         return this.sources[sourceId];
     }
 
-    public defaultFilters(
-        sourceId: keyof typeof this.sources
-    ): Record<string, SearchFilters> {
+    public defaultFilters(sourceId: keyof typeof this.sources): SearchFilters {
         return this.defaults[sourceId];
     }
 
@@ -131,7 +129,7 @@ export class SourceHandler {
     }
 
     private sourceArray: Array<Promise<Source>>;
-    private defaults: Record<string, Record<string, SearchFilters>> = {};
+    private defaults: Record<string, SearchFilters> = {};
     private sources: Record<string, Source> = {};
 }
 
