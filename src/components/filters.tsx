@@ -1,6 +1,7 @@
 import {
     Accordion,
     AccordionButton,
+    AccordionIcon,
     AccordionItem,
     AccordionPanel,
     Box,
@@ -22,7 +23,7 @@ import {
 import { css, StyleSheet } from "aphrodite";
 import Select from "components/select";
 import { ReactElement, useCallback, useMemo } from "react";
-import { FilterType, SearchFilter } from "types/search";
+import { FilterType, HasId, SearchFilter } from "types/search";
 import { AllIcons } from "util/search";
 import { Source } from "util/sources";
 import Button from "./button";
@@ -51,7 +52,7 @@ const Filters = (props: {
     const generateHierarchy = useCallback((): ReactElement => {
         const currentFilters = handler.filters;
         const walker = (
-            value: SearchFilter,
+            value: SearchFilter | HasId<SearchFilter>,
             key: string | number,
             isReadonly?: boolean
         ): ReactElement | null => {
@@ -61,10 +62,22 @@ const Filters = (props: {
                 case FilterType.Group:
                     const { fields } = value;
                     return (
-                        <Accordion>
-                            <AccordionItem>
-                                <AccordionButton>
-                                    <Box>{value.name ?? value.id ?? key} </Box>
+                        <Accordion allowToggle allowMultiple>
+                            <AccordionItem border="none">
+                                <AccordionButton
+                                    backgroundColor="#00000022"
+                                    transition="backgroundColor 0.2s"
+                                    marginBottom="4px"
+                                    marginTop="4px"
+                                    _hover={{
+                                        backgroundColor: "#33333322",
+                                    }}
+                                    borderRadius="4px"
+                                >
+                                    <Box flex="1" textAlign="left">
+                                        {value.name ?? key}{" "}
+                                    </Box>
+                                    <AccordionIcon />
                                 </AccordionButton>
                                 <AccordionPanel>
                                     {fields.map((v) =>
