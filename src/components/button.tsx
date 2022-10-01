@@ -1,7 +1,13 @@
 import { Button as CButton, ButtonProps } from "@chakra-ui/react";
 import { Link } from "react-router-dom";
 
-const Button = (props: ButtonProps & { to?: string | null }) => {
+const Button = (
+    props: ButtonProps &
+        (
+            | { to?: string; onClick?: never }
+            | { to?: never; onClick: ButtonProps["onClick"] }
+        )
+) => {
     const coreButton = (
         <CButton
             borderRadius="2px"
@@ -16,7 +22,7 @@ const Button = (props: ButtonProps & { to?: string | null }) => {
         </CButton>
     );
 
-    return props.to !== null ? (
+    return !props.onClick ? (
         <Link to={props.to ?? "/library"}>{coreButton}</Link>
     ) : (
         coreButton
