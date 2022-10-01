@@ -1,9 +1,7 @@
 # suwariyomi.rs :crab:
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-
-[![All Contributors](https://img.shields.io/badge/all_contributors-0-orange.svg?style=flat-square)](#contributors-)
-
+[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 `suwariyomi.rs` is a Manga reader created in TypeScript and Rust using the framework Tauri; inspired by the manga reader Tachiyomi.
@@ -95,6 +93,23 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore-start -->
 <!-- markdownlint-disable -->
+<table>
+  <tbody>
+    <tr>
+      <td align="center"><a href="https://nowaaru.github.io/"><img src="https://avatars.githubusercontent.com/u/16274568?v=4?s=100" width="100px;" alt="Noire"/><br /><sub><b>Noire</b></sub></a><br /><a href="#maintenance-Nowaaru" title="Maintenance">🚧</a> <a href="https://github.com/Nowaaru/suwariyomi.rs/commits?author=Nowaaru" title="Code">💻</a> <a href="#projectManagement-Nowaaru" title="Project Management">📆</a> <a href="#ideas-Nowaaru" title="Ideas, Planning, & Feedback">🤔</a> <a href="#design-Nowaaru" title="Design">🎨</a></td>
+    </tr>
+  </tbody>
+  <tfoot>
+    <tr>
+      <td align="center" size="13px" colspan="7">
+        <img src="https://raw.githubusercontent.com/all-contributors/all-contributors-cli/1b8533af435da9854653492b1327a23a4dbd0a10/assets/logo-small.svg">
+          <a href="https://all-contributors.js.org/docs/en/bot/usage">Add your contributions</a>
+        </img>
+      </td>
+    </tr>
+  </tfoot>
+</table>
+
 <!-- markdownlint-restore -->
 <!-- prettier-ignore-end -->
 
