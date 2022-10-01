@@ -61,6 +61,15 @@ const Filters = (props: {
             switch (value.type) {
                 case FilterType.Readonly:
                 case FilterType.Group: {
+                    const { fields, sorted } = value;
+                    const mapFn = (v: HasId<SearchFilter>) =>
+                        walker(v, v.id, value.type === FilterType.Readonly);
+
+                    const arrayValues = [...fields];
+                    if (sorted)
+                        arrayValues.sort((a, b) =>
+                            (a.name ?? a.id).localeCompare(b.name ?? b.id)
+                        );
                     return (
                         <Accordion allowToggle allowMultiple>
                             <AccordionItem border="none">
@@ -80,17 +89,7 @@ const Filters = (props: {
                                     <AccordionIcon />
                                 </AccordionButton>
                                 <AccordionPanel>
-                                    <Stack>
-                                        {fields
-                                            .map((v) =>
-                                                walker(
-                                                    v,
-                                                    v.id,
-                                                    value.type ===
-                                                        FilterType.Readonly
-                                                )
-                                            )}
-                                    </Stack>
+                                    <Stack>{arrayValues.map(mapFn)}</Stack>
                                 </AccordionPanel>
                             </AccordionItem>
                         </Accordion>
@@ -144,7 +143,6 @@ const Filters = (props: {
                             {name ?? key}
                         </Checkbox>
                     );
-
                 }
                 case FilterType.Text: {
                     const { placeholderValue, value: currentValue } = value;
@@ -154,11 +152,10 @@ const Filters = (props: {
                             value={currentValue}
                         />
                     );
-
                 }
                 case FilterType.Select: {
+                    const { allowMultiple, name, selected, type } = value;
                     return <Select />;
-
                 }
                 default:
                     return null;
