@@ -38,13 +38,13 @@
 
 -   [ ] Implement canvas-based read component (for zooming/filters and all that good stuff)
 
--   [ ] Implement reading page
+-   [x] Implement reading page
 
 -   [ ] Implement third-party sources
 
--   [ ] Implement search page
+-   [x] Implement search page
 
--   [ ] Integrate source functionality (chapters, title, description, so on..) with view page
+-   [x] Integrate source functionality (chapters, title, description, so on..) with view page
 
 -   [ ] Implement settings and configuration
 
