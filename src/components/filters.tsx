@@ -8,6 +8,7 @@ import {
     Checkbox,
     Divider,
     Flex,
+    HStack,
     Input,
     Modal,
     ModalBody,
@@ -80,13 +81,17 @@ const Filters = (props: {
                                     <AccordionIcon />
                                 </AccordionButton>
                                 <AccordionPanel>
-                                    {fields.map((v) =>
-                                        walker(
-                                            v,
-                                            v.id,
-                                            value.type === FilterType.Readonly
-                                        )
-                                    )}
+                                    <Stack>
+                                        {fields
+                                            .map((v) =>
+                                                walker(
+                                                    v,
+                                                    v.id,
+                                                    value.type ===
+                                                        FilterType.Readonly
+                                                )
+                                            )}
+                                    </Stack>
                                 </AccordionPanel>
                             </AccordionItem>
                         </Accordion>
