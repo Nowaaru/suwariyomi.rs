@@ -38,7 +38,7 @@ export abstract class Source {
 
     public abstract get colors(): Record<string, HexColor>;
 
-    public abstract get filters(): SourceFilters;
+    public abstract get filters(): SearchFilters;
 }
 
 const evalCache: Record<string, Source> = {};
