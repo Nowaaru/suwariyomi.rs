@@ -1,5 +1,13 @@
-import { css, StyleSheet } from "aphrodite";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { css, Style, StyleSheet } from "aphrodite";
+import {
+    ComponentClass,
+    ReactElement,
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from "react";
 
 import { SearchIcon } from "@chakra-ui/icons";
 import {
@@ -11,10 +19,18 @@ import {
     Input,
     InputGroup,
     InputLeftElement,
+    Modal,
+    ModalBody,
+    ModalCloseButton,
+    ModalContent,
+    ModalFooter,
+    ModalHeader,
+    ModalOverlay,
     Skeleton,
     SkeletonText,
     Stack,
     Text,
+    useDisclosure,
 } from "@chakra-ui/react";
 import Card from "components/card";
 import type { Manga } from "types/manga";
@@ -33,6 +49,7 @@ import useForceUpdate from "hooks/forceupdate";
 import CircularProgress from "components/circularprogress";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { LazyLoadComponent } from "react-lazy-load-image-component";
+import Button from "components/button";
 
 type Cache = {
     [searchQuery: string]: {
@@ -52,9 +69,20 @@ type Search = {
     >;
 };
 
+/* BEGIN MODAL IMPORTS */
+
+import { Checkbox, CheckboxGroup, Select } from "@chakra-ui/react";
+import { CheckIcon, CloseIcon, MinusIcon } from "@chakra-ui/icons";
+import { FilterType, SearchFilter, SearchFilters } from "types/search";
+import { AllIcons } from "util/search";
+import DatePicker from "react-date-picker";
+
+/* END MODAL IMPORTS */
+
 const LOADING_PER_PAGE = 100;
 const Search = () => {
     const [queryParams] = useSearchParams();
+    const { isOpen, onOpen, onClose } = useDisclosure();
     const forceUpdate = useForceUpdate();
     const Navigate = useNavigate();
     const mainRef = useRef<HTMLDivElement | null | undefined>();
@@ -261,6 +289,17 @@ const Search = () => {
     const currentScopedSearch = currentSearch.current.scope
         ? currentSearch.current.results[currentSearch.current.scope]
         : null;
+    const ostyles = useMemo(
+        () =>
+            StyleSheet.create({
+                header: {
+                    color: "#fb8e84",
+                    fontFamily: "Cascadia Code",
+                    letterSpacing: "0.1px",
+                },
+            }),
+        []
+    );
 
     return (
         <div
@@ -286,9 +325,110 @@ const Search = () => {
                     e.preventDefault();
                 }}
             />
+            <Modal isOpen={isOpen} onClose={onClose}>
+                <ModalOverlay />
+                <ModalContent backgroundColor="#0D1620" color="whitesmoke">
+                    <ModalHeader>
+                        Filters for{" "}
+                        <span className={css(ostyles.header)}>
+                            {currentSearch.current.scope}
+                        </span>
+                    </ModalHeader>
+                    <ModalCloseButton />
+                    <ModalBody>
+                        {((isReadonly?: boolean): ReactElement => {
+                            if (!currentSearch.current.scope) return <></>;
+                            const handler = SourceHandler.getSource(
+                                currentSearch.current?.scope
+                            );
+                            const currentFilters = handler.filters;
+                            const walker = (
+                                value: SearchFilter,
+                                key: string | number
+                            ): ReactElement | null => {
+                                /* eslint-disable no-case-declarations */
+                                switch (value.type) {
+                                    case FilterType.Readonly:
+                                    case FilterType.Group:
+                                        const { fields } = value;
+                                        return <>{fields.map(walker)}</>;
+
+                                    case FilterType.Checkbox:
+                                        const { checked = "unchecked", name } =
+                                            value;
+
+                                        const checkboxIcons = Object.assign(
+                                            value.checkboxIcons ?? {},
+                                            {
+                                                checked: "CheckIcon",
+                                                indeterminate: "MinusIcon",
+                                            }
+                                        );
+
+                                        const getIcon = (
+                                            icon: keyof typeof AllIcons
+                                        ): JSX.Element => {
+                                            const IconConstructor = AllIcons[
+                                                icon
+                                                // TODO: \/ this should not be here. fix this.
+                                            ] as unknown as React.FunctionComponent;
+
+                                            return <IconConstructor />;
+                                        };
+
+                                        const newIcons = {
+                                            checked: getIcon(
+                                                checkboxIcons.checked
+                                            ),
+                                            indeterminate: getIcon(
+                                                checkboxIcons.indeterminate
+                                            ),
+                                        };
+
+                                        return (
+                                            <Checkbox
+                                                checked={checked === "checked"}
+                                                isIndeterminate={
+                                                    checked === "indeterminate"
+                                                }
+                                                isDisabled={isReadonly}
+                                                icon={
+                                                    checked !== "unchecked"
+                                                        ? newIcons[checked]
+                                                        : undefined
+                                                }
+                                            >
+                                                {name ?? key}
+                                            </Checkbox>
+                                        );
+
+                                    default:
+                                        return null;
+                                }
+                            };
+
+                            const out: Array<ReactElement | null> = [];
+                            (
+                                Object.keys(currentFilters) as Array<
+                                    string | number
+                                >
+                            ).forEach((v) =>
+                                out.push(walker(currentFilters[v], v))
+                            );
+
+                            return <>{out.filter((n) => n)}</>;
+                        })()}
+                    </ModalBody>
+                    <ModalFooter>
+                        <Button colorScheme="blue" mr={3} onClick={onClose}>
+                            Close
+                        </Button>
+                        <Button variant="ghost">Secondary Action</Button>
+                    </ModalFooter>
+                </ModalContent>
+            </Modal>
             <HStack padding="8px" spacing="25%" margin="8px">
                 <BackButton
-                    to={null}
                     onClick={() => {
                         if (!currentSearch.current.scope) Navigate("/library");
 
@@ -334,6 +474,7 @@ const Search = () => {
                         <Card
                             className={css(styles.filters)}
                             scrollTarget={mainRef}
+                            onClick={onOpen}
                         >
                             <HStack>
                                 <Text>Filters</Text>
