@@ -2,9 +2,9 @@ import { AllIcons } from "util/search";
 
 type SupportedIcon = keyof typeof AllIcons;
 
-type HasId<T> = T & { id: string };
+export type HasId<T> = T & { id: string };
 
-type HasName<T> = T & { name?: string };
+export type HasName<T> = T & { name?: string };
 
 export enum FilterType {
     Checkbox = "checkbox",
