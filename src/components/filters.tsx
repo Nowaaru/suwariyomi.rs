@@ -24,6 +24,7 @@ import {
 import { css, StyleSheet } from "aphrodite";
 import Select from "components/select";
 import { ReactElement, useCallback, useMemo } from "react";
+import { Options } from "react-select";
 import { FilterType, HasId, SearchFilter } from "types/search";
 import { AllIcons } from "util/search";
 import { Source } from "util/sources";
@@ -154,8 +155,17 @@ const Filters = (props: {
                     );
                 }
                 case FilterType.Select: {
-                    const { allowMultiple, name, selected, type } = value;
-                    return <Select />;
+                    const { allowMultiple, name, options, selected } =
+                        value;
+
+                    return (
+                        <Select
+                            isMulti={allowMultiple}
+                            name={name}
+                            value={selected ?? null}
+                            options={options}
+                        />
+                    );
                 }
                 default:
                     return null;

@@ -1,3 +1,4 @@
+import { Options } from "react-select";
 import { AllIcons } from "util/search";
 
 type SupportedIcon = keyof typeof AllIcons;
@@ -58,12 +59,13 @@ type SearchFilterDate = {
 
 type SearchFilterSelect = {
     type: FilterType.Select;
+    options: readonly ({ value: unknown; label: string })[];
 } & (
     | {
           allowMultiple?: true;
-          selected?: Array<{ displayValue: unknown; value: unknown }>;
+          selected?: Options<unknown>;
       }
-    | { allowMultiple?: false | never; selected?: unknown }
+    | { allowMultiple?: false; selected?: Options<unknown>[number] }
 );
 
 type SearchFilterGroup = {
