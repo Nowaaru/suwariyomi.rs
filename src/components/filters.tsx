@@ -60,8 +60,7 @@ const Filters = (props: {
             /* eslint-disable no-case-declarations */
             switch (value.type) {
                 case FilterType.Readonly:
-                case FilterType.Group:
-                    const { fields } = value;
+                case FilterType.Group: {
                     return (
                         <Accordion allowToggle allowMultiple>
                             <AccordionItem border="none">
@@ -96,8 +95,8 @@ const Filters = (props: {
                             </AccordionItem>
                         </Accordion>
                     );
-
-                case FilterType.Checkbox:
+                }
+                case FilterType.Checkbox: {
                     const {
                         checked = "unchecked",
                         name,
@@ -146,7 +145,8 @@ const Filters = (props: {
                         </Checkbox>
                     );
 
-                case FilterType.Text:
+                }
+                case FilterType.Text: {
                     const { placeholderValue, value: currentValue } = value;
                     return (
                         <Input
@@ -155,9 +155,11 @@ const Filters = (props: {
                         />
                     );
 
-                case FilterType.Select:
+                }
+                case FilterType.Select: {
                     return <Select />;
 
+                }
                 default:
                     return null;
             }
