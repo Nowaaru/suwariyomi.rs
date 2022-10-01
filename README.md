@@ -1,7 +1,7 @@
 # suwariyomi.rs :crab:
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-2-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 `suwariyomi.rs` is a Manga reader created in TypeScript and Rust using the framework Tauri; inspired by the manga reader Tachiyomi.
@@ -97,6 +97,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
   <tbody>
     <tr>
       <td align="center"><a href="https://nowaaru.github.io/"><img src="https://avatars.githubusercontent.com/u/16274568?v=4?s=100" width="100px;" alt="Noire"/><br /><sub><b>Noire</b></sub></a><br /><a href="#maintenance-Nowaaru" title="Maintenance">🚧</a> <a href="https://github.com/Nowaaru/suwariyomi.rs/commits?author=Nowaaru" title="Code">💻</a> <a href="#projectManagement-Nowaaru" title="Project Management">📆</a> <a href="#ideas-Nowaaru" title="Ideas, Planning, & Feedback">🤔</a> <a href="#design-Nowaaru" title="Design">🎨</a></td>
+      <td align="center"><a href="https://github.com/hueblu"><img src="https://avatars.githubusercontent.com/u/52867612?v=4?s=100" width="100px;" alt="blu"/><br /><sub><b>blu</b></sub></a><br /><a href="#maintenance-hueblu" title="Maintenance">🚧</a></td>
     </tr>
   </tbody>
   <tfoot>
