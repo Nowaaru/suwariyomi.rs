@@ -68,6 +68,7 @@ type SearchFilterSelect = {
 
 type SearchFilterGroup = {
     type: FilterType.Group | FilterType.Readonly;
+    sorted?: boolean;
     fields: Array<HasId<SearchFilter>>;
 };
 
