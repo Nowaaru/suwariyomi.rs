@@ -37,6 +37,7 @@
         "react-lazy-load-image-component": "^1.5.5",
         "react-router": "^6.3.0",
         "react-router-dom": "^6.3.0",
+        "react-select": "^5.4.0",
         "string-strip-html": "^11.6.4",
         "use-image": "^1.0.12",
         "vite-plugin-swc-react-refresh": "^2.0.0"
