@@ -7,8 +7,8 @@ import {
     Box,
     Checkbox,
     Divider,
-    Flex,
-    HStack,
+    FormControl,
+    FormLabel,
     Input,
     Modal,
     ModalBody,
@@ -18,13 +18,11 @@ import {
     ModalHeader,
     ModalOverlay,
     Stack,
-    useDisclosure,
 } from "@chakra-ui/react";
 
 import { css, StyleSheet } from "aphrodite";
 import Select from "components/select";
 import { ReactElement, useCallback, useMemo } from "react";
-import { Options } from "react-select";
 import { FilterType, HasId, SearchFilter } from "types/search";
 import { AllIcons } from "util/search";
 import { Source } from "util/sources";
@@ -155,8 +153,7 @@ const Filters = (props: {
                     );
                 }
                 case FilterType.Select: {
-                    const { allowMultiple, name, options, selected } =
-                        value;
+                    const { allowMultiple, name, options, selected } = value;
 
                     return (
                         <Select
@@ -165,6 +162,38 @@ const Filters = (props: {
                             value={selected ?? null}
                             options={options}
                         />
+                    );
+                }
+                case FilterType.Date: {
+                    const { maxDate, minDate, selectedDate, name } = value;
+                    const sliceDate = (date: Date) =>
+                        `${date.getUTCFullYear()}-${String(
+                            date.getUTCMonth()
+                        ).padStart(2, "0")}-${String(
+                            date.getUTCDate()
+                        ).padStart(2, "0")}`;
+
+                    return (
+                        <FormControl>
+                            <FormLabel>{name ?? "Input"}</FormLabel>
+                            <Input
+                                sx={{
+                                    "&": {
+                                        colorScheme: "dark",
+                                    },
+                                }}
+                                borderRadius="4px"
+                                type="date"
+                                size="md"
+                                value={
+                                    selectedDate
+                                        ? sliceDate(selectedDate)
+                                        : undefined
+                                }
+                                min={minDate ? sliceDate(minDate) : undefined}
+                                max={maxDate ? sliceDate(maxDate) : undefined}
+                            />
+                        </FormControl>
                     );
                 }
                 default:
@@ -203,11 +232,14 @@ const Filters = (props: {
                 <ModalBody>
                     <Stack>{generateHierarchy()}</Stack>
                 </ModalBody>
+
                 <ModalFooter>
-                    <Button colorScheme="blue" mr={3} onClick={onClose}>
+                    <Button variant="ghost" mr={3}>
+                        Submit
+                    </Button>
+                    <Button colorScheme="blue" onClick={onClose}>
                         Close
                     </Button>
-                    <Button variant="ghost">Secondary Action</Button>
                 </ModalFooter>
             </ModalContent>
         </Modal>
