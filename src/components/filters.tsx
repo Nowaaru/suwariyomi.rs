@@ -98,7 +98,11 @@ const Filters = (props: {
                     );
 
                 case FilterType.Checkbox:
-                    const { checked = "unchecked", name } = value;
+                    const {
+                        checked = "unchecked",
+                        name,
+                        allowIndeterminate,
+                    } = value;
 
                     const checkboxIcons = Object.assign(
                         value.checkboxIcons ?? {},
@@ -127,7 +131,10 @@ const Filters = (props: {
                     return (
                         <Checkbox
                             checked={checked === "checked"}
-                            isIndeterminate={checked === "indeterminate"}
+                            isIndeterminate={
+                                allowIndeterminate &&
+                                checked === "indeterminate"
+                            }
                             isDisabled={isReadonly}
                             icon={
                                 checked !== "unchecked"
