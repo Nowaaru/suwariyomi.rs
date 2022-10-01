@@ -76,7 +76,7 @@ const Filters = (props: {
                                     borderRadius="4px"
                                 >
                                     <Box flex="1" textAlign="left">
-                                        {value.name ?? key}{" "}
+                                        {value.name ?? key}
                                     </Box>
                                     <AccordionIcon />
                                 </AccordionButton>
