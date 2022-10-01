@@ -54,7 +54,7 @@ async function dynamicImport(targetPath: string) {
                 )}`
                 /* @vite-ignore */
             )
-        ).default(fetch);
+        ).default({fetch});
 
     return evalCache[readFile];
 }
