@@ -115,7 +115,7 @@ const SearchSource = (props: SearchSourceProps) => {
             padding: "16px",
             overflowX: "auto",
             overflowY: "hidden",
-            justifyContent: "space-around",
+            justifyContent: "space-evenly",
             backgroundColor: "rgb(18, 30, 42)",
         },
         mangacount: {
