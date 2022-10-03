@@ -23,7 +23,7 @@ import {
 import { css, StyleSheet } from "aphrodite";
 import Select from "components/select";
 import { ReactElement, useCallback, useMemo } from "react";
-import { FilterType, HasId, SearchFilter } from "types/search";
+import { FilterType, HasId, SearchFilter, SearchFilters } from "types/search";
 import { AllIcons } from "util/search";
 import { Source } from "util/sources";
 import Button from "./button";
@@ -31,9 +31,10 @@ import Button from "./button";
 const Filters = (props: {
     handler: Source;
     isOpen: boolean;
+    onChange?: (value: SearchFilter, filters: SearchFilters) => void;
     onClose: () => void;
 }) => {
-    const { handler, isOpen, onClose } = props;
+    const { handler, isOpen, onClose, onChange } = props;
 
     const styles = useMemo(
         () =>
@@ -50,7 +51,7 @@ const Filters = (props: {
     );
 
     const generateHierarchy = useCallback((): ReactElement => {
-        const currentFilters = handler.filters;
+        const currentFilters = { ...handler.filters };
         const walker = (
             value: SearchFilter | HasId<SearchFilter>,
             key: string | number,
@@ -132,6 +133,16 @@ const Filters = (props: {
                                 allowIndeterminate &&
                                 checked === "indeterminate"
                             }
+                            onChange={(e) => {
+                                if (!onChange) return;
+
+                                const { indeterminate, checked } = e.target;
+                                if (indeterminate) value.checked = "unchecked";
+                                else if (checked)
+                                    value.checked = "indeterminate";
+
+                                return onChange(value, currentFilters);
+                            }}
                             isDisabled={isReadonly}
                             icon={
                                 checked !== "unchecked"
@@ -207,7 +218,7 @@ const Filters = (props: {
         );
 
         return <>{out.filter((n) => n)}</>;
-    }, [handler.filters]);
+    }, [handler.filters, onChange]);
 
     return (
         <Modal isOpen={isOpen} onClose={onClose}>
