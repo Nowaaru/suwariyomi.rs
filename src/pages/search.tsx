@@ -57,7 +57,6 @@ type Search = {
 /* BEGIN MODAL IMPORTS */
 /* END MODAL IMPORTS */
 
-const LOADING_PER_PAGE = 100;
 const Search = () => {
     const { isOpen, onOpen, onClose } = useDisclosure();
     const [queryParams] = useSearchParams();
@@ -186,11 +185,12 @@ const Search = () => {
 
     const trySearch = useCallback(
         async (handler: Source): Promise<Array<Manga>> => {
+            const { query, scope, results } = currentSearch.current;
             return new Promise((resolve, reject) => {
                 handler
                     .search(
-                        currentSearch.current.query,
-                        currentScopedSearch?.manga?.length ?? 0,
+                        query,
+                        scope ? results[scope]?.manga.length : 0,
                         generateTree(SourceHandler.defaultFilters(handler.id))
                     )
                     .then(resolve)
