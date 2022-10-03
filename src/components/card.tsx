@@ -53,12 +53,17 @@ const Card = (
         };
     }, [handleScroll, scrollTarget, scrollPosition, scrollDelta]);
 
-    const buttonProps = { ...props, scrollTarget: undefined };
-    const isAtTop = scrollPosition < (scrollTarget?.clientHeight ?? 1000) * 0.1;
-
-    (Object.keys(buttonProps) as Array<keyof typeof buttonProps>)
+    const buttonProps: ButtonProps = {};
+    (
+        Object.keys({
+            ...props,
+            scrollTarget: undefined,
+        }) as Array<keyof ButtonProps>
+    )
         .filter((k) => !_.isUndefined(k))
-        .map((nk) => buttonProps[nk]);
+        .forEach((nk: keyof ButtonProps) => (buttonProps[nk] = props[nk]));
+
+    const isAtTop = scrollPosition < (scrollTarget?.clientHeight ?? 1000) * 0.1;
     return (
         <Button
             leftIcon={leftIcon}
