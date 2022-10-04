@@ -28,6 +28,8 @@ export abstract class Source {
         tree: Record<string, unknown>
     ): Promise<Array<Manga>>;
 
+    public abstract setFilters(newFilters: SearchFilters): void;
+
     public abstract get id(): string;
 
     public abstract get icon(): string;
