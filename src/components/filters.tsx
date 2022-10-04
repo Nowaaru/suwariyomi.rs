@@ -22,7 +22,8 @@ import {
 
 import { css, StyleSheet } from "aphrodite";
 import Select from "components/select";
-import { ReactElement, useCallback, useMemo } from "react";
+import _ from "lodash";
+import { ReactElement, useCallback, useMemo, useState } from "react";
 import { FilterType, HasId, SearchFilter, SearchFilters } from "types/search";
 import { AllIcons } from "util/search";
 import { Source } from "util/sources";
@@ -31,10 +32,12 @@ import Button from "./button";
 const Filters = (props: {
     handler: Source;
     isOpen: boolean;
-    onChange?: (value: SearchFilter, filters: SearchFilters) => void;
+    onSubmit?: (filters: SearchFilters) => void;
     onClose: () => void;
 }) => {
-    const { handler, isOpen, onClose, onChange } = props;
+    const { handler, isOpen, onClose, onSubmit = _.noop } = props;
+    const initialFilters = useMemo(() => handler.filters, [handler.filters]);
+    const [filters, setFilters] = useState<SearchFilters>(initialFilters); // useRef<SearchFilters>(initialFilters);
 
     const styles = useMemo(
         () =>
@@ -51,13 +54,12 @@ const Filters = (props: {
     );
 
     const generateHierarchy = useCallback((): ReactElement => {
-        const currentFilters = { ...handler.filters };
         const walker = (
             value: SearchFilter | HasId<SearchFilter>,
             key: string | number,
             isReadonly?: boolean
         ): ReactElement | null => {
-            /* eslint-disable no-case-declarations */
+            const currentFilters: SearchFilters = { ...filters };
             switch (value.type) {
                 case FilterType.Readonly:
                 case FilterType.Group: {
@@ -71,7 +73,7 @@ const Filters = (props: {
                             (a.name ?? a.id).localeCompare(b.name ?? b.id)
                         );
                     return (
-                        <Accordion allowToggle allowMultiple>
+                        <Accordion allowToggle allowMultiple key={key}>
                             <AccordionItem border="none">
                                 <AccordionButton
                                     backgroundColor="#00000022"
@@ -113,11 +115,7 @@ const Filters = (props: {
                     const getIcon = (
                         icon: keyof typeof AllIcons
                     ): JSX.Element => {
-                        const IconConstructor = AllIcons[
-                            icon
-                            // TODO: \/ this should not be here. fix this.
-                        ] as unknown as React.FunctionComponent;
-
+                        const IconConstructor = AllIcons[icon];
                         return <IconConstructor />;
                     };
 
@@ -128,20 +126,26 @@ const Filters = (props: {
 
                     return (
                         <Checkbox
-                            checked={checked === "checked"}
+                            isChecked={checked === "checked"}
                             isIndeterminate={
                                 allowIndeterminate &&
                                 checked === "indeterminate"
                             }
-                            onChange={(e) => {
-                                if (!onChange) return;
+                            key={key}
+                            onChange={() => {
+                                switch (value.checked) {
+                                    case "indeterminate":
+                                        value.checked = "unchecked";
+                                        break;
+                                    case "checked":
+                                        value.checked = "indeterminate";
+                                        break;
+                                    default:
+                                        value.checked = "checked";
+                                        break;
+                                }
 
-                                const { indeterminate, checked } = e.target;
-                                if (indeterminate) value.checked = "unchecked";
-                                else if (checked)
-                                    value.checked = "indeterminate";
-
-                                return onChange(value, currentFilters);
+                                setFilters(currentFilters);
                             }}
                             isDisabled={isReadonly}
                             icon={
@@ -159,19 +163,28 @@ const Filters = (props: {
                     return (
                         <Input
                             placeholder={placeholderValue}
+                            key={key}
+                            onChange={(e) => {
+                                value.value = e.target.value;
+                                setFilters(currentFilters);
+                            }}
                             value={currentValue}
                         />
                     );
                 }
                 case FilterType.Select: {
-                    const { allowMultiple, name, options, selected } = value;
+                    const { name, options, selected } = value;
 
                     return (
                         <Select
-                            isMulti={allowMultiple}
                             name={name}
-                            value={selected ?? null}
+                            key={key}
                             options={options}
+                            value={selected}
+                            onChange={(option) => {
+                                value.selected = option ?? undefined;
+                                setFilters(currentFilters);
+                            }}
                         />
                     );
                 }
@@ -185,7 +198,7 @@ const Filters = (props: {
                         ).padStart(2, "0")}`;
 
                     return (
-                        <FormControl>
+                        <FormControl key={key}>
                             <FormLabel>{name ?? "Input"}</FormLabel>
                             <Input
                                 sx={{
@@ -201,6 +214,12 @@ const Filters = (props: {
                                         ? sliceDate(selectedDate)
                                         : undefined
                                 }
+                                onChange={(e) => {
+                                    value.selectedDate = new Date(
+                                        Date.parse(e.target.value)
+                                    );
+                                    setFilters(currentFilters);
+                                }}
                                 min={minDate ? sliceDate(minDate) : undefined}
                                 max={maxDate ? sliceDate(maxDate) : undefined}
                             />
@@ -213,12 +232,12 @@ const Filters = (props: {
         };
 
         const out: Array<ReactElement | null> = [];
-        (Object.keys(currentFilters) as Array<string | number>).forEach((v) =>
-            out.push(walker(currentFilters[v], v))
+        (Object.keys(filters) as Array<string | number>).forEach((v) =>
+            out.push(walker(filters[v], v))
         );
 
         return <>{out.filter((n) => n)}</>;
-    }, [handler.filters, onChange]);
+    }, [filters]);
 
     return (
         <Modal isOpen={isOpen} onClose={onClose}>
@@ -245,7 +264,13 @@ const Filters = (props: {
                 </ModalBody>
 
                 <ModalFooter>
-                    <Button variant="ghost" mr={3}>
+                    <Button
+                        onClick={() => {
+                            onSubmit(filters);
+                        }}
+                        variant="ghost"
+                        mr={3}
+                    >
                         Submit
                     </Button>
                     <Button colorScheme="blue" onClick={onClose}>

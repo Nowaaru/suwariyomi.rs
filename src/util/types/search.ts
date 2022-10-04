@@ -57,16 +57,13 @@ type SearchFilterDate = {
     selectedDate?: Date;
 };
 
+export type Option = { value: string; label: string };
+
 type SearchFilterSelect = {
     type: FilterType.Select;
-    options: readonly ({ value: unknown; label: string })[];
-} & (
-    | {
-          allowMultiple?: true;
-          selected?: Options<unknown>;
-      }
-    | { allowMultiple?: false; selected?: Options<unknown>[number] }
-);
+    options: readonly Option[];
+    selected: string;
+};
 
 type SearchFilterGroup = {
     type: FilterType.Group | FilterType.Readonly;
