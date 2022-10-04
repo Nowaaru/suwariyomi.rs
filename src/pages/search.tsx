@@ -58,7 +58,11 @@ type Search = {
 /* END MODAL IMPORTS */
 
 const Search = () => {
-    const { isOpen, onOpen, onClose } = useDisclosure();
+    const {
+        isOpen: filtersIsOpen,
+        onOpen: onFiltersOpen,
+        onClose: onFiltersClose,
+    } = useDisclosure();
     const [queryParams] = useSearchParams();
     const forceUpdate = useForceUpdate();
     const Navigate = useNavigate();
@@ -191,7 +195,11 @@ const Search = () => {
                     .search(
                         query,
                         scope ? results[scope]?.manga.length : 0,
-                        generateTree(SourceHandler.defaultFilters(handler.id))
+                        generateTree(
+                            scope
+                                ? handler.filters
+                                : SourceHandler.defaultFilters(handler.id)
+                        )
                     )
                     .then(resolve)
                     .catch(reject);
@@ -210,6 +218,8 @@ const Search = () => {
             } = currentSearch.current;
 
             if (oldResults[handler.id]) return;
+            if (filtersIsOpen) return;
+
             const cachedData = searchCache.current[oldQuery]?.[handler.id];
             setSearch((oldSearch) => {
                 const { results } = oldSearch;
@@ -256,7 +266,7 @@ const Search = () => {
                         });
                     });
         });
-    });
+    }, [filtersIsOpen, setSearch, trySearch]);
 
     const [infiniteScrollStatus, setScrollStatus] = useState({
         loading: false,
@@ -297,8 +307,20 @@ const Search = () => {
                     handler={SourceHandler.getSource(
                         currentSearch.current.scope
                     )}
-                    isOpen={isOpen}
-                    onClose={onClose}
+                    isOpen={filtersIsOpen}
+                    onSubmit={(newFilters) => {
+                        if (!currentSearch.current.scope) return;
+
+                        SourceHandler.getSource(
+                            currentSearch.current.scope
+                        )?.setFilters(newFilters);
+
+                        setSearch((oldSearch) => {
+                            oldSearch.results = {};
+                            return oldSearch;
+                        });
+                    }}
+                    onClose={onFiltersClose}
                 />
             ) : null}
             <HStack padding="8px" spacing="25%" margin="8px">
@@ -348,7 +370,7 @@ const Search = () => {
                         <Card
                             className={css(styles.filters)}
                             scrollTarget={mainRef}
-                            onClick={onOpen}
+                            onClick={onFiltersOpen}
                         >
                             <HStack>
                                 <Text>Filters</Text>
@@ -400,7 +422,8 @@ const Search = () => {
                                 infiniteScrollStatus.loading ||
                                 currentScopedSearch.manga.length === 0 || // if there is no content, don't bother trying to request it
                                 !infiniteScrollStatus.hasMore ||
-                                !currentSearch.current.scope
+                                !currentSearch.current.scope ||
+                                filtersIsOpen
                             )
                                 return;
 
