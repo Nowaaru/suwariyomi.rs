@@ -62,7 +62,7 @@ export type Option = { value: string; label: string };
 type SearchFilterSelect = {
     type: FilterType.Select;
     options: readonly Option[];
-    selected: string;
+    selected?: unknown;
 };
 
 type SearchFilterGroup = {
