@@ -158,7 +158,7 @@ const View = () => {
                         fontSize: "28px",
                     },
                     transition: "font-size 1s ease-in-out",
-                    fontSize: "48px",
+                    fontSize: "36px",
                     marginBottom: "-8px",
                 },
                 mainauthor: {
@@ -533,9 +533,9 @@ const View = () => {
                             />
                         </div>
                         <div className={css(styles.details)}>
-                            <h1 className={css(styles.title, styles.text)}>
+                            <Text noOfLines={2} className={css(styles.title, styles.text)}>
                                 {mangaData.name}
-                            </h1>
+                            </Text>
                             <span className={css(styles.text, styles.author)}>
                                 by{" "}
                                 <Tooltip label="Click to search this artist.">
