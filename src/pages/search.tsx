@@ -1,6 +1,5 @@
 import { css, StyleSheet } from "aphrodite";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-
 import { SearchIcon } from "@chakra-ui/icons";
 import {
     Box,
@@ -188,7 +187,9 @@ const Search = () => {
     );
 
     const trySearch = useCallback(
-        async (handler: Source): Promise<Array<Manga>> => {
+        async (
+            handler: Source
+        ): Promise<{ total: number; data: Array<Manga> }> => {
             const { query, scope, results } = currentSearch.current;
             return new Promise((resolve, reject) => {
                 handler
@@ -237,7 +238,15 @@ const Search = () => {
                     },
                 };
             });
-            if (!cachedData)
+
+            const scrollStatus = (loading: boolean) =>
+                setScrollStatus((oldStatus) => ({
+                    ...oldStatus,
+                    loading: loading,
+                }));
+
+            if (!cachedData) {
+                if (oldScope) scrollStatus(true);
                 trySearch(handler)
                     .then((searchResults) => {
                         if (oldQuery !== currentSearch.current.query) return;
@@ -246,11 +255,12 @@ const Search = () => {
                         setSearch((oldSearch) => {
                             oldSearch.results[handler.id] = {
                                 status: Status.completed,
-                                manga: searchResults,
+                                manga: searchResults.data,
                             };
 
                             return oldSearch;
                         });
+                        scrollStatus(false);
                     })
                     .catch(() => {
                         if (oldQuery !== currentSearch.current.query) return;
@@ -264,7 +274,9 @@ const Search = () => {
 
                             return oldSearch;
                         });
+                        scrollStatus(false);
                     });
+            }
         });
     }, [filtersIsOpen, setSearch, trySearch]);
 
@@ -315,8 +327,11 @@ const Search = () => {
                             currentSearch.current.scope
                         )?.setFilters(newFilters);
 
+                        searchCache.current = {};
+
                         setSearch((oldSearch) => {
                             oldSearch.results = {};
+                            console.log(oldSearch);
                             return oldSearch;
                         });
                     }}
@@ -325,11 +340,21 @@ const Search = () => {
             ) : null}
             <HStack padding="8px" spacing="25%" margin="8px">
                 <BackButton
-                    onClick={() => {
+                    onClick={async () => {
                         if (!currentSearch.current.scope) Navigate("/library");
+                        await Promise.all(
+                            SourceHandler.sourcesArray.map(async (promise) => {
+                                const source = await promise;
+                                source.setFilters(
+                                    SourceHandler.defaultFilters(source.id)
+                                );
+                            })
+                        );
 
                         setSearch((oldSearch) => {
                             oldSearch.scope = undefined;
+                            oldSearch.results = {};
+                            searchCache.current = {};
                             return oldSearch;
                         });
                     }}
@@ -378,142 +403,6 @@ const Search = () => {
                             </HStack>
                         </Card>
                     </Flex>
-                    <InfiniteScroll
-                        scrollableTarget="search"
-                        dataLength={currentScopedSearch.manga.length}
-                        endMessage={
-                            <Stack
-                                display="flex"
-                                width="100%"
-                                marginBottom="64px"
-                                marginTop="32px"
-                                alignItems="center"
-                                color="#FFFFFF22"
-                                userSelect="none"
-                            >
-                                <Text
-                                    fontSize="64px"
-                                    filter="grayscale(100%) blur(0px) brightness(200%)"
-                                >
-                                    🐰
-                                </Text>
-                                <Text fontFamily="Cascadia Code">
-                                    You&apos;ve finally seen it all.
-                                </Text>
-                            </Stack>
-                        }
-                        loader={
-                            infiniteScrollStatus.loading ? (
-                                <Flex
-                                    alignItems="center"
-                                    justifyContent="center"
-                                    width="100%"
-                                    height="250px"
-                                >
-                                    <CircularProgress showTimeElapsed />
-                                </Flex>
-                            ) : (
-                                <Box width="0" height="0" visibility="hidden" />
-                            )
-                        }
-                        next={() => {
-                            // check if content is already loaded first
-                            if (
-                                infiniteScrollStatus.loading ||
-                                currentScopedSearch.manga.length === 0 || // if there is no content, don't bother trying to request it
-                                !infiniteScrollStatus.hasMore ||
-                                !currentSearch.current.scope ||
-                                filtersIsOpen
-                            )
-                                return;
-
-                            const handler = SourceHandler.getSource(
-                                currentSearch.current.scope
-                            );
-
-                            setScrollStatus({
-                                loading: true,
-                                hasMore: true,
-                            });
-
-                            trySearch(handler).then((resultingManga) => {
-                                if (resultingManga.length <= 0)
-                                    return setScrollStatus({
-                                        loading: false,
-                                        hasMore: false,
-                                    });
-
-                                setSearch((oldSearch) => {
-                                    const oldResults =
-                                        oldSearch.results[handler.id].manga;
-
-                                    oldResults.push(
-                                        ...resultingManga.filter(
-                                            (y) =>
-                                                !oldResults.find(
-                                                    (v) => v.id === y.id
-                                                )
-                                        )
-                                    );
-                                    return oldSearch;
-                                });
-
-                                setScrollStatus({
-                                    loading: false,
-                                    hasMore: true,
-                                });
-                            });
-                        }}
-                        hasMore={infiniteScrollStatus.hasMore}
-                    >
-                        {currentScopedSearch.manga.length > 0 &&
-                        !infiniteScrollStatus.loading ? (
-                            <Flex className={css(styles.mangaContainer)}>
-                                {currentScopedSearch.manga.map((manga) => (
-                                    <LazyLoadComponent
-                                        placeholder={
-                                            <Stack marginBottom="12px">
-                                                <Skeleton
-                                                    width="220px"
-                                                    height="300px"
-                                                />
-                                                <SkeletonText
-                                                    width="200px"
-                                                    noOfLines={1}
-                                                    height="10px"
-                                                />
-                                            </Stack>
-                                        }
-                                        key={`${manga.source}-${manga.id}`}
-                                    >
-                                        <MangaComponent manga={manga} />
-                                    </LazyLoadComponent>
-                                ))}
-                            </Flex>
-                        ) : (
-                            <Stack
-                                display="flex"
-                                width="100%"
-                                height="250px"
-                                alignItems="center"
-                                justifyContent="center"
-                                color="#FFFFFF22"
-                                userSelect="none"
-                                marginBottom="64px"
-                                marginTop="32px"
-                            >
-                                <Text
-                                    fontSize="64px"
-                                    filter="grayscale(100%) blur(0px) brightness(200%)"
-                                >
-                                    ❌
-                                </Text>
-                                <Text fontFamily="Cascadia Code">
-                                    There&apos;s nothing here.
-                                </Text>
-                            </Stack>
-                        )}
-                    </InfiniteScroll>
                 </div>
             ) : (
                 <div className={css(styles.sources)}>
@@ -537,7 +426,6 @@ const Search = () => {
                                         if (currentSearch.current.scope === id)
                                             return;
 
-                                        console.log("new scope:", id);
                                         setSearch((oldSearch) => {
                                             oldSearch.scope = id;
                                             return oldSearch;
@@ -558,7 +446,7 @@ const Search = () => {
                                                     };
                                                     newSearch.results[id] = {
                                                         status: Status.completed,
-                                                        manga: searchResults,
+                                                        manga: searchResults.data,
                                                     };
 
                                                     return newSearch;
