@@ -1,8 +1,12 @@
-import { FilterType, SearchFilter, SearchFilters} from "types/search";
+import { FilterType, SearchFilter, SearchFilters } from "types/search";
 import * as MdIcons from "react-icons/md";
 import * as CkIcons from "@chakra-ui/icons";
+import { FunctionComponent } from "react";
 
-export const AllIcons = { ...MdIcons, ...CkIcons };
+export const AllIcons = { ...MdIcons, ...CkIcons } as unknown as Record<
+    string,
+    FunctionComponent
+>;
 
 const getValue = (toQuery: SearchFilter) => {
     /* eslint-disable no-case-declarations */
@@ -38,9 +42,7 @@ const getValue = (toQuery: SearchFilter) => {
     }
 };
 
-export const generateTree = (
-    searchFiltersBase: SearchFilters
-) => {
+export const generateTree = (searchFiltersBase: SearchFilters) => {
     const out: Record<string, unknown> = {};
     Object.keys(searchFiltersBase).forEach(
         (k) => (out[k] = getValue(searchFiltersBase[k]))
