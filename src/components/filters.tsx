@@ -9,6 +9,7 @@ import {
     Divider,
     FormControl,
     FormLabel,
+    Icon,
     Input,
     Modal,
     ModalBody,
@@ -105,18 +106,15 @@ const Filters = (props: {
                     } = value;
 
                     const checkboxIcons = Object.assign(
-                        value.checkboxIcons ?? {},
                         {
                             checked: "CheckIcon",
                             indeterminate: "MinusIcon",
-                        }
+                        },
+                        value.checkboxIcons ?? {}
                     );
 
-                    const getIcon = (
-                        icon: keyof typeof AllIcons
-                    ): JSX.Element => {
-                        const IconConstructor = AllIcons[icon];
-                        return <IconConstructor />;
+                    const getIcon = (icon: keyof typeof AllIcons) => {
+                        return AllIcons[icon];
                     };
 
                     const newIcons = {
@@ -138,7 +136,9 @@ const Filters = (props: {
                                         value.checked = "unchecked";
                                         break;
                                     case "checked":
-                                        value.checked = "indeterminate";
+                                        value.checked = allowIndeterminate
+                                            ? "indeterminate"
+                                            : "unchecked";
                                         break;
                                     default:
                                         value.checked = "checked";
@@ -148,10 +148,36 @@ const Filters = (props: {
                                 setFilters(currentFilters);
                             }}
                             isDisabled={isReadonly}
+                            size="lg"
+                            iconColor="white"
+                            sx={{
+                                "& span.chakra-checkbox__control": {
+                                    borderColor:
+                                        value.checked !== "unchecked"
+                                            ? "#f8837955"
+                                            : "white",
+                                    backgroundColor:
+                                        value.checked !== "unchecked"
+                                            ? "#f88379"
+                                            : "transparent",
+
+                                    ":hover": {
+                                        borderColor:
+                                            value.checked === "unchecked"
+                                                ? "#f88379"
+                                                : "white",
+                                        backgroundColor:
+                                            value.checked !== "unchecked"
+                                                ? "#f88379"
+                                                : "transparent",
+                                        filter: "brightness(1.2)",
+                                    },
+                                },
+                            }}
                             icon={
-                                checked !== "unchecked"
-                                    ? newIcons[checked]
-                                    : undefined
+                                checked !== "unchecked" ? (
+                                    <Icon as={newIcons[checked]} />
+                                ) : undefined
                             }
                         >
                             {name ?? key}
