@@ -56,7 +56,7 @@ async function dynamicImport(targetPath: string) {
                 )}`
                 /* @vite-ignore */
             )
-        ).default({fetch});
+        ).default({ fetch });
 
     return evalCache[readFile];
 }
@@ -86,7 +86,10 @@ export class SourceHandler {
                                     requiredSource;
 
                                 this.defaults[requiredSource.id] =
-                                    requiredSource.filters;
+                                    Object.freeze({
+                                        ...requiredSource.filters,
+                                    });
+
                                 resolve(requiredSource);
                             });
                         });
@@ -109,7 +112,7 @@ export class SourceHandler {
     }
 
     public defaultFilters(sourceId: keyof typeof this.sources): SearchFilters {
-        return this.defaults[sourceId];
+        return { ...this.defaults[sourceId] };
     }
 
     public async querySource(
