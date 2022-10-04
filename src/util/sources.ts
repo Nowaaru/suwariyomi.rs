@@ -177,7 +177,7 @@ export const MangaValidator = (manga: Manga) => {
     assert(id, "field 'id' should be defined");
 
     assert(
-        !_.isNaN(added) && added > -1,
+        !_.isNaN(added) && added >= -1,
         "field 'added' should be a number greater or equal to -1"
     );
 
