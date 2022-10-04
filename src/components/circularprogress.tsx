@@ -3,9 +3,10 @@ import {
     CircularProgressLabel,
     CircularProgressProps,
 } from "@chakra-ui/react";
+
 import { css, StyleSheet } from "aphrodite";
 import { useEffect, useMemo, useState } from "react";
-
+import _ from "lodash";
 const CircularProgress = (
     props: Omit<
         CircularProgressProps,
@@ -43,7 +44,7 @@ const CircularProgress = (
                     stroke: "#fb8e84",
                 },
             }}
-            {...Object.assign({ ...props }, { showTimeElapsed: undefined })}
+            {..._(props).omit(["showTimeElapsed"]).value()}
         >
             {props.showTimeElapsed ? (
                 <CircularProgressLabel className={css(styles.label)}>
