@@ -34,6 +34,7 @@ import CircularProgress from "components/circularprogress";
 import Filters from "components/filters";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { LazyLoadComponent } from "react-lazy-load-image-component";
+import PageEnd from "components/pageend";
 
 type Cache = {
     [searchQuery: string]: {
@@ -290,6 +291,8 @@ const Search = () => {
         ? currentSearch.current.results[currentSearch.current.scope]
         : null;
 
+    const { loading: scrollLoading, hasMore: scrollMore } =
+        infiniteScrollStatus;
     return (
         <div
             className={css(styles.search)}
@@ -403,6 +406,119 @@ const Search = () => {
                             </HStack>
                         </Card>
                     </Flex>
+                    <InfiniteScroll
+                        dataLength={currentScopedSearch.manga.length}
+                        hasMore={infiniteScrollStatus.hasMore}
+                        scrollableTarget="search"
+                        loader={(() => {
+                            if (infiniteScrollStatus.loading)
+                                return (
+                                    <Flex
+                                        alignItems="center"
+                                        justifyContent="center"
+                                        width="100%"
+                                        height="250px"
+                                    >
+                                        <CircularProgress showTimeElapsed />
+                                    </Flex>
+                                );
+
+                            return (
+                                <Box width="0" height="0" visibility="hidden" />
+                            );
+                        })()}
+                        endMessage={<PageEnd />}
+                        next={() => {
+                            // check if content is already loaded first
+                            if (
+                                infiniteScrollStatus.loading ||
+                                currentScopedSearch.manga.length === 0 || // if there is no content, don't bother trying to request it
+                                !infiniteScrollStatus.hasMore ||
+                                !currentSearch.current.scope ||
+                                filtersIsOpen
+                            )
+                                return;
+
+                            const handler = SourceHandler.getSource(
+                                currentSearch.current.scope
+                            );
+
+                            setScrollStatus({
+                                loading: true,
+                                hasMore: true,
+                            });
+
+                            trySearch(handler).then((data) => {
+                                const { data: resultingManga, total } = data;
+                                if (resultingManga.length <= 0)
+                                    return setScrollStatus({
+                                        loading: false,
+                                        hasMore: false,
+                                    });
+
+                                setSearch((oldSearch) => {
+                                    const oldResults =
+                                        oldSearch.results[handler.id].manga;
+
+                                    const pushedManga = resultingManga.filter(
+                                        (y) =>
+                                            !oldResults.find(
+                                                (v) => v.id === y.id
+                                            )
+                                    );
+
+                                    setScrollStatus({
+                                        loading: false,
+                                        hasMore:
+                                            oldResults.length +
+                                                pushedManga.length <
+                                            total,
+                                    });
+
+                                    oldResults.push(...pushedManga);
+                                    return oldSearch;
+                                });
+                            });
+                        }}
+                    >
+                        <Flex className={css(styles.mangaContainer)}>
+                            {(() => {
+                                const hasManga =
+                                    currentScopedSearch.manga.length > 0;
+                                const displayManga =
+                                    currentScopedSearch.manga.map((manga) => (
+                                        <LazyLoadComponent
+                                            placeholder={
+                                                <Stack marginBottom="12px">
+                                                    <Skeleton
+                                                        width="220px"
+                                                        height="300px"
+                                                    />
+                                                    <SkeletonText
+                                                        width="200px"
+                                                        noOfLines={1}
+                                                        height="10px"
+                                                    />
+                                                </Stack>
+                                            }
+                                            key={`${manga.source}-${manga.id}`}
+                                        >
+                                            <MangaComponent manga={manga} />
+                                        </LazyLoadComponent>
+                                    ));
+
+                                const noResultsPageEnd = (
+                                    <PageEnd
+                                        icon="❌"
+                                        text="There's nothing here."
+                                    />
+                                );
+                                return hasManga
+                                    ? displayManga
+                                    : noResultsPageEnd;
+                            })()}
+                        </Flex>
+                    </InfiniteScroll>
                 </div>
             ) : (
                 <div className={css(styles.sources)}>

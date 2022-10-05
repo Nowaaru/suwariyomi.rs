@@ -27,7 +27,7 @@ import _ from "lodash";
 import { ReactElement, useCallback, useMemo, useState } from "react";
 import { FilterType, HasId, SearchFilter, SearchFilters } from "types/search";
 import { AllIcons } from "util/search";
-import { Source } from "util/sources";
+import SourceHandler, { Source } from "util/sources";
 import Button from "./button";
 
 const Filters = (props: {
@@ -37,7 +37,10 @@ const Filters = (props: {
     onClose: () => void;
 }) => {
     const { handler, isOpen, onClose, onSubmit = _.noop } = props;
-    const initialFilters = useMemo(() => handler.filters, [handler.filters]);
+    const initialFilters = useMemo(
+        () => _.cloneDeep(handler.filters),
+        [handler.filters]
+    );
     const [filters, setFilters] = useState<SearchFilters>(initialFilters); // useRef<SearchFilters>(initialFilters);
 
     const styles = useMemo(
@@ -266,7 +269,13 @@ const Filters = (props: {
     }, [filters]);
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose}>
+        <Modal
+            isOpen={isOpen}
+            onClose={() => {
+                setFilters(initialFilters);
+                onClose();
+            }}
+        >
             <ModalOverlay />
             <ModalContent
                 backgroundColor="#0D1620"
@@ -293,6 +302,7 @@ const Filters = (props: {
                     <Button
                         onClick={() => {
                             onSubmit(filters);
+                            onClose();
                         }}
                         variant="ghost"
                         mr={3}

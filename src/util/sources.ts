@@ -26,7 +26,7 @@ export abstract class Source {
         query: string,
         offset: number,
         tree: Record<string, unknown>
-    ): Promise<Array<Manga>>;
+    ): Promise<{ total: number; data: Array<Manga> }>;
 
     public abstract setFilters(newFilters: SearchFilters): void;
 
@@ -112,7 +112,7 @@ export class SourceHandler {
     }
 
     public defaultFilters(sourceId: keyof typeof this.sources): SearchFilters {
-        return { ...this.defaults[sourceId] };
+        return _.cloneDeep(this.defaults[sourceId]);
     }
 
     public async querySource(
