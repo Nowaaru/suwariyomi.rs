@@ -19,7 +19,7 @@ export const compileVolumeText = (
 export const isChapterCompleted = (chapter: Chapter) =>
     chapter.total && chapter.pages >= chapter.total - 1;
 
-export const formatDate = (date: Date | number, short?: boolean) => {
+export const formatDate = (date: Date | number = -1, short?: boolean) => {
     return date === -1 ? date : format(new Date(date), short ? "MMM. do, yyyy" : "MMMM do, yyyy");
 };
 
