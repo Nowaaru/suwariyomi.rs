@@ -66,6 +66,7 @@ const Search = () => {
     const [queryParams] = useSearchParams();
     const forceUpdate = useForceUpdate();
     const Navigate = useNavigate();
+
     const mainRef = useRef<HTMLDivElement | null | undefined>();
 
     const styles = useMemo(
@@ -130,7 +131,7 @@ const Search = () => {
                     flexWrap: "wrap",
                     flexDirection: "row",
                     backgroundColor: "rgb(18, 30, 42)",
-                    width: "fit-content",
+                    width: "100%",
                     height: "fit-content",
                     minHeight: "250px",
                     marginTop: "16px",
@@ -154,25 +155,21 @@ const Search = () => {
         []
     );
 
+    const [loadingSources, setLoading] = useState<Array<string>>([]);
+    const [hasMore, setMore] = useState<boolean>(true);
     const searchCache = useRef<Cache>({});
-    const currentSearch = useRef<Search>({
+
+    const [currentSearch, _setSearch] = useState<Search>({
         query: queryParams.get("search") ?? "",
         results: {},
     });
 
     const setSearch = useCallback(
         (newValue: ((oldSearch: Search) => Search) | Search) => {
-            if (typeof newValue === "function") {
-                currentSearch.current = newValue({
-                    ...currentSearch.current,
-                });
-            } else currentSearch.current = newValue as Search;
-
-            Object.keys(currentSearch.current.results).forEach((sourceId) => {
+            Object.keys(currentSearch.results).forEach((sourceId) => {
                 const currentCache = searchCache.current;
-                const currentQuery = currentSearch.current.query;
-                const { manga: sourceManga } =
-                    currentSearch.current.results[sourceId];
+                const currentQuery = currentSearch.query;
+                const { manga: sourceManga } = currentSearch.results[sourceId];
 
                 if (!currentCache[currentQuery])
                     return (currentCache[currentQuery] = {
@@ -182,16 +179,25 @@ const Search = () => {
                 currentCache[currentQuery][sourceId] = sourceManga;
             });
 
-            return forceUpdate();
+            if (typeof newValue === "function") {
+                _setSearch(
+                    newValue({
+                        ...currentSearch,
+                    })
+                );
+            } else setSearch(newValue as Search);
         },
-        [forceUpdate]
+        [_setSearch, currentSearch]
     );
 
     const trySearch = useCallback(
         async (
             handler: Source
         ): Promise<{ total: number; data: Array<Manga> }> => {
-            const { query, scope, results } = currentSearch.current;
+            const { query, scope, results } = currentSearch;
+            setLoading([...loadingSources, handler.id]);
+
+            console.log("Trysearch called.");
             return new Promise((resolve, reject) => {
                 handler
                     .search(
@@ -207,7 +213,7 @@ const Search = () => {
                     .catch(reject);
             });
         },
-        []
+        [currentSearch, loadingSources]
     );
 
     useEffect(() => {
@@ -217,10 +223,13 @@ const Search = () => {
                 query: oldQuery,
                 scope: oldScope,
                 results: oldResults,
-            } = currentSearch.current;
+            } = currentSearch;
 
-            if (oldResults[handler.id]) return;
-            if (filtersIsOpen) return;
+            if (loadingSources.includes(handler.id))
+                return console.log("Source is loading.");
+            if (oldResults[handler.id])
+                return console.log("Items already exist.");
+            if (filtersIsOpen) return console.log("Filters is open.");
 
             const cachedData = searchCache.current[oldQuery]?.[handler.id];
             setSearch((oldSearch) => {
@@ -240,19 +249,13 @@ const Search = () => {
                 };
             });
 
-            const scrollStatus = (loading: boolean) =>
-                setScrollStatus((oldStatus) => ({
-                    ...oldStatus,
-                    loading: loading,
-                }));
-
             if (!cachedData) {
-                if (oldScope) scrollStatus(true);
                 trySearch(handler)
                     .then((searchResults) => {
-                        if (oldQuery !== currentSearch.current.query) return;
-                        if (oldScope !== currentSearch.current.scope) return;
+                        if (oldQuery !== currentSearch.query) return;
+                        if (oldScope !== currentSearch.scope) return;
 
+                        setMore(searchResults.data.length < searchResults.total);
                         setSearch((oldSearch) => {
                             oldSearch.results[handler.id] = {
                                 status: Status.completed,
@@ -261,12 +264,12 @@ const Search = () => {
 
                             return oldSearch;
                         });
-                        scrollStatus(false);
                     })
-                    .catch(() => {
-                        if (oldQuery !== currentSearch.current.query) return;
-                        if (oldScope !== currentSearch.current.scope) return;
+                    .catch((err) => {
+                        if (oldQuery !== currentSearch.query) return;
+                        if (oldScope !== currentSearch.scope) return;
 
+                        console.error(err);
                         setSearch((oldSearch) => {
                             oldSearch.results[handler.id] = {
                                 status: Status.error,
@@ -275,24 +278,20 @@ const Search = () => {
 
                             return oldSearch;
                         });
-                        scrollStatus(false);
                     });
-            }
+            } else setMore(true); // if cached, allow loader to see if there's more
         });
-    }, [filtersIsOpen, setSearch, trySearch]);
-
-    const [infiniteScrollStatus, setScrollStatus] = useState({
-        loading: false,
-        hasMore: true,
-    });
+    }, [loadingSources, currentSearch, filtersIsOpen, setSearch, trySearch]);
 
     const searchBar = useRef<HTMLInputElement | null>(null);
-    const currentScopedSearch = currentSearch.current.scope
-        ? currentSearch.current.results[currentSearch.current.scope]
+    const currentScopedSearch = currentSearch.scope
+        ? currentSearch.results[currentSearch.scope]
         : null;
 
-    const { loading: scrollLoading, hasMore: scrollMore } =
-        infiniteScrollStatus;
+    const hasManga = (currentScopedSearch?.manga.length ?? 0) > 0;
+    const scrollLoading =
+        currentSearch.scope && loadingSources.includes(currentSearch.scope);
+
     return (
         <div
             className={css(styles.search)}
@@ -303,7 +302,8 @@ const Search = () => {
                 className={css(styles.hiddenSearchForm)}
                 id="searchbar"
                 onSubmit={(e) => {
-                    if (searchBar.current)
+                    if (searchBar.current) {
+                        setLoading([]);
                         setSearch((oldSearch) => {
                             oldSearch.results = {};
                             oldSearch.query = (
@@ -312,29 +312,26 @@ const Search = () => {
 
                             return oldSearch;
                         });
-
+                    }
                     e.stopPropagation();
                     e.preventDefault();
                 }}
             />
-            {currentSearch.current.scope ? (
+            {currentSearch.scope ? (
                 <Filters
-                    handler={SourceHandler.getSource(
-                        currentSearch.current.scope
-                    )}
+                    handler={SourceHandler.getSource(currentSearch.scope)}
                     isOpen={filtersIsOpen}
                     onSubmit={(newFilters) => {
-                        if (!currentSearch.current.scope) return;
+                        if (!currentSearch.scope) return;
 
                         SourceHandler.getSource(
-                            currentSearch.current.scope
+                            currentSearch.scope
                         )?.setFilters(newFilters);
 
                         searchCache.current = {};
 
                         setSearch((oldSearch) => {
                             oldSearch.results = {};
-                            console.log(oldSearch);
                             return oldSearch;
                         });
                     }}
@@ -344,7 +341,7 @@ const Search = () => {
             <HStack padding="8px" spacing="25%" margin="8px">
                 <BackButton
                     onClick={async () => {
-                        if (!currentSearch.current.scope) Navigate("/library");
+                        if (!currentSearch.scope) Navigate("/library");
                         await Promise.all(
                             SourceHandler.sourcesArray.map(async (promise) => {
                                 const source = await promise;
@@ -354,10 +351,12 @@ const Search = () => {
                             })
                         );
 
+                        setMore(true);
+                        setLoading([]);
+                        searchCache.current = {};
                         setSearch((oldSearch) => {
                             oldSearch.scope = undefined;
                             oldSearch.results = {};
-                            searchCache.current = {};
                             return oldSearch;
                         });
                     }}
@@ -373,7 +372,7 @@ const Search = () => {
                         placeholder="Search here..."
                         form="searchbar"
                         ref={searchBar}
-                        defaultValue={currentSearch.current.query}
+                        defaultValue={currentSearch.query}
                     />
                 </InputGroup>
             </HStack>
@@ -408,10 +407,10 @@ const Search = () => {
                     </Flex>
                     <InfiniteScroll
                         dataLength={currentScopedSearch.manga.length}
-                        hasMore={infiniteScrollStatus.hasMore}
+                        hasMore={hasMore}
                         scrollableTarget="search"
                         loader={(() => {
-                            if (infiniteScrollStatus.loading)
+                            if (scrollLoading)
                                 return (
                                     <Flex
                                         alignItems="center"
@@ -431,31 +430,19 @@ const Search = () => {
                         next={() => {
                             // check if content is already loaded first
                             if (
-                                infiniteScrollStatus.loading ||
-                                currentScopedSearch.manga.length === 0 || // if there is no content, don't bother trying to request it
-                                !infiniteScrollStatus.hasMore ||
-                                !currentSearch.current.scope ||
-                                filtersIsOpen
+                                filtersIsOpen ||
+                                !hasMore ||
+                                !currentSearch.scope ||
+                                currentScopedSearch.manga.length === 0 // initial search is done elsewhere
                             )
                                 return;
 
                             const handler = SourceHandler.getSource(
-                                currentSearch.current.scope
+                                currentSearch.scope
                             );
-
-                            setScrollStatus({
-                                loading: true,
-                                hasMore: true,
-                            });
 
                             trySearch(handler).then((data) => {
                                 const { data: resultingManga, total } = data;
-                                if (resultingManga.length <= 0)
-                                    return setScrollStatus({
-                                        loading: false,
-                                        hasMore: false,
-                                    });
-
                                 setSearch((oldSearch) => {
                                     const oldResults =
                                         oldSearch.results[handler.id].manga;
@@ -467,24 +454,26 @@ const Search = () => {
                                             )
                                     );
 
-                                    setScrollStatus({
-                                        loading: false,
-                                        hasMore:
-                                            oldResults.length +
-                                                pushedManga.length <
-                                            total,
-                                    });
+                                    setMore(
+                                        oldResults.length + pushedManga.length <
+                                            total
+                                    );
 
                                     oldResults.push(...pushedManga);
                                     return oldSearch;
                                 });
-                            });
+                            }).catch(console.error);
                         }}
                     >
-                        <Flex className={css(styles.mangaContainer)}>
+                        <Flex
+                            className={css(styles.mangaContainer)}
+                            visibility={
+                                !hasManga && scrollLoading
+                                    ? "hidden"
+                                    : "visible"
+                            }
+                        >
                             {(() => {
-                                const hasManga =
-                                    currentScopedSearch.manga.length > 0;
                                 const displayManga =
                                     currentScopedSearch.manga.map((manga) => (
                                         <LazyLoadComponent
@@ -513,6 +502,7 @@ const Search = () => {
                                         text="There's nothing here."
                                     />
                                 );
+
                                 return hasManga
                                     ? displayManga
                                     : noResultsPageEnd;
@@ -522,15 +512,14 @@ const Search = () => {
                 </div>
             ) : (
                 <div className={css(styles.sources)}>
-                    {Object.keys(currentSearch.current.results ?? {})
+                    {Object.keys(currentSearch.results ?? {})
                         .map((sourceId) => {
                             const sourceHandler =
                                 SourceHandler.getSource(sourceId);
                             if (!sourceHandler) return;
 
                             const storedManga =
-                                currentSearch.current.results[sourceId]
-                                    ?.manga ?? [];
+                                currentSearch.results[sourceId]?.manga ?? [];
 
                             return (
                                 <SearchSource
@@ -539,8 +528,7 @@ const Search = () => {
                                     sourceName={sourceHandler.id}
                                     sourceManga={storedManga}
                                     onScopeChange={(_, id) => {
-                                        if (currentSearch.current.scope === id)
-                                            return;
+                                        if (currentSearch.scope === id) return;
 
                                         setSearch((oldSearch) => {
                                             oldSearch.scope = id;
@@ -571,8 +559,7 @@ const Search = () => {
                                         );
                                     }}
                                     status={
-                                        currentSearch.current.results[sourceId]
-                                            ?.status
+                                        currentSearch.results[sourceId]?.status
                                     }
                                 />
                             );
