@@ -505,7 +505,7 @@ const View = () => {
                             className={css(styles.bg)}
                         />
                     </div>
-                    <BackButton to="/search" className={css(styles.backbutton)}>
+                    <BackButton className={css(styles.backbutton)}>
                         Back
                     </BackButton>
                     <hr className={css(styles.line, styles.lineabsolute)} />
@@ -594,7 +594,7 @@ const View = () => {
                                 </Tooltip>
                                 <ButtonGroup>
                                     <Button
-                                        backgroundColor={"#fb8e84"}
+                                        backgroundColor="#fb8e84"
                                         color="whitesmoke"
                                         _hover={{
                                             bg: "#f88379",
