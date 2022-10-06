@@ -15,26 +15,25 @@ import {
     useDisclosure,
 } from "@chakra-ui/react";
 import { css, StyleSheet } from "aphrodite";
-import Card from "components/card";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { Manga } from "types/manga";
+
 import SourceHandler, { Source } from "util/sources";
-
-import { MdFilterList } from "react-icons/md";
-
 import SearchSource, { Status } from "components/searchsource";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { LazyLoadComponent } from "react-lazy-load-image-component";
 import { generateTree } from "util/search";
-
-import BackButton from "components/button";
-import MangaComponent from "components/manga";
-import useForceUpdate from "hooks/forceupdate";
+import { MdFilterList } from "react-icons/md";
+import type { Manga } from "types/manga";
 
 import CircularProgress from "components/circularprogress";
+import InfiniteScroll from "react-infinite-scroll-component";
+import SearchCache from "util/searchcache";
+import MangaComponent from "components/manga";
+import BackButton from "components/button";
 import Filters from "components/filters";
 import PageEnd from "components/pageend";
-import InfiniteScroll from "react-infinite-scroll-component";
-import { LazyLoadComponent } from "react-lazy-load-image-component";
+import Card from "components/card";
+
 
 type Cache = {
     [searchQuery: string]: {
@@ -64,7 +63,6 @@ const Search = () => {
         onClose: onFiltersClose,
     } = useDisclosure();
     const [queryParams] = useSearchParams();
-    const forceUpdate = useForceUpdate();
     const Navigate = useNavigate();
 
     const mainRef = useRef<HTMLDivElement | null | undefined>();
@@ -186,9 +184,11 @@ const Search = () => {
 
                 handleCache(functionReturn);
                 setSearch_RAW(functionReturn);
+                SearchCache.set(functionReturn);
                 return;
             }
 
+            SearchCache.set(newValue);
             handleCache(newValue as Search);
             setSearch_RAW(newValue as Search);
         },
