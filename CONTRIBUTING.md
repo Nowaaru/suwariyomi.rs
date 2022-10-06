@@ -8,7 +8,7 @@ When contributing, you must follow a small set of guidelines.
 
   When writing a commit, it should follow the following format:
 
-  `<type>[field/optional scope]: <description>
+  `<type>[field/optional scope]: <description>`
 
   where `field` represents the area where the commit was made:
 
