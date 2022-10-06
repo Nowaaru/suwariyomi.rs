@@ -129,7 +129,7 @@ const Filters = (props: {
                     const isChecked = value.checked !== "unchecked";
                     return (
                         <Checkbox
-                            isChecked={isChecked === "checked"}
+                            isChecked={isChecked}
                             isIndeterminate={
                                 allowIndeterminate &&
                                 checked === "indeterminate"
@@ -155,29 +155,9 @@ const Filters = (props: {
                             isDisabled={isReadonly}
                             size="lg"
                             iconColor="white"
-                            sx={{
-                                "& span.chakra-checkbox__control": {
-                                    borderColor: isChecked
-                                        ? "#f8837955"
-                                        : "white",
-                                    backgroundColor: isChecked
-                                        ? "#f88379"
-                                        : "transparent",
-
-                                    ":hover": {
-                                        borderColor: isChecked
-                                            ? "#f88379"
-                                            : "white",
-                                        backgroundColor: isChecked
-                                            ? "#f88379"
-                                            : "transparent",
-                                        filter: "brightness(1.2)",
-                                    },
-                                },
-                            }}
                             icon={
                                 checked !== "unchecked" ? (
-                                    <Icon opacity={1} as={newIcons[checked]} />
+                                    <Icon as={newIcons[checked]} />
                                 ) : undefined
                             }
                         >
