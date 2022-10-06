@@ -27,13 +27,12 @@ import type { Manga } from "types/manga";
 
 import CircularProgress from "components/circularprogress";
 import InfiniteScroll from "react-infinite-scroll-component";
-import SearchCache from "util/searchcache";
+import SearchCache, { Search } from "util/searchcache";
 import MangaComponent from "components/manga";
 import BackButton from "components/button";
 import Filters from "components/filters";
 import PageEnd from "components/pageend";
 import Card from "components/card";
-
 
 type Cache = {
     [searchQuery: string]: {
@@ -41,22 +40,7 @@ type Cache = {
     };
 };
 
-type Search = {
-    query: string;
-    scope?: string;
-    results: Record<
-        string,
-        {
-            status: Status;
-            manga: Array<Manga>;
-        }
-    >;
-};
-
-/* BEGIN MODAL IMPORTS */
-/* END MODAL IMPORTS */
-
-const Search = () => {
+const SearchPage = () => {
     const {
         isOpen: filtersIsOpen,
         onOpen: onFiltersOpen,
@@ -156,10 +140,12 @@ const Search = () => {
     const [hasMore, setMore] = useState<boolean>(true);
     const searchCache = useRef<Cache>({});
 
-    const [currentSearch, setSearch_RAW] = useState<Search>({
-        query: queryParams.get("search") ?? "",
-        results: {},
-    });
+    const [currentSearch, setSearch_RAW] = useState<Search>(
+        SearchCache.get() ?? {
+            query: queryParams.get("search") ?? "",
+            results: {},
+        }
+    );
 
     const setSearch = useCallback(
         (newValue: ((oldSearch: Search) => Search) | Search) => {
@@ -228,10 +214,8 @@ const Search = () => {
                 results: oldResults,
             } = currentSearch;
 
-            if (oldResults[handler.id])
-                return console.log("Items already exist.");
-
-            if (filtersIsOpen) return console.log("Filters is open.");
+            if (oldResults[handler.id]) return;
+            if (filtersIsOpen) return;
 
             const cachedData = searchCache.current[oldQuery]?.[handler.id];
             setSearch_RAW((oldSearch) => {
@@ -579,4 +563,4 @@ const Search = () => {
     );
 };
 
-export default Search;
+export default SearchPage;

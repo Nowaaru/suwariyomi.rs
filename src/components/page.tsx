@@ -1,3 +1,4 @@
+import SearchCache from "util/searchcache";
 const Page = ({ children, id}: { children: JSX.Element, id: string }) => {
     switch (id) {
         case "View":
@@ -5,7 +6,7 @@ const Page = ({ children, id}: { children: JSX.Element, id: string }) => {
             break;
 
         default: {
-            window.localStorage.removeItem("search_cache");
+            SearchCache.set();
         }
     }
 

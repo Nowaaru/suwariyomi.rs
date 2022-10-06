@@ -1,14 +1,30 @@
+import {Status} from "components/searchsource";
+import {Manga} from "types/manga";
+
+export type Search = {
+    query: string;
+    scope?: string;
+    results: Record<
+        string,
+        {
+            status: Status;
+            manga: Array<Manga>;
+        }
+    >;
+};
+
 class SearchCache {
-    public set(data?: unknown) {
+    public set(data?: Search) {
         this.data = data;
-        console.log(data);
     }
 
     public get() {
         return this.data;
     }
 
-    private data?: unknown;
+    private data?: Search;
 }
+
+
 
 export default new SearchCache();

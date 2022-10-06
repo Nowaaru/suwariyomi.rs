@@ -11,7 +11,6 @@ import Search from "pages/search";
 
 import _ from "lodash";
 import Page from "components/page";
-import SearchCache from "util/searchcache";
 
 // Utility
 import DefaultThemeDark from "assets/themes/dark";
