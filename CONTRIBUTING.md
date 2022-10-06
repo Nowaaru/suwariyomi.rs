@@ -8,7 +8,7 @@ When contributing, you must follow a small set of guidelines.
 
     When writing a commit, it should follow the following format:
 
-    `<type>[field/optional scope]: <description>`
+    `[optional: skip ci] <type>[field/optional scope]: <description>`
 
     where `field` represents the area where the commit was made:
 
@@ -24,6 +24,9 @@ When contributing, you must follow a small set of guidelines.
 
     It is optional to use square brackets, parenthesis, or curly
     brackets for the field.
+
+    If you are using the `meta` field, then please use `skip ci` unless necessary.
+    When changing code, you should almost never use [skip ci].
 
     Generally, follow the rules of: [Conventional Commits 1.0.0](https://www.conventionalcommits.org/en/v1.0.0/)
 

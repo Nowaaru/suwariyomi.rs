@@ -36,7 +36,12 @@ See [SOURCES.md](./SOURCES.md) for more information.
 
 ## Contributing
 
-Please see [CONTRIBUTING.md](./CONTRIBUTING.md).
+First, follow the steps in the [Building From Source](#building-from-source) section.
+
+When you're finished making your changes, [make a pull request](https://github.com/Nowaaru/suwariyomi.rs/compare)
+and follow the prompt.
+
+Please see [CONTRIBUTING.md](./CONTRIBUTING.md) if you want to figure out more.
 
 <!--
 1. No committing changes to both frontend and backend at the same time.
