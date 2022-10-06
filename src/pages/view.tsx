@@ -5,7 +5,6 @@ import { Chapter, Manga } from "types/manga";
 import BackButton from "components/button";
 import CircularProgress from "components/circularprogress";
 import _ from "lodash";
-import { useNavigate } from "react-router-dom";
 import SourceHandler, { Source } from "util/sources";
 
 import ipc from "ipc";
@@ -19,7 +18,7 @@ import {
     Tooltip,
 } from "@chakra-ui/react";
 import ChapterComponent from "components/chapter";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { stripHtml } from "string-strip-html";
 import {
     compileChapterTitle,
@@ -27,7 +26,7 @@ import {
     isChapterCompleted,
 } from "util/textutil";
 
-const { manga: MangaDB, chapters: ChapterDB } = ipc;
+const { manga: MangaDB } = ipc;
 
 // TODO: Automatically scroll to the last-read chapter
 // TODO: When starting to read a chapter, look at the scanlators
@@ -533,7 +532,10 @@ const View = () => {
                             />
                         </div>
                         <div className={css(styles.details)}>
-                            <Text noOfLines={2} className={css(styles.title, styles.text)}>
+                            <Text
+                                noOfLines={2}
+                                className={css(styles.title, styles.text)}
+                            >
                                 {mangaData.name}
                             </Text>
                             <span className={css(styles.text, styles.author)}>

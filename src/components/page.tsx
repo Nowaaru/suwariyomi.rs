@@ -1,5 +1,5 @@
 import SearchCache from "util/searchcache";
-const Page = ({ children, id}: { children: JSX.Element, id: string }) => {
+const Page = ({ children, id }: { children: JSX.Element; id: string }) => {
     switch (id) {
         case "View":
         case "Search":

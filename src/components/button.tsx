@@ -1,6 +1,6 @@
 import { Button as CButton, ButtonProps } from "@chakra-ui/react";
-import { useNavigate } from "react-router-dom";
 import _ from "lodash";
+import { useNavigate } from "react-router-dom";
 
 const Button = (
     props: ButtonProps &

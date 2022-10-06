@@ -1,5 +1,5 @@
-import {Status} from "components/searchsource";
-import {Manga} from "types/manga";
+import { Status } from "components/searchsource";
+import { Manga } from "types/manga";
 
 export type Search = {
     query: string;
@@ -26,7 +26,5 @@ class SearchCache {
 
     private data?: Search;
 }
-
-
 
 export default new SearchCache();
