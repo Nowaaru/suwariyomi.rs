@@ -230,7 +230,7 @@ const SearchSource = (props: SearchSourceProps) => {
 
             {(() => {
                 switch (status) {
-                    case "error":
+                    case Status.error:
                         return (
                             <div className={css(styles.box)}>
                                 <Flex
@@ -259,7 +259,7 @@ const SearchSource = (props: SearchSourceProps) => {
                                     </HStack>
                                     <Button
                                         onClick={(e) => onRetry(e, sourceName)}
-                                        to={null}
+                                        to={undefined}
                                         size="sm"
                                     >
                                         Retry?
@@ -267,7 +267,7 @@ const SearchSource = (props: SearchSourceProps) => {
                                 </Flex>
                             </div>
                         );
-                    case "searching":
+                    case Status.searching:
                         return (
                             <div className={css(styles.box)}>
                                 <Flex
@@ -295,7 +295,7 @@ const SearchSource = (props: SearchSourceProps) => {
                                 </Flex>
                             </div>
                         );
-                    case "completed":
+                    case Status.completed:
                     default:
                         if (sourceManga.length > 0)
                             return (
