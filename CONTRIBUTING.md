@@ -8,7 +8,7 @@ When contributing, you must follow a small set of guidelines.
 
   When writing a commit, it should follow the following format:
 
-  <`type`>[`field`/`optional scope`]: <`description`>
+  `<type>[field/optional scope]: <description>
 
   where `field` represents the area where the commit was made:
 
@@ -20,6 +20,9 @@ When contributing, you must follow a small set of guidelines.
   a commit should never contain modifications to more than one
   field. there is only one exception: **if you are reflecting
   an interface change** e.g. ipc
+
+  it is optional to use square brackets, parenthesis, or curly
+  brackets for the field.
 
 - **Pull Requests**
 
@@ -37,7 +40,7 @@ When contributing, you must follow a small set of guidelines.
   If your pull request has been in processing for a long time,
   feel free to mention reviewers at any time for a status update.
 
---
+---
 
 When you contribute to the repository, you get a shiny spot of
 representation in the front page of the repository! You also
