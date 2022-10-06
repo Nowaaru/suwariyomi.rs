@@ -4,41 +4,44 @@ You want to become a contributor? Awesome! ✨
 
 When contributing, you must follow a small set of guidelines.
 
-- **Commit Format**
+-   **Commit Format**
 
-  When writing a commit, it should follow the following format:
+    When writing a commit, it should follow the following format:
 
-  `<type>[field/optional scope]: <description>`
+    `<type>[field/optional scope]: <description>`
 
-  where `field` represents the area where the commit was made:
+    where `field` represents the area where the commit was made:
 
-  - frontend: typescript-centric commit
-  - backend: rust-centric commit
-  - mixed: commit contains both frontend and backend changes
-  - meta: repository-centric commit
+    -   frontend: typescript-centric commit
+    -   backend: rust-centric commit
+    -   mixed: commit contains both frontend and backend changes
+    -   meta: repository-centric commit
 
-  a commit should never contain modifications to more than one
-  field. there is only one exception: **if you are reflecting
-  an interface change** e.g. ipc
+    A commit should never contain modifications to more than one
+    field. there is only one exception: **if you are reflecting
+    an interface change** e.g. updating the IPC to support a new
+    command.
 
-  it is optional to use square brackets, parenthesis, or curly
-  brackets for the field.
+    It is optional to use square brackets, parenthesis, or curly
+    brackets for the field.
 
-- **Pull Requests**
+    Generally, follow the rules of: [Conventional Commits 1.0.0](https://www.conventionalcommits.org/en/v1.0.0/)
 
-  You've finalized your changes and you're ready to make a
-  pull request, so what's next?
+-   **Pull Requests**
 
-  First, make sure that you've followed the layout of the
-  placeholder. If the bare minimum isn't followed, the
-  pull request will be closed.
+    You've finalized your changes and you're ready to make a
+    pull request, so what's next?
 
-  Please make sure all checks are passing and ensure that
-  code quality is at least something more than a rotten
-  spaghetti bowl.
+    First, make sure that you've followed the layout of the
+    placeholder. If the bare minimum isn't followed, the
+    pull request will be closed.
 
-  If your pull request has been in processing for a long time,
-  feel free to mention reviewers at any time for a status update.
+    Please make sure all checks are passing and ensure that
+    code quality is at least something more than a rotten
+    spaghetti bowl.
+
+    If your pull request has been in processing for a long time,
+    feel free to mention reviewers at any time for a status update.
 
 ---
 
@@ -46,4 +49,4 @@ When you contribute to the repository, you get a shiny spot of
 representation in the front page of the repository! You also
 get a few badges depending on the kind of contribution you make.
 
-Thank you! ❤️
+###### Thank you! ❤️
