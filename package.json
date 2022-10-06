@@ -38,6 +38,7 @@
         "react-router": "^6.3.0",
         "react-router-dom": "^6.3.0",
         "react-select": "^5.4.0",
+        "ripple-effects": "^1.0.2",
         "string-strip-html": "^11.6.4",
         "use-image": "^1.0.12",
         "vite-plugin-swc-react-refresh": "^2.0.0"
