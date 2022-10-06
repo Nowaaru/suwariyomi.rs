@@ -1,5 +1,6 @@
 import { Button as CButton, ButtonProps } from "@chakra-ui/react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import _ from "lodash";
 
 const Button = (
     props: ButtonProps &
@@ -8,7 +9,9 @@ const Button = (
             | { to?: never; onClick: ButtonProps["onClick"] }
         )
 ) => {
-    const coreButton = (
+    const Navigate = useNavigate();
+
+    return (
         <CButton
             borderRadius="2px"
             backgroundColor="#fb8e84"
@@ -16,16 +19,18 @@ const Button = (
             _hover={{
                 bg: "#f88379",
             }}
-            {...props}
+            onClick={
+                props.onClick ??
+                (() => {
+                    if (props.to) return Navigate(props.to);
+
+                    return Navigate(-1);
+                })
+            }
+            {..._.omit(props, "onChange")}
         >
             {props.children ?? "Button"}
         </CButton>
-    );
-
-    return !props.onClick ? (
-        <Link to={props.to ?? "/library"}>{coreButton}</Link>
-    ) : (
-        coreButton
     );
 };
 
