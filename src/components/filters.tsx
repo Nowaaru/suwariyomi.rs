@@ -5,7 +5,6 @@ import {
     AccordionItem,
     AccordionPanel,
     Box,
-    Checkbox,
     Divider,
     FormControl,
     FormLabel,
@@ -22,13 +21,15 @@ import {
 } from "@chakra-ui/react";
 
 import { css, StyleSheet } from "aphrodite";
-import Select from "components/select";
-import _ from "lodash";
 import { ReactElement, useCallback, useMemo, useState } from "react";
 import { FilterType, HasId, SearchFilter, SearchFilters } from "types/search";
 import { AllIcons } from "util/search";
-import SourceHandler, { Source } from "util/sources";
+import { Source } from "util/sources";
+import Select from "components/select";
+
+import _ from "lodash";
 import Button from "./button";
+import Checkbox from "./checkbox";
 
 const Filters = (props: {
     handler: Source;
@@ -125,9 +126,10 @@ const Filters = (props: {
                         indeterminate: getIcon(checkboxIcons.indeterminate),
                     };
 
+                    const isChecked = value.checked !== "unchecked";
                     return (
                         <Checkbox
-                            isChecked={checked === "checked"}
+                            isChecked={isChecked === "checked"}
                             isIndeterminate={
                                 allowIndeterminate &&
                                 checked === "indeterminate"
@@ -155,31 +157,27 @@ const Filters = (props: {
                             iconColor="white"
                             sx={{
                                 "& span.chakra-checkbox__control": {
-                                    borderColor:
-                                        value.checked !== "unchecked"
-                                            ? "#f8837955"
-                                            : "white",
-                                    backgroundColor:
-                                        value.checked !== "unchecked"
-                                            ? "#f88379"
-                                            : "transparent",
+                                    borderColor: isChecked
+                                        ? "#f8837955"
+                                        : "white",
+                                    backgroundColor: isChecked
+                                        ? "#f88379"
+                                        : "transparent",
 
                                     ":hover": {
-                                        borderColor:
-                                            value.checked === "unchecked"
-                                                ? "#f88379"
-                                                : "white",
-                                        backgroundColor:
-                                            value.checked !== "unchecked"
-                                                ? "#f88379"
-                                                : "transparent",
+                                        borderColor: isChecked
+                                            ? "#f88379"
+                                            : "white",
+                                        backgroundColor: isChecked
+                                            ? "#f88379"
+                                            : "transparent",
                                         filter: "brightness(1.2)",
                                     },
                                 },
                             }}
                             icon={
                                 checked !== "unchecked" ? (
-                                    <Icon as={newIcons[checked]} />
+                                    <Icon opacity={1} as={newIcons[checked]} />
                                 ) : undefined
                             }
                         >
