@@ -1,18 +1,11 @@
 import { Checkbox, CheckboxProps } from "@chakra-ui/react";
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 
 import _ from "lodash";
-import ripple from "ripple-effects";
-
 const CheckboxRipple = (props: CheckboxProps) => {
-    const ref = useRef<null | HTMLInputElement>(null);
-
-    useEffect(() => {
-        if (!ref.current) return;
-        ripple(ref.current);
-    }, []);
-
+    const ref = useRef<HTMLInputElement>(null);
     const checked = props.isChecked || props.isIndeterminate;
+
     return (
         <Checkbox
             onChange={(e) => {
