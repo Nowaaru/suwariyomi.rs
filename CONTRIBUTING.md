@@ -28,6 +28,13 @@ When contributing, you must follow a small set of guidelines.
     If you are using the `meta` field, then please use `skip ci` unless necessary.
     When changing code, you should almost never use [skip ci].
 
+    Examples:
+
+    -   [skip ci] docs(meta/readme): change line endings
+    -   fix(frontend): fix library infinite loop
+    -   feat(frontend/search): implement search history button
+    -   chore(backend): capitalize table fields
+
     Generally, follow the rules of: [Conventional Commits 1.0.0](https://www.conventionalcommits.org/en/v1.0.0/)
 
 -   **Pull Requests**
