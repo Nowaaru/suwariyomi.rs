@@ -9,21 +9,12 @@ import SplashScreen from "pages/splash";
 import Reader from "pages/reader";
 import Search from "pages/search";
 
-import SourceHandler from "util/sources";
-
-new Promise((res) => setTimeout(res, 1000)).then(() => {
-    const sourceHandler = SourceHandler.getSource("MangaDex");
-    const myTree = generateTree(sourceHandler.filters);
-
-    // sourceHandler.search(myTree).then(console.log);
-});
+import _ from "lodash";
+import Page from "components/page";
+import SearchCache from "util/searchcache";
 
 // Utility
 import DefaultThemeDark from "assets/themes/dark";
-import { generateTree } from "util/search";
-// TODO: Instead of directly writing the routes with the target page
-//      we should use a function to setup any additional logic (i.e. redirecting),
-//      and then return the logic after all is done.
 
 export default function App() {
     window.addEventListener("keydown", (e) => {
@@ -32,17 +23,28 @@ export default function App() {
         }
     });
 
+    const Pages = _.mapValues(
+        {
+            Library,
+            Reader,
+            View,
+            Search,
+            SplashScreen,
+        },
+        (Route, key) => <Page id={key}>{<Route />}</Page>
+    );
+
     return (
         <React.StrictMode>
             <ChakraProvider theme={extendTheme(DefaultThemeDark)}>
                 <BrowserRouter>
                     <Routes>
-                        <Route path="/" element={<Library />} />
-                        <Route path="library" element={<Library />} />
-                        <Route path="reader" element={<Reader />} />
-                        <Route path="view" element={<View />} />
-                        <Route path="search" element={<Search />} />
-                        <Route path="splash" element={<SplashScreen />} />
+                        <Route path="/" element={Pages.Library} />
+                        <Route path="library" element={Pages.Library} />
+                        <Route path="reader" element={Pages.Reader} />
+                        <Route path="view" element={Pages.View} />
+                        <Route path="search" element={Pages.Search} />
+                        <Route path="splash" element={Pages.SplashScreen} />
                     </Routes>
                 </BrowserRouter>
             </ChakraProvider>
