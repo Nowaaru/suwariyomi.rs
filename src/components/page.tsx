@@ -7,6 +7,7 @@ const Page = ({ children, id}: { children: JSX.Element, id: string }) => {
 
         default: {
             SearchCache.set();
+            SearchCache.scroll = undefined;
         }
     }
 

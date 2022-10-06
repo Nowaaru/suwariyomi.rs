@@ -15,7 +15,14 @@ import {
     useDisclosure,
 } from "@chakra-ui/react";
 import { css, StyleSheet } from "aphrodite";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+    useCallback,
+    useEffect,
+    useLayoutEffect,
+    useMemo,
+    useRef,
+    useState,
+} from "react";
 
 import SourceHandler, { Source } from "util/sources";
 import SearchSource, { Status } from "components/searchsource";
@@ -33,6 +40,7 @@ import BackButton from "components/button";
 import Filters from "components/filters";
 import PageEnd from "components/pageend";
 import Card from "components/card";
+import _ from "lodash";
 
 type Cache = {
     [searchQuery: string]: {
@@ -49,8 +57,7 @@ const SearchPage = () => {
     const [queryParams] = useSearchParams();
     const Navigate = useNavigate();
 
-    const mainRef = useRef<HTMLDivElement | null | undefined>();
-
+    const mainRef = useRef<HTMLDivElement>(null);
     const styles = useMemo(
         () =>
             StyleSheet.create({
@@ -272,6 +279,22 @@ const SearchPage = () => {
         });
     }, [currentSearch, filtersIsOpen, setSearch, trySearch]);
 
+    useLayoutEffect(() => {
+        mainRef.current?.scrollTo(
+            0,
+            SearchCache.scroll ?? mainRef.current.scrollTop
+        );
+
+        SearchCache.scroll = undefined;
+    }, []);
+
+    const scrollHandler = useCallback(
+        _.throttle(() => {
+            SearchCache.scroll = mainRef.current?.scrollTop;
+        }, 100),
+        []
+    );
+
     const searchBar = useRef<HTMLInputElement | null>(null);
     const currentScopedSearch = currentSearch.scope
         ? currentSearch.results[currentSearch.scope]
@@ -284,7 +307,8 @@ const SearchPage = () => {
         <div
             className={css(styles.search)}
             id="search"
-            ref={(r) => (mainRef.current = r)}
+            onScroll={scrollHandler}
+            ref={mainRef}
         >
             <form
                 className={css(styles.hiddenSearchForm)}

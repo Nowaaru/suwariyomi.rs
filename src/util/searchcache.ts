@@ -22,6 +22,8 @@ class SearchCache {
         return this.data;
     }
 
+    public scroll?: number;
+
     private data?: Search;
 }
 
