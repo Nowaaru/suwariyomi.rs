@@ -13,15 +13,19 @@
 ###### [dependencies] rust (nightly), node, npm.
 
 1. To build `suwariyomi.rs`, first clone the repository:
+
    `git clone --depth 1 https://github.com/Nowaaru/suwariyomi.rs.git ./suwariyomi.rs`
 
 2. Then, navigate into the new folder:
+
    `cd ./suwariyomi.rs`
 
 3. Compile dependencies:
+
    `npm install`
 
 4. To run the application in dev, run:
+
    `npm run tauri dev`
 
 ## Source Extensions
