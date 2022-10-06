@@ -358,7 +358,7 @@ const Library = () => {
                         icon={<ViewIcon />}
                     />
                 </Link>
-                <Link to={`/search`}>
+                <Link to="/search">
                     <LibraryButton
                         aria-label="Go to Search"
                         icon={<SearchIcon />}
