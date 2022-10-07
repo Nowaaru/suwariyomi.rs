@@ -23,17 +23,23 @@ When contributing, you must follow a small set of guidelines.
 
     and `type` represents the type of commit you are making:
 
-    -   build: relating to the build process
-    -   chore: small code-related tasks
-    -   ci: relating to continuous integration
-    -   docs: relating to documentation changes
-    -   feat: adds new functionality to suwariyomi
-    -   fix: fixes a bug in suwariyomi.
+    -   build: affects npm and its files
+    -   ci: changes the continuous integration process
+    -   docs: changes documentation
+    -   feat: adds a new feature
+    -   fix: fixes a bug
     -   perf: performance-improving change but without changing general functionality
-    -   refactor: large code styling changes / logic changes without changing functionality
+    -   refactor: changes that do not fix a bug or implement a new feature
     -   revert: removal of experimental / risky changes
-    -   style: specifically smaller code styling changes
-    -   test: modifies unit tests
+    -   style: changes that do not change the code's meaning (whitespace, formatting, semis, etc)
+    -   test: adds or modifies unit tests
+
+    and lastly, the optional scope represents what exactly the commit changed:
+
+    -   any component name
+    -   any spcifier
+
+    Please do not have a scope if it does not introduce any specicifity.
 
     If a commit has a breaking change, please prepend an exclamation
     point behind the colon.
@@ -42,9 +48,6 @@ When contributing, you must follow a small set of guidelines.
     field. there is only one exception: **if you are reflecting
     an interface change** e.g. updating the IPC to support a new
     command.
-
-    It is optional to use square brackets, parenthesis, or curly
-    brackets for the field.
 
     If you are using the `meta` field, then please use `skip ci` unless necessary.
     When changing code, you should almost never use [skip ci].
