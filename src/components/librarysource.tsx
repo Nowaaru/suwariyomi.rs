@@ -1,7 +1,9 @@
 import type { Manga as MangaType } from "types/manga";
 import Manga from "components/manga";
 import { StyleSheet, css } from "aphrodite";
-import { Tooltip } from "@chakra-ui/react";
+import { HStack, IconButton, Tooltip } from "@chakra-ui/react";
+import { SearchIcon } from "@chakra-ui/icons";
+import { useNavigate } from "react-router";
 
 type LibrarySourceProps = {
     sourceName: string;
@@ -77,13 +79,47 @@ const LibrarySource = (props: LibrarySourceProps) => {
             color: "#f88379",
         },
     });
+
+    const Navigate = useNavigate();
     return (
         <div className={css(styles.main)}>
             <div className={css(styles.meta)}>
+                <div className={css(styles.icon)}>
+                    <img className={css(styles.img)} src={props.sourceIcon} />
+                </div>
                 <div className={css(styles.namecontainer)}>
-                    <span className={css(styles.name, styles.text)}>
-                        {props.sourceName}
-                    </span>
+                    <HStack>
+                        <span className={css(styles.name, styles.text)}>
+                            {props.sourceName}
+                        </span>
+                        <Tooltip label="Click to search using this source.">
+                            <IconButton
+                                transform="rotate(90deg)"
+                                aria-label="Advanced Search"
+                                cursor="pointer"
+                                backgroundColor="transparent"
+                                width="16px"
+                                height="16px"
+                                padding="0"
+                                margin="0"
+                                position="relative"
+                                top="3px"
+                                right="5%"
+                                sx={{
+                                    color: "#00000044",
+                                    transition: "color 1s",
+                                    border: "none",
+                                    marginLeft: "-28px",
+                                    ":hover": {
+                                        color: "#fb8e84",
+                                        backgroundColor: "transparent",
+                                    },
+                                }}
+                                onClick={() => Navigate("/search")}
+                                as={SearchIcon}
+                            />
+                        </Tooltip>
+                    </HStack>
                     <span className={css(styles.text, styles.mangacount)}>
                         <span className={css(styles.count)}>
                             {props.sourceManga.length}&nbsp;
