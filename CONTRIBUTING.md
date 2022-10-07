@@ -10,12 +10,33 @@ When contributing, you must follow a small set of guidelines.
 
     `[optional: skip ci] <type>[field/optional scope]: <description>`
 
+    `[optional body]`
+
+    `[optional footer(s)]`
+
     where `field` represents the area where the commit was made:
 
     -   frontend: typescript-centric commit
     -   backend: rust-centric commit
     -   mixed: commit contains both frontend and backend changes
     -   meta: repository-centric commit
+
+    and `type` represents the type of commit you are making:
+
+    -   build: relating to the build process
+    -   chore: small code-related tasks
+    -   ci: relating to continuous integration
+    -   docs: relating to documentation changes
+    -   feat: adds new functionality to suwariyomi
+    -   fix: fixes a bug in suwariyomi.
+    -   perf: performance-improving change but without changing general functionality
+    -   refactor: large code styling changes / logic changes without changing functionality
+    -   revert: removal of experimental / risky changes
+    -   style: specifically smaller code styling changes
+    -   test: modifies unit tests
+
+    If a commit has a breaking change, please prepend an exclamation
+    point behind the colon.
 
     A commit should never contain modifications to more than one
     field. there is only one exception: **if you are reflecting
