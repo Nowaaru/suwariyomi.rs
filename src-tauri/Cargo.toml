@@ -32,6 +32,7 @@ chrono = "0.4"
 
 [dependencies.tauri-plugin-log]
 git = "https://github.com/tauri-apps/tauri-plugin-log"
+features = ["colored"]
 branch = "dev"
 
 [features]

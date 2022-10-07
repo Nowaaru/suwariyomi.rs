@@ -6,6 +6,7 @@
 
 use std::path::Path;
 use std::path::PathBuf;
+use tauri_plugin_log::{fern::colors::ColoredLevelConfig, LogTarget, LoggerBuilder};
 
 use tauri::CustomMenuItem;
 use tauri::Manager;
@@ -19,7 +20,7 @@ pub mod download;
 pub mod errors;
 pub mod handlers;
 
-pub fn get_db_path() -> Option<PathBuf> {
+#[must_use] pub fn get_db_path() -> Option<PathBuf> {
     let return_none = false;
     if return_none {
         return None;
@@ -30,7 +31,10 @@ pub fn get_db_path() -> Option<PathBuf> {
         app_context.config(),
         app_context.package_info(),
         &tauri::Env::default(),
-        Path::new("com.suwariyomirs.swrs\\suwariyomi.db3").as_os_str().to_str().unwrap(),
+        Path::new("com.suwariyomirs.swrs\\suwariyomi.db3")
+            .as_os_str()
+            .to_str()
+            .unwrap(),
         Some(BaseDirectory::Config),
     );
 
@@ -73,16 +77,12 @@ async fn main() {
             let app_data = tauri::api::path::app_dir(&app_config);
 
             if let Some(path) = app_data {
-                if !path.exists() && std::fs::create_dir(&path).is_err() {
-                    panic!("unable to create path {:?}", path.to_str().unwrap());
-                }
+                assert!(path.exists() || std::fs::create_dir(&path).is_ok(), "unable to create path {:?}", path.to_str().unwrap());
 
                 // try creating sources directory
-                let sources_dir = path.clone().join("sources/");
+                let sources_dir = path.join("sources/");
                 println!("{} {}", &sources_dir.display(), &sources_dir.exists());
-                if !sources_dir.exists() && std::fs::create_dir(&sources_dir).is_err() {
-                    panic!("unable to create path {:?}", sources_dir.to_str().unwrap());
-                }
+                assert!(sources_dir.exists() || std::fs::create_dir(&sources_dir).is_ok(), "unable to create path {:?}", sources_dir.to_str().unwrap());
             }
             Ok(())
         })
@@ -118,6 +118,12 @@ async fn main() {
             handlers::get_sources,
             handlers::return_to_tray,
         ])
+        .plugin(
+            LoggerBuilder::default()
+                .targets([LogTarget::LogDir, LogTarget::Stdout, LogTarget::Webview])
+                .with_colors(ColoredLevelConfig::default())
+                .build(),
+        )
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

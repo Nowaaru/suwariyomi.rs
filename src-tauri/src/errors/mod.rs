@@ -17,7 +17,7 @@ impl InternalError {
 impl From<rusqlite::Error> for InternalError {
     fn from(err: rusqlite::Error) -> Self {
         Self {
-            message: err
+            message: err.to_string()
         }
     }
 }
