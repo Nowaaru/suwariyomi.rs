@@ -82,7 +82,6 @@ const SearchSource = (props: SearchSourceProps) => {
             alignItems: "center",
             flexDirection: "column",
             marginRight: "4px",
-            cursor: "pointer",
         },
         img: {
             maxWidth: "42px",
@@ -181,11 +180,9 @@ const SearchSource = (props: SearchSourceProps) => {
     return (
         <div className={css(styles.main)}>
             <div className={css(styles.meta)}>
-                <Tooltip label="Click to search using this source.">
-                    <div className={css(styles.icon)}>
-                        <img className={css(styles.img)} src={sourceIcon} />
-                    </div>
-                </Tooltip>
+                <div className={css(styles.icon)}>
+                    <img className={css(styles.img)} src={sourceIcon} />
+                </div>
                 <div className={css(styles.namecontainer)}>
                     <HStack>
                         <span className={css(styles.name, styles.text)}>
