@@ -27,6 +27,11 @@ error = "0.1.9"
 mime = "0.3.16"
 bytes = "1.2.1"
 serde_rusqlite = "0.31.0"
+log = "^0.4"
+
+[dependencies.tauri-plugin-log]
+git = "https://github.com/tauri-apps/tauri-plugin-log"
+branch = "dev"
 
 [features]
 # by default Tauri runs in production mode
