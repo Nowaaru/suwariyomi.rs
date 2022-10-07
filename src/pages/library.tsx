@@ -344,6 +344,12 @@ const Library = () => {
                 <LibraryButton aria-label="Settings" icon={<SettingsIcon />} />
                 <LibraryButton aria-label="History" icon={<TimeIcon />} />
                 <LibraryButton aria-label="Download" icon={<DownloadIcon />} />
+                <Link to="/search">
+                    <LibraryButton
+                        aria-label="Go to Search"
+                        icon={<SearchIcon />}
+                    />
+                </Link>
             </ButtonGroup>
             <hr className={css(styles.line)} />
             {librarySourceComponentArray}
