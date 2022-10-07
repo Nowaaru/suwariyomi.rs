@@ -1,6 +1,8 @@
 import React from "react";
+import MangaRouter from "components/router";
+import { createBrowserHistory } from "history";
 import { ChakraProvider, extendTheme } from "@chakra-ui/react";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 
 // Page Imports
 import Library from "pages/library";
@@ -16,36 +18,26 @@ import Page from "components/page";
 import DefaultThemeDark from "assets/themes/dark";
 
 export default function App() {
+    const history = createBrowserHistory();
     window.addEventListener("keydown", (e) => {
         if (e.key === "F12") {
             e.preventDefault();
         }
     });
 
-    const Pages = _.mapValues(
-        {
-            Library,
-            Reader,
-            View,
-            Search,
-            SplashScreen,
-        },
-        (Route, key) => <Page id={key}>{<Route />}</Page>
-    );
-
     return (
         <React.StrictMode>
             <ChakraProvider theme={extendTheme(DefaultThemeDark)}>
-                <BrowserRouter>
+                <MangaRouter history={history}>
                     <Routes>
-                        <Route path="/" element={Pages.Library} />
-                        <Route path="library" element={Pages.Library} />
-                        <Route path="reader" element={Pages.Reader} />
-                        <Route path="view" element={Pages.View} />
-                        <Route path="search" element={Pages.Search} />
-                        <Route path="splash" element={Pages.SplashScreen} />
+                        <Route path="/" element={<Library />} />
+                        <Route path="library" element={<Library />} />
+                        <Route path="reader" element={<Reader />} />
+                        <Route path="view" element={<View />} />
+                        <Route path="search" element={<Search />} />
+                        <Route path="splash" element={<SplashScreen />} />
                     </Routes>
-                </BrowserRouter>
+                </MangaRouter>
             </ChakraProvider>
         </React.StrictMode>
     );
