@@ -8,7 +8,7 @@ When contributing, you must follow a small set of guidelines.
 
     When writing a commit, it should follow the following format:
 
-    `[optional: skip ci] <type>[field/optional scope]: <description>`
+    `[optional: skip ci] <type>(field/optional scope): <description>`
 
     `[optional body]`
 
@@ -19,7 +19,6 @@ When contributing, you must follow a small set of guidelines.
     -   frontend: typescript-centric commit
     -   backend: rust-centric commit
     -   mixed: commit contains both frontend and backend changes
-    -   meta: repository-centric commit
 
     and `type` represents the type of commit you are making:
 
@@ -33,6 +32,7 @@ When contributing, you must follow a small set of guidelines.
     -   revert: removal of experimental / risky changes
     -   style: changes that do not change the code's meaning (whitespace, formatting, semis, etc)
     -   test: adds or modifies unit tests
+    -   misc: changes that do not fit any of these categories (generally, should not be used)
 
     and lastly, the optional scope represents what exactly the commit changed:
 
@@ -40,6 +40,7 @@ When contributing, you must follow a small set of guidelines.
     -   any spcifier
 
     Please do not have a scope if it does not introduce any specicifity.
+    `build`, `ci`, and `docs` do not require a field or scope.
 
     If a commit has a breaking change, please prepend an exclamation
     point behind the colon.
