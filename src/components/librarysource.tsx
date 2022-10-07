@@ -36,7 +36,6 @@ const LibrarySource = (props: LibrarySourceProps) => {
             alignItems: "center",
             flexDirection: "column",
             marginRight: "4px",
-            cursor: "pointer",
         },
         img: {
             maxWidth: "42px",
@@ -81,14 +80,6 @@ const LibrarySource = (props: LibrarySourceProps) => {
     return (
         <div className={css(styles.main)}>
             <div className={css(styles.meta)}>
-                <Tooltip label="Click to search using this source.">
-                    <div className={css(styles.icon)}>
-                        <img
-                            className={css(styles.img)}
-                            src={props.sourceIcon}
-                        />
-                    </div>
-                </Tooltip>
                 <div className={css(styles.namecontainer)}>
                     <span className={css(styles.name, styles.text)}>
                         {props.sourceName}
