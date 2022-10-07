@@ -7,4 +7,4 @@ jobs:
         steps:
             - uses: actions/checkout@v3
             - run: rustup component add clippy
-            - run: cargo clippy --all-features --all-targets -- -D warnings -D clippy::all -D clippy::nursery
+            - run: cd src-tauri; cargo clippy --all-features --all-targets -- -D warnings -D clippy::all -D clippy::nursery
