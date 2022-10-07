@@ -1,26 +1,23 @@
+use std::string::ToString;
 #[derive(Debug, serde::Serialize)]
 pub struct InternalError {
     message: std::string::String,
 }
 
 impl InternalError {
-    pub fn new(message: &str) -> Self {
-        InternalError {
+    #[must_use] pub fn new<T>(message: T) -> Self
+    where T: ToString
+    {
+        Self {
             message: message.to_string(),
         }
-    }
-}
-
-impl Into<rusqlite::Error> for InternalError {
-    fn into(self) -> rusqlite::Error {
-        rusqlite::Error::QueryReturnedNoRows
     }
 }
 
 impl From<rusqlite::Error> for InternalError {
     fn from(err: rusqlite::Error) -> Self {
         Self {
-            message: err.to_string()
+            message: err
         }
     }
 }
@@ -60,7 +57,7 @@ pub struct DownloadError {
 }
 
 impl DownloadError {
-    pub fn new(msg: std::string::String) -> Self {
+    #[must_use] pub const fn new(msg: std::string::String) -> Self {
         Self {
             message: msg,
         }
@@ -86,7 +83,7 @@ pub struct RequestError {
 }
 
 impl RequestError {
-    pub fn new(msg: std::string::String, status: std::string::String) -> Self {
+    #[must_use] pub const fn new(msg: std::string::String, status: std::string::String) -> Self {
         Self {
             message: msg,
             status,

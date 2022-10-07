@@ -28,32 +28,28 @@ pub fn stringify_result_none<T,E>(r: Result<T, E>) -> Result<(), String>
     }
 }
 
-pub fn get_manga_db() -> MangaDB {
+#[must_use] pub fn get_manga_db() -> MangaDB {
     MangaDB::new(&get_db_path())
 }
 
-pub fn get_chapter_db() -> ChapterDB {
+#[must_use] pub fn get_chapter_db() -> ChapterDB {
     ChapterDB::new(&get_db_path())
 }
 
 #[tauri::command]
 pub fn splash_close(window: tauri::Window) -> Result<(), errors::InternalError> {
-    if let Some(splashscreen) = window.get_window("splashscreen") {
-        match splashscreen.close() {
-            Ok(()) => Ok(()),
-            Err(why) => Err(crate::errors::InternalError::new(&*format!(
-                "Splashscreen failed to close: {}",
-                why
-            ))),
-        }
-    } else {
-        Err(crate::errors::InternalError::new("No splash-screen found."))
-    }
+    window.get_window("splashscreen").map_or_else(|| Err(crate::errors::InternalError::new("No splash-screen found.")), |splashscreen| match splashscreen.close() {
+        Ok(()) => Ok(()),
+        Err(why) => Err(crate::errors::InternalError::new(&format!(
+            "Splashscreen failed to close: {}",
+            why
+       ))),
+   })
 }
 
 #[tauri::command]
-pub fn path_exists(path: String) -> bool {
-    Path::new(path.as_str()).exists()
+#[must_use] pub fn path_exists(path: &str) -> bool {
+    Path::new(path).exists()
 }
 
 #[tauri::command]
@@ -161,16 +157,13 @@ pub fn get_sources() -> Result<Vec<PathBuf>, InternalError> {
                 }
 
                 let mut all_sources: Vec<PathBuf> = vec![];
-                if let Ok(itr) = fs::read_dir(path) {
-                    itr.for_each(|val| match val {
-                        Ok(val) => all_sources.push(val.path()),
-                        Err(..) => (),
+                fs::read_dir(path).map_or_else(|_| Err(InternalError::new("unable to read sources directory")), |itr| {
+                    itr.for_each(|val| if let Ok(val) = val {
+                        all_sources.push(val.path());
                     });
 
-                    return Ok(all_sources);
-                } else {
-                    return Err(InternalError::new("unable to read sources directory"));
-                }
+                    Ok(all_sources)
+                })
             }
             Err(y) => Err(InternalError::new(y.to_string().as_str())),
         }

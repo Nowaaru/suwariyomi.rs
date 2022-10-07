@@ -40,10 +40,11 @@ impl std::fmt::Debug for Result {
 }
 
 impl Result {
+    #[must_use]
     pub fn new(from: &Download) -> Self {
         return Self {
             url: std::string::String::from(&from.url), // This is slow.
-            bytes: bytes::Bytes::from(from.bytes.to_vec()).to_vec(), // This is also slow.
+            bytes: bytes::Bytes::from(from.bytes.clone()).to_vec(), // This is also slow.
             size: from.size,
             extension: match bindet::detect(std::io::Cursor::new(from.bytes())) {
                 Ok(val) => match val {
@@ -77,23 +78,21 @@ impl Result {
                     return Ok(());
                 }
 
-                 Err(DownloadError::new(
+                Err(DownloadError::new(
                     "An error occured whilst writing to file.".to_string(),
-                    ))
+                ))
             }
-            Err(why) => {
-                 Err(DownloadError::new(format!(
-                    "Failed to write file: {}",
-                    why,
-                )))
-            }
+            Err(why) => Err(DownloadError::new(
+                format!("Failed to write file: {}", why,),
+            )),
         }
     }
 }
 
 impl Download {
+    #[must_use]
     pub fn new(url: &str) -> Self {
-         Self {
+        Self {
             url: std::string::String::from(url),
             size: 0,
             progress: None,
@@ -102,25 +101,25 @@ impl Download {
         }
     }
 
-    pub fn progress(&self) -> Option<usize> {
-         self.progress
+    #[must_use]
+    pub const fn progress(&self) -> Option<usize> {
+        self.progress
     }
 
-    pub fn bytes(&self) -> &Vec<u8> {
-         &self.bytes
+    #[must_use]
+    pub const fn bytes(&self) -> &Vec<u8> {
+        &self.bytes
     }
 
     pub async fn start(&mut self) -> std::result::Result<Result, DownloadError> {
         match reqwest::get(&self.url).await {
-            Err(why) => {
-                 Err(DownloadError::new(
-                    crate::errors::RequestError::new(
-                        why.to_string(),
-                        why.status().unwrap().to_string(),
-                    )
-                    .to_string(),
-                ))
-            }
+            Err(why) => Err(DownloadError::new(
+                crate::errors::RequestError::new(
+                    why.to_string(),
+                    why.status().unwrap().to_string(),
+                )
+                .to_string(),
+            )),
             Ok(data) => {
                 let content_length = data.content_length();
                 if content_length.is_some() {
@@ -148,11 +147,9 @@ impl Download {
 
                     Ok(Result::new(self))
                 } else {
-                     Err(
-                         DownloadError::new(
-                            "No content length provided.".to_string(),
-                        )
-                    )
+                    Err(DownloadError::new(
+                        "No content length provided.".to_string(),
+                    ))
                 }
             }
         }

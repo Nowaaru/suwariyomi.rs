@@ -73,7 +73,7 @@ pub struct Mangas {
 
 impl std::fmt::Display for Manga {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let Manga {
+        let Self {
             id,
             name,
             description,
@@ -120,7 +120,7 @@ pub struct Chapter {
 
 impl std::fmt::Display for Chapter {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let Chapter {
+        let Self {
             id,
             manga_id,
             chapter,
@@ -207,24 +207,22 @@ fn generate_chapter_from_row(row: &Row) -> Result<Chapter, rusqlite::Error> {
 
         lang: row.get::<&str, String>("lang")?,
         scanlators: serde_json::from_str(row.get::<&str, String>("scanlators")?.as_str())
-            .unwrap_or(vec![]),
+            .unwrap_or_default(),
     })
 }
 
 impl MangaDB {
-    pub fn new(path: &Option<std::path::PathBuf>) -> Self {
+    #[must_use] pub fn new(path: &Option<std::path::PathBuf>) -> Self {
         // Make tables if not present.
         // let db = if path.is_none() { Connection::open_in_memory().expect("unable to open in-memory database") }
         //        else { Connection::open(path.unwrap()).expect("unable to open database") };
 
-        let db = if let Some(path) = path {
-            let p2 = path.clone();
-            Connection::open(path).unwrap_or_else(|_| {
-                panic!("unable to open database from path {}", p2.to_str().unwrap())
+        let db = path.as_ref().map_or_else(|| Connection::open_in_memory().expect("unable to open in-memory database"), |p| {
+            let p2 = &p.clone();
+            Connection::open(p2).unwrap_or_else(|_| {
+                panic!("unable to open database from path {}", &p2.to_str().unwrap())
             })
-        } else {
-            Connection::open_in_memory().expect("unable to open in-memory database")
-        };
+        });
 
         match db.execute(
             "
@@ -300,7 +298,7 @@ impl MangaDB {
             .query_row(
                 "SELECT * FROM Library WHERE id = ?1 AND source = ?2",
                 [id, source],
-                |row| generate_manga_from_row(row),
+                generate_manga_from_row,
             )
             .optional()
     }
@@ -320,7 +318,7 @@ impl MangaDB {
             generate_manga_from_row(row)
         })?;
 
-        Ok(iter.map(|res| res.unwrap()).collect::<Vec<Manga>>())
+        Ok(iter.map(std::result::Result::unwrap).collect::<Vec<Manga>>())
     }
 
     pub fn get_all(&self, source: Option<String>) -> Result<Vec<Manga>, rusqlite::Error> {
@@ -329,14 +327,14 @@ impl MangaDB {
 
         if let Some(source) = source {
             let mut prepared_rows = self.db.prepare("SELECT * FROM Library WHERE source = ?1")?;
-            let iter = prepared_rows.query_map([source], |row| generate_manga_from_row(row))?;
+            let iter = prepared_rows.query_map([source], generate_manga_from_row)?;
 
-            Ok(iter.map(|v| v.unwrap()).collect::<Vec<Manga>>())
+            Ok(iter.map(std::result::Result::unwrap).collect::<Vec<Manga>>())
         } else {
             let mut prepared_rows = self.db.prepare("SELECT * FROM Library")?;
-            let iter = prepared_rows.query_map([], |row| generate_manga_from_row(row))?;
+            let iter = prepared_rows.query_map([], generate_manga_from_row)?;
 
-            Ok(iter.map(|v| v.unwrap()).collect::<Vec<Manga>>())
+            Ok(iter.map(std::result::Result::unwrap).collect::<Vec<Manga>>())
         }
     }
 
@@ -349,15 +347,14 @@ impl MangaDB {
 }
 
 impl ChapterDB {
-    pub fn new(path: &Option<std::path::PathBuf>) -> Self {
-        let db: Connection = if let Some(path) = path {
+    #[must_use] pub fn new(path: &Option<std::path::PathBuf>) -> Self {
+
+        let db: Connection = path.as_ref().map_or_else(|| Connection::open_in_memory().expect("unable to open database"), |path| {
             let p2 = path.clone();
             Connection::open(path).unwrap_or_else(|_| {
                 panic!("unable to open database with path {}", p2.to_str().unwrap())
             })
-        } else {
-            Connection::open_in_memory().expect("unable to open database")
-        };
+        });
 
         match db.execute(
             "
@@ -442,7 +439,7 @@ impl ChapterDB {
             .query_row(
                 "SELECT * FROM Chapters WHERE id = ?1 AND manga_id = ?2 AND source = ?3",
                 [chapter_id, manga_id, source],
-                |row| generate_chapter_from_row(row),
+                generate_chapter_from_row,
             )
             .optional()
     }
@@ -463,7 +460,7 @@ impl ChapterDB {
             generate_chapter_from_row(row)
         })?;
 
-        Ok(iter.map(|res| res.unwrap()).collect::<Vec<Chapter>>())
+        Ok(iter.map(std::result::Result::unwrap).collect::<Vec<Chapter>>())
     }
 
     pub fn get_all(
@@ -472,9 +469,9 @@ impl ChapterDB {
         id: Option<String>,
         manga_id: Option<String>,
     ) -> Result<Vec<Chapter>, rusqlite::Error> {
-        let mut id_value = "".to_string();
-        let mut source_value = "".to_string();
-        let mut manga_id_value = "".to_string();
+        let mut id_value = String::new();
+        let mut source_value = String::new();
+        let mut manga_id_value = String::new();
 
         if let Some(id) = id {
             id_value = format!("AND id={}", id);
@@ -497,9 +494,9 @@ impl ChapterDB {
                 )
                 .as_str(),
             )?
-            .query_map([], |row| generate_chapter_from_row(row))
+            .query_map([], generate_chapter_from_row)
         {
-            Ok(iter) => Ok(iter.map(|v| v.unwrap()).collect::<Vec<Chapter>>()),
+            Ok(iter) => Ok(iter.map(std::result::Result::unwrap).collect::<Vec<Chapter>>()),
             Err(why) => Err(why),
         }
     }
