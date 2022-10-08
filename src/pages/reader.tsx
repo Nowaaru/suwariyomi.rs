@@ -1,14 +1,13 @@
-import MangaPage from "components/mangapage";
-import Lightbar from "components/lightbar";
-import { StyleSheet, css } from "aphrodite";
-import { useRef, useEffect, useMemo, useState, useCallback } from "react";
-import { fetch, ResponseType } from "@tauri-apps/api/http";
-import _ from "lodash";
-import SourceHandler, { Source } from "util/sources";
-import CircularProgress from "components/circularprogress";
-import { useSearchParams } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
 import { Button } from "@chakra-ui/react";
+import { fetch, ResponseType } from "@tauri-apps/api/http";
+import { css, StyleSheet } from "aphrodite";
+import CircularProgress from "components/circularprogress";
+import Lightbar from "components/lightbar";
+import MangaPage from "components/mangapage";
+import _ from "lodash";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import SourceHandler, { Source } from "util/sources";
 
 type Page = {
     url: string;
