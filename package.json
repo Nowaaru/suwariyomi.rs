@@ -3,6 +3,17 @@
     "private": true,
     "version": "0.2.0",
     "type": "module",
+    "husky": {
+        "hooks": {
+            "pre-commit": "lint-staged"
+        }
+    },
+    "lint-staged": {
+        "**/*.js": [
+            "eslint --fix",
+            "git add"
+        ]
+    },
     "scripts": {
         "dev": "vite",
         "build": "tsc -p tsconfig.prod.json && vite build",
