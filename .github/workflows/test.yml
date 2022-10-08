@@ -32,6 +32,6 @@ jobs:
               run: npm test
             - name: try building the app
               run: npm run tauri build
-            - uses: tauri-apps/tauri-action@v0
+            - uses: tauri-apps/tauri-action@fix/linux-appname
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
