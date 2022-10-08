@@ -74,10 +74,7 @@ const Reader = () => {
                 ArrowUp: -1,
             };
 
-            if (code === "Backspace")
-                return Navigate(
-                    `/view?source=${mangaData.sourceId}&id=${mangaData.mangaId}`
-                );
+            if (code === "Backspace") return Navigate(-1);
 
             if (codeMaps[code]) {
                 const y =
