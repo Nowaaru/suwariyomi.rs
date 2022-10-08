@@ -12,7 +12,6 @@ import Reader from "pages/reader";
 import Search from "pages/search";
 
 import _ from "lodash";
-import Page from "components/page";
 
 // Utility
 import DefaultThemeDark from "assets/themes/dark";

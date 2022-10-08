@@ -9,7 +9,6 @@ import {
     isChapterCompleted,
 } from "util/textutil";
 import {useNavigate} from "react-router";
-import {MangaDB} from "util/db";
 
 type ChapterProps = {
     chapter: MangaChapter;
