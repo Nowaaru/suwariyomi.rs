@@ -8,7 +8,7 @@ import {
     formatDate,
     isChapterCompleted,
 } from "util/textutil";
-import {useNavigate} from "react-router";
+import { useNavigate } from "react-router";
 
 type ChapterProps = {
     chapter: MangaChapter;
@@ -94,9 +94,14 @@ const Chapter = (props: ChapterProps) => {
             </div>
             <div className={css(styles.interactable)}>
                 <Tooltip label={isCompleted ? "Completed" : pageDisplay}>
-                    <Button onClick={() => {
-                        Navigate(`/reader?manga=${chapter.manga_id}&chapter=${chapter.id}&source=${source}`);
-                    }} sx={styles.read._value as Record<string, string>}>
+                    <Button
+                        onClick={() => {
+                            Navigate(
+                                `/reader?manga=${chapter.manga_id}&chapter=${chapter.id}&source=${source}`
+                            );
+                        }}
+                        sx={styles.read._value as Record<string, string>}
+                    >
                         {isCompleted ? "Reread" : readOrContinue}
                     </Button>
                 </Tooltip>
