@@ -21,7 +21,6 @@ export class Style {
     constructor(style: keyof CSSObject, value: CSSObject[keyof CSSObject]) {
         this._key = style;
         this._value = Object.assign({ label: style }, value);
-        // Assign value to dummy in case value assigns label prior
     }
 
     public _key: keyof CSSObject;
