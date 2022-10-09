@@ -21,7 +21,6 @@ const ReaderRouter = ({
                 break;
 
             default: {
-                console.log("Rewriting history.");
                 SearchCache.set();
                 SearchCache.scroll = undefined;
             }
