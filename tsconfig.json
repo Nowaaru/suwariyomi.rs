@@ -18,7 +18,7 @@
         "types": ["jest", "node"],
         "baseUrl": ".",
         "paths": {
-            "types/*": ["src/util/types/*"],
+            "types/*": ["src/types/*"],
             "assets/*": ["src/assets/*"],
             "components/*": ["src/components/*"],
             "pages/*": ["src/pages/*"],
@@ -30,6 +30,6 @@
             "ipc": ["src/util/ipc.ts"]
         }
     },
-    "include": ["src"],
+    "include": ["src", "src/index.d.ts"],
     "references": [{ "path": "./tsconfig.node.json" }]
 }

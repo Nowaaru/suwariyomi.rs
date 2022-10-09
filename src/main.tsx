@@ -2,11 +2,11 @@
 import App from "./app";
 import React from "react";
 import ReactDOM from "react-dom/client";
+import ThemeHandler from "util/theme";
 
 import _ from "lodash";
-import { format as prettyFormat } from "pretty-format";
 import * as logApi from "tauri-plugin-log-api";
-
+import { format as prettyFormat } from "pretty-format";
 const uninterfacedConsole = _.cloneDeep(console);
 const mappedLogApi = _.mapValues(
     _.omit(logApi, "default"),
@@ -31,12 +31,14 @@ const mappedLogApi = _.mapValues(
         }
 );
 
-console = {
+globalThis.console = {
     ...uninterfacedConsole,
     ..._.omit(mappedLogApi, "trace", "attachConsole"),
 
     log: mappedLogApi.trace,
 };
+
+globalThis.ThemeHandler = ThemeHandler;
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
     <React.StrictMode>
