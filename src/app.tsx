@@ -11,8 +11,6 @@ import SplashScreen from "pages/splash";
 import Reader from "pages/reader";
 import Search from "pages/search";
 
-import _ from "lodash";
-
 // Utility
 import DefaultThemeDark from "assets/themes/dark";
 
