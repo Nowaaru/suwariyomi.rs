@@ -31,6 +31,10 @@ class ThemeHandler {
         return _.cloneDeep(this._colors);
     }
 
+    public get chroma() {
+        return chroma;
+    }
+
     public apply(newColors: ThemeRequired) {
         this._colors = {
             ...ThemeDefault,
