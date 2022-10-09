@@ -105,7 +105,7 @@ const SearchPage = () => {
                 sourceHeader: {
                     color: "#fb8e84",
                     textDecoration: "underline",
-                    textDecorationColor: "#fb8e8400",
+                    textDecorationColor: "transparent",
                     cursor: "pointer",
                     ":hover": {
                         textDecorationColor: "#fb8e84",
