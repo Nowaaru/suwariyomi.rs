@@ -1,4 +1,12 @@
-import { Button } from "@chakra-ui/react";
+import { SearchIcon } from "@chakra-ui/icons";
+import {
+    Box,
+    Button,
+    ButtonGroup,
+    Container,
+    Flex,
+    IconButton,
+} from "@chakra-ui/react";
 import { fetch, ResponseType } from "@tauri-apps/api/http";
 import { css, StyleSheet } from "aphrodite";
 import CircularProgress from "components/circularprogress";
@@ -263,6 +271,29 @@ const Reader = () => {
     return (
         <div className={css(styles.reader)}>
             {currentMangaPage}
+            <Container
+                position="absolute"
+                maxWidth="100%"
+                height="100px"
+                bottom="100px"
+                centerContent
+            >
+                <Container
+                    backgroundColor="#000000CC"
+                    borderColor="#00000044"
+                    borderWidth="2px"
+                    borderRadius="4px"
+                    padding="8px"
+                    color="white"
+                    width="450px"
+                    height="fit-content"
+                    maxHeight="100%"
+                >
+                    <ButtonGroup gap="4" isAttached>
+                        <IconButton aria-label="Search" icon={<SearchIcon />} />
+                    </ButtonGroup>
+                </Container>
+            </Container>
             {pages.current.length > 0 && currentPageNumber ? (
                 <Lightbar
                     onTabClick={(_, tab) => {
