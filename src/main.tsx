@@ -11,7 +11,7 @@ const mappedLogApi = _.mapValues(
     _.omit(logApi, "default"),
     (loggerFn, loggerKey) =>
         (...data: unknown[]) => {
-            loggerFn(prettyFormat(data)).finally(() => {
+            loggerFn(data.map((v) => prettyFormat(v)).join(" ")).finally(() => {
                 const assumedLoggerFunction =
                     uninterfacedConsole[
                         loggerKey as Exclude<
