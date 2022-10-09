@@ -1,4 +1,3 @@
-import { Options } from "react-select";
 import { AllIcons } from "util/search";
 
 type SupportedIcon = keyof typeof AllIcons;
