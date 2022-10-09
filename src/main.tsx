@@ -2,7 +2,6 @@
 import App from "./app";
 import React from "react";
 import ReactDOM from "react-dom/client";
-import ThemeHandler from "util/theme";
 
 import _ from "lodash";
 import * as logApi from "tauri-plugin-log-api";
@@ -37,8 +36,6 @@ globalThis.console = {
 
     log: mappedLogApi.trace,
 };
-
-globalThis.ThemeHandler = ThemeHandler;
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
     <React.StrictMode>
