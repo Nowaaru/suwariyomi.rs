@@ -11,11 +11,9 @@ import {
 } from "@chakra-ui/react";
 import {
     DownloadIcon,
-    InfoIcon,
     RepeatIcon,
     SettingsIcon,
     TimeIcon,
-    ViewIcon,
     SearchIcon,
 } from "@chakra-ui/icons";
 import { Link } from "react-router-dom";
