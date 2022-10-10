@@ -12,10 +12,11 @@ import { useNavigate } from "react-router";
 
 type ChapterProps = {
     chapter: MangaChapter;
+    onClick?: () => void;
 };
 
 const Chapter = (props: ChapterProps) => {
-    const { chapter } = props;
+    const { chapter, onClick } = props;
     const styles = useMemo(
         () =>
             StyleSheet.create({
@@ -95,11 +96,14 @@ const Chapter = (props: ChapterProps) => {
             <div className={css(styles.interactable)}>
                 <Tooltip label={isCompleted ? "Completed" : pageDisplay}>
                     <Button
-                        onClick={() => {
-                            Navigate(
-                                `/reader?manga=${chapter.manga_id}&chapter=${chapter.id}&source=${chapter.source}`
-                            );
-                        }}
+                        onClick={
+                            onClick ??
+                            (() => {
+                                Navigate(
+                                    `/reader?manga=${chapter.manga_id}&chapter=${chapter.id}&source=${chapter.source}`
+                                );
+                            })
+                        }
                         sx={styles.read._value as Record<string, string>}
                     >
                         {isCompleted ? "Reread" : readOrContinue}
