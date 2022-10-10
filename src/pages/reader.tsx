@@ -182,7 +182,7 @@ const Reader = () => {
     }, [sourceHandler, mangaData]);
 
     useEffect(() => {
-        if (!sourceHandler || !mangaData.chapterId || !mangaData.mangaId)
+        if (!sourceHandler || !mangaData.chapterId || !mangaData.mangaId || pageSources?.length > 0)
             return;
 
         sourceHandler
@@ -203,7 +203,7 @@ const Reader = () => {
 
                 setCurrentPage(pages.current[0]);
             });
-    }, [mangaData, sourceHandler]);
+    }, [mangaData, sourceHandler, pageSources?.length]);
 
     const downloadPage = useCallback(
         ({ pageUrl: page }: { pageUrl: string }) => {
