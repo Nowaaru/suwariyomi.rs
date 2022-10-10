@@ -405,6 +405,17 @@ const Reader = () => {
                 >
                     <ButtonGroup height="100%">
                         <IconButtonWithLabel
+                            label="Go Back"
+                            onClick={() => Navigate(-1)}
+                            icon={<MdHouse />}
+                        />
+                        <IconButtonWithLabel
+                            label="Open Settings"
+                            onClick={() => Navigate(-1)}
+                            icon={<MdSettings />}
+                        />
+                        <Divider orientation="vertical" />
+                        <IconButtonWithLabel
                             icon={<MdPublic />}
                             onClick={() => {
                                 if (mangaData.chapterId && mangaData.mangaId) {
@@ -429,17 +440,6 @@ const Reader = () => {
                             label="Open Chapter Index"
                             onClick={onChaptersOpen}
                             icon={<MdFormatListNumbered />}
-                        />
-                        <Divider orientation="vertical" />
-                        <IconButtonWithLabel
-                            label="Go Back"
-                            onClick={() => Navigate(-1)}
-                            icon={<MdHouse />}
-                        />
-                        <IconButtonWithLabel
-                            label="Open Settings"
-                            onClick={() => Navigate(-1)}
-                            icon={<MdSettings />}
                         />
                     </ButtonGroup>
                 </Container>
