@@ -36,10 +36,9 @@ When contributing, you must follow a small set of guidelines.
 
     and lastly, the optional scope represents what exactly the commit changed:
 
-    -   any component name
-    -   any spcifier
+    -   any specifier (typically component names, though)
 
-    Please do not have a scope if it does not introduce any specicifity.
+    Please do not write a scope if it does not introduce any specicifity.
     `build`, `ci`, and `docs` do not require a field or scope.
 
     If a commit has a breaking change, please prepend an exclamation
