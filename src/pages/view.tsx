@@ -8,6 +8,7 @@ import _ from "lodash";
 import SourceHandler, { Source } from "util/sources";
 
 import ipc from "ipc";
+import { open } from "@tauri-apps/api/shell";
 
 import {
     Button,
@@ -429,11 +430,7 @@ const View = () => {
         if (!sourceHandler) return [];
 
         return rawChapterData.map((e) => (
-            <ChapterComponent
-                key={e.id}
-                chapter={e as Chapter}
-                source={sourceHandler.id}
-            />
+            <ChapterComponent key={e.id} chapter={e as Chapter} />
         ));
     }, [rawChapterData, sourceHandler]);
 
