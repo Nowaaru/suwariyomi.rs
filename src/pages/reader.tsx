@@ -91,7 +91,7 @@ const Reader = () => {
         },
     });
 
-    const [queryParams] = useSearchParams();
+    const [queryParams, setQueryParams] = useSearchParams();
     const [sourceHandler, setSourceHandler] = useState<Source | null>(null);
     const [mangaData, updateMangaData] = useState<MangaData>({
         mangaId: queryParams.get("manga"),
@@ -370,6 +370,10 @@ const Reader = () => {
                             chapters: null,
                         }));
 
+                        const newParams = new URLSearchParams(queryParams);
+                        newParams.set("chapter", chapterId);
+
+                        setQueryParams(newParams);
                         setCurrentPage(null);
                         setPageSources([]);
                     }}
