@@ -366,6 +366,16 @@ const Reader = () => {
         >
             {mangaData.chapters ? (
                 <Chapters
+                    onChapterSelect={(chapterId) => {
+                        updateMangaData((oldMangaData) => ({
+                            ...oldMangaData,
+                            chapterId,
+                            chapters: null,
+                        }));
+
+                        setCurrentPage(null);
+                        setPageSources([]);
+                    }}
                     chapters={mangaData.chapters}
                     isOpen={chaptersAreOpen}
                     onClose={onChaptersClose}

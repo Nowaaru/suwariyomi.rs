@@ -18,14 +18,22 @@ const Chapters = ({
     isOpen,
     onClose,
     chapters,
+    onChapterSelect,
 }: {
     isOpen: boolean;
     onClose: () => void;
+    onChapterSelect?: (chapterId: string) => void;
     chapters: Array<MangaChapter>;
 }) => {
     const chaptersMap: Array<JSX.Element> = chapters.map((ch) => (
         <LazyLoadComponent key={ch.id}>
-            <Chapter chapter={ch} />{" "}
+            <Chapter
+                onClick={() => {
+                    onClose();
+                    onChapterSelect?.(ch.id);
+                }}
+                chapter={ch}
+            />
         </LazyLoadComponent>
     ));
 
