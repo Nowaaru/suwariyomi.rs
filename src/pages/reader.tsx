@@ -1,4 +1,3 @@
-import { ArrowBackIcon, SearchIcon } from "@chakra-ui/icons";
 import {
     Button,
     ButtonGroup,
@@ -14,7 +13,7 @@ import { open } from "@tauri-apps/api/shell";
 import { css, StyleSheet } from "aphrodite";
 import CircularProgress from "components/circularprogress";
 import Lightbar from "components/lightbar";
-import MangaPage from "components/mangapage";
+import MangaPage, { FilterType } from "components/mangapage";
 import Chapters from "components/chapters";
 import _ from "lodash";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -29,6 +28,7 @@ import {
 import { useNavigate, useSearchParams } from "react-router-dom";
 import SourceHandler, { Source } from "util/sources";
 import { Chapter } from "types/manga";
+import chroma from "chroma-js";
 
 type Page = {
     url: string;
@@ -180,7 +180,12 @@ const Reader = () => {
     }, [sourceHandler, mangaData]);
 
     useEffect(() => {
-        if (!sourceHandler || !mangaData.chapterId || !mangaData.mangaId || pageSources?.length > 0)
+        if (
+            !sourceHandler ||
+            !mangaData.chapterId ||
+            !mangaData.mangaId ||
+            pageSources?.length > 0
+        )
             return;
 
         sourceHandler
@@ -320,9 +325,12 @@ const Reader = () => {
                 </div>
             );
         }
+
         return (
             <MangaPage
                 fit="comfortable"
+                filterType={FilterType.Dodge}
+                filterColor={chroma("DF1920")}
                 blob={currentPage?.blob ?? new Blob()}
             />
         );
@@ -346,6 +354,7 @@ const Reader = () => {
                 })),
             100
         );
+
         return () => clearInterval(newInterval);
     }, [setMouseData]);
 

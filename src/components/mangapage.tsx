@@ -3,8 +3,8 @@ import { css, StyleSheet } from "aphrodite";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import _ from "lodash";
+import chroma from "chroma-js";
 
-type float = number;
 type MangaBlob = {
     blob: Blob;
     url?: never;
@@ -24,11 +24,37 @@ type MangaRoundedFalse = {
     radius?: never;
 };
 
+type MangaFilters =
+    | {
+          filterColor: chroma.Color;
+          filterType: FilterType;
+      }
+    | {
+          filterColor: never;
+          filterType: never;
+      };
+
+export enum FilterType {
+    Multiply = "multiply",
+    Screen = "screen",
+    Overlay = "overlay",
+    Darken = "darken",
+    Lighten = "lighten",
+    Dodge = "color-dodge",
+    Burn = "color-burn",
+    Subtract = "difference",
+    Color = "color",
+    Hue = "hue",
+    Saturation = "saturation",
+    Exclusion = "exclusion",
+}
+
 type MangaAppearance = {
-    baseZoom?: float; // TBA when I can be fucked to implement canvas-based manga pages because zooming and panning is a demonic thing to implement.
+    baseZoom?: number; // TBA when I can be fucked to implement canvas-based manga pages because zooming and panning is a demonic thing to implement.
 } & (MangaRoundedTrue | MangaRoundedFalse);
 
 type MangaPageProps = (MangaBlob | MangaUrl) &
+    MangaFilters &
     MangaAppearance & {
         fit?: "width" | "height" | "comfortable";
     };
@@ -57,17 +83,35 @@ const MangaPage = (props: MangaPageProps) => {
 
     const canvas = useRef<HTMLCanvasElement>(null);
     useLayoutEffect(() => {
-        if (!imageData) return;
+        if (!imageData || !canvas.current) return;
+        const ctx = canvas.current.getContext("2d");
 
-        const ctx = canvas.current?.getContext("2d");
-        ctx?.drawImage(
-            imageData,
-            0,
-            0,
-            imageData.naturalWidth,
-            imageData.naturalHeight
-        );
-    }, [imageData]);
+        if (ctx) {
+            ctx.drawImage(
+                imageData,
+                0,
+                0,
+                imageData.naturalWidth,
+                imageData.naturalHeight
+            );
+
+            const { filterColor, filterType } = props;
+            if (filterColor) {
+                ctx.save();
+
+                ctx.globalCompositeOperation = filterType;
+                ctx.fillStyle = filterColor.hex();
+                ctx.fillRect(
+                    0,
+                    0,
+                    imageData.naturalWidth,
+                    imageData.naturalHeight
+                );
+
+                ctx.restore();
+            }
+        }
+    }, [imageData, props]);
 
     return (
         <Flex
