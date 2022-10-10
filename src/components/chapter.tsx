@@ -21,6 +21,7 @@ const Chapter = (props: ChapterProps) => {
             StyleSheet.create({
                 chapter: {
                     display: "flex",
+                    minWidth: "400px",
                     flexDirection: "row",
                     color: "whitesmoke",
                     fontFamily: "Cascadia Code",
