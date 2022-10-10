@@ -12,11 +12,10 @@ import { useNavigate } from "react-router";
 
 type ChapterProps = {
     chapter: MangaChapter;
-    source: string;
 };
 
 const Chapter = (props: ChapterProps) => {
-    const { chapter, source } = props;
+    const { chapter } = props;
     const styles = useMemo(
         () =>
             StyleSheet.create({
@@ -97,7 +96,7 @@ const Chapter = (props: ChapterProps) => {
                     <Button
                         onClick={() => {
                             Navigate(
-                                `/reader?manga=${chapter.manga_id}&chapter=${chapter.id}&source=${source}`
+                                `/reader?manga=${chapter.manga_id}&chapter=${chapter.id}&source=${chapter.source}`
                             );
                         }}
                         sx={styles.read._value as Record<string, string>}
