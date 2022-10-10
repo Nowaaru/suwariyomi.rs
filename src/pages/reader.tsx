@@ -10,6 +10,7 @@ import {
     useDisclosure,
 } from "@chakra-ui/react";
 import { fetch, ResponseType } from "@tauri-apps/api/http";
+import { open } from "@tauri-apps/api/shell";
 import { css, StyleSheet } from "aphrodite";
 import CircularProgress from "components/circularprogress";
 import Lightbar from "components/lightbar";
@@ -405,6 +406,18 @@ const Reader = () => {
                     <ButtonGroup height="100%">
                         <IconButtonWithLabel
                             icon={<MdPublic />}
+                            onClick={() => {
+                                if (mangaData.chapterId && mangaData.mangaId) {
+                                    const chapterUrl =
+                                        sourceHandler?.getChapterUrl?.(
+                                            mangaData.mangaId,
+                                            mangaData.chapterId,
+                                            currentPageNumber
+                                        );
+
+                                    if (chapterUrl) open(chapterUrl);
+                                }
+                            }}
                             label="Open in Browser"
                         />
                         <IconButtonWithLabel

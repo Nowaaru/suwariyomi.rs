@@ -8,12 +8,17 @@ import fetch from "util/fetch";
 
 type HexColor = string;
 type Locale = string;
-type Locales = Array<Locale>;
 
 export abstract class Source {
     public abstract getManga(mangaId: string): Promise<Manga>;
 
     public abstract getMangaUrl(mangaId: string): string;
+
+    public abstract getChapterUrl(
+        mangaId: string,
+        chapterId: string,
+        pageNumber?: number | null
+    ): string;
 
     public abstract getPages(
         mangaId: string,
