@@ -18,15 +18,12 @@ import Chapters from "components/chapters";
 import _ from "lodash";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-    MdCropFree,
     MdFormatListNumbered,
     MdHouse,
-    MdList,
     MdLooksOne,
     MdPublic,
     MdSettings,
     MdShare,
-    MdWeb,
 } from "react-icons/md";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import SourceHandler, { Source } from "util/sources";
