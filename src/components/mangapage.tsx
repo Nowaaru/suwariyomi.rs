@@ -1,4 +1,7 @@
-import { StyleSheet, css } from "aphrodite";
+import { Flex } from "@chakra-ui/react";
+import { css, StyleSheet } from "aphrodite";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+
 import _ from "lodash";
 
 type float = number;
@@ -42,22 +45,49 @@ const MangaPage = (props: MangaPageProps) => {
         },
     });
 
+    const [imageData, setImageData] = useState<HTMLImageElement | null>(null);
+    useEffect(() => {
+        const newImage = new Image();
+        newImage.src = url;
+
+        newImage.onload = () => {
+            setImageData(newImage);
+        };
+    }, [url]);
+
+    const canvas = useRef<HTMLCanvasElement>(null);
+    useLayoutEffect(() => {
+        if (!imageData) return;
+
+        const ctx = canvas.current?.getContext("2d");
+        ctx?.drawImage(
+            imageData,
+            0,
+            0,
+            imageData.naturalWidth,
+            imageData.naturalHeight
+        );
+    }, [imageData]);
+
     return (
-        <div
-            style={{
-                display: "flex",
-                justifyContent: "center",
-                flexDirection: "row",
-                verticalAlign: "middle",
-                alignItems: "center",
-                backgroundColor: "#0D1620",
-                width: "100vw",
-                height: "100vh",
-                padding,
-            }}
+        <Flex
+            justifyContent="center"
+            flexDirection="row"
+            verticalAlign="middle"
+            alignItems="center"
+            backgroundColor="#0D1620"
+            position="relative"
+            width="100%"
+            height="100%"
+            padding={padding}
         >
-            <img src={url} className={css(styles.page)} />
-        </div>
+            <canvas
+                width={imageData?.naturalWidth}
+                height={imageData?.naturalHeight}
+                className={css(styles.page)}
+                ref={canvas}
+            />
+        </Flex>
     );
 };
 
