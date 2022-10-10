@@ -185,7 +185,6 @@ const Reader = () => {
         sourceHandler
             .getPages(mangaData.mangaId, mangaData.chapterId)
             .then((newPagesArray) => {
-                console.log(newPagesArray);
                 setPageSources(newPagesArray);
                 pages.current = newPagesArray.map((n) => ({
                     url: n,
@@ -243,7 +242,6 @@ const Reader = () => {
             })
                 .then((response) => {
                     if (!response.ok) setError();
-                    console.log(`done loading: ${page}`);
                     const newBlob = new Blob( // SHOUTOUTS TO TAURI APPS' MELLENIO AND GIBBY FOR THEIR HELP
                         [new Uint8Array(response.data as Array<number>)],
                         { type: response.headers["content-type"] }
@@ -293,7 +291,6 @@ const Reader = () => {
         if (!currentPageNumber) return;
         if (!currentPage?.completed && !currentPage?.didError) {
             const currentPage = pages.current[currentPageNumber - 1];
-            console.log(currentPage.isDownloading);
             return (
                 <div
                     style={{
