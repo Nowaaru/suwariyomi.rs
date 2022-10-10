@@ -7,12 +7,14 @@ import {
     Tooltip,
     IconButtonProps,
     Divider,
+    useDisclosure,
 } from "@chakra-ui/react";
 import { fetch, ResponseType } from "@tauri-apps/api/http";
 import { css, StyleSheet } from "aphrodite";
 import CircularProgress from "components/circularprogress";
 import Lightbar from "components/lightbar";
 import MangaPage from "components/mangapage";
+import Chapters from "components/chapters";
 import _ from "lodash";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -28,6 +30,7 @@ import {
 } from "react-icons/md";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import SourceHandler, { Source } from "util/sources";
+import { Chapter } from "types/manga";
 
 type Page = {
     url: string;
@@ -44,6 +47,8 @@ type MangaData = {
     mangaId: string | null;
     sourceId: string | null;
     chapterId: string | null;
+
+    chapters: Array<Chapter> | null;
 };
 
 const IconButtonWithLabel = (
@@ -63,7 +68,7 @@ const IconButtonWithLabel = (
     );
 
     return (
-        <Tooltip label={props.label}>
+        <Tooltip label={props.label} hasArrow>
             <IconButton
                 _hover={{
                     backgroundColor: props.color ?? "#f88379",
@@ -91,10 +96,12 @@ const Reader = () => {
 
     const [queryParams] = useSearchParams();
     const [sourceHandler, setSourceHandler] = useState<Source | null>(null);
-    const [mangaData] = useState<MangaData>({
+    const [mangaData, updateMangaData] = useState<MangaData>({
         mangaId: queryParams.get("manga"),
         sourceId: queryParams.get("source"),
         chapterId: queryParams.get("chapter"),
+
+        chapters: null,
     });
 
     const [currentPage, setCurrentPage] = useState<Page | null>(null);
@@ -115,6 +122,12 @@ const Reader = () => {
         );
         return foundPage === -1 ? null : foundPage + 1;
     }, [pages, currentPage]);
+
+    const {
+        isOpen: chaptersAreOpen,
+        onOpen: onChaptersOpen,
+        onClose: onChaptersClose,
+    } = useDisclosure();
 
     useEffect(() => {
         if (!currentPageNumber) return;
@@ -156,6 +169,17 @@ const Reader = () => {
             setSourceHandler(foundSource ?? null)
         );
     }, [mangaData]);
+
+    useEffect(() => {
+        if (!sourceHandler || !mangaData.mangaId || mangaData.chapters) return;
+
+        sourceHandler.getChapters(mangaData.mangaId).then((chapters) =>
+            updateMangaData((oldMangaData) => ({
+                ...oldMangaData,
+                chapters,
+            }))
+        );
+    }, [sourceHandler, mangaData]);
 
     useEffect(() => {
         if (!sourceHandler || !mangaData.chapterId || !mangaData.mangaId)
@@ -340,6 +364,13 @@ const Reader = () => {
                 setMouseData({ x, y, lastMoved: 0 })
             }
         >
+            {mangaData.chapters ? (
+                <Chapters
+                    chapters={mangaData.chapters}
+                    isOpen={chaptersAreOpen}
+                    onClose={onChaptersClose}
+                />
+            ) : null}
             {currentMangaPage}
             <Container
                 position="absolute"
@@ -375,7 +406,7 @@ const Reader = () => {
                         <IconButtonWithLabel icon={<MdShare />} label="Share" />
                         <IconButtonWithLabel
                             label="Open Chapter Index"
-                            onClick={() => Navigate(-1)}
+                            onClick={onChaptersOpen}
                             icon={<MdFormatListNumbered />}
                         />
                         <Divider orientation="vertical" />
