@@ -40,8 +40,8 @@ const Chapters = ({
     return (
         <Modal isOpen={isOpen} onClose={onClose}>
             <ModalOverlay />
-            <ModalContent backgroundColor="#0D1620">
-                <ModalHeader color="whitesmoke">Chapters</ModalHeader>
+            <ModalContent color="whitesmoke" backgroundColor="#0D1620">
+                <ModalHeader>Chapters</ModalHeader>
                 <ModalCloseButton />
                 <Divider
                     position="relative"
