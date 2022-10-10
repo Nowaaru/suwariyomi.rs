@@ -7,8 +7,6 @@ import _ from "lodash";
 import fetch from "util/fetch";
 
 type HexColor = string;
-type Locale = string;
-
 export abstract class Source {
     public abstract getManga(mangaId: string): Promise<Manga>;
 
