@@ -23,7 +23,18 @@ export abstract class Source {
         chapterId: string
     ): Promise<Array<string>>;
 
-    public abstract getChapters(mangaId: string): Promise<Array<Chapter>>;
+    public abstract getChapters(
+        mangaId: string,
+        offset?: number,
+        sortOrder?: {
+            [K in
+                | "createdAt"
+                | "updatedAt"
+                | "publishAt"
+                | "volume"
+                | "chapter"]?: "asc" | "desc";
+        }
+    ): Promise<{ data: Array<Chapter>; total: number }>;
 
     public abstract search(
         query: string,
@@ -217,5 +228,43 @@ export const MangaValidator = (manga: Manga) => {
 
     return manga;
 };
+
+export async function getAllChapters(sourceHandler: Source, mangaId: string) {
+    let expectedTotal = null;
+    const allChapters: Array<Chapter> = [];
+
+    while (Math.random() < 500) {
+        const mangaResult = await sourceHandler
+            ?.getChapters(mangaId)
+            .then(({ data, total }) => ({
+                data: data
+                    .filter(({ lang }) => lang === "en")
+                    .sort(
+                        ({ chapter: aChapter }, { chapter: bChapter }) =>
+                            bChapter - aChapter
+                    ),
+                total,
+            }))
+            .catch(console.error);
+
+        if (!mangaResult) return allChapters;
+        if (!expectedTotal) expectedTotal = mangaResult.total ?? 150;
+
+        const addedChapters = mangaResult.data.filter(
+            (ch) => !allChapters.find((n) => n.id === ch.id)
+        );
+
+        if (addedChapters.length > 0) {
+            allChapters.push(...addedChapters);
+            if (allChapters.length > expectedTotal) return allChapters;
+
+            continue;
+        }
+
+        break;
+    }
+
+    return allChapters;
+}
 
 export default new SourceHandler();
