@@ -171,11 +171,8 @@ const Reader = () => {
     useEffect(() => {
         if (!sourceHandler || !mangaData.mangaId || mangaData.chapters) return;
 
-        sourceHandler.getChapters(mangaData.mangaId).then((chapters) =>
-            updateMangaData((oldMangaData) => ({
-                ...oldMangaData,
-                chapters,
-            }))
+        getAllChapters(sourceHandler, mangaData.mangaId).then((chapters) =>
+            updateMangaData({ ...mangaData, chapters })
         );
     }, [sourceHandler, mangaData]);
 
