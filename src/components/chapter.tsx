@@ -12,6 +12,7 @@ import { useNavigate } from "react-router";
 
 type ChapterProps = {
     chapter: MangaChapter;
+    id?: string;
     onClick?: () => void;
 };
 
@@ -81,7 +82,7 @@ const Chapter = (props: ChapterProps) => {
         : `Page ${chapter.pages}/${chapter.total}`;
 
     return (
-        <div className={css(styles.chapter)}>
+        <div className={css(styles.chapter)} id={props.id}>
             <div className={css(styles.meta)}>
                 <span className={css(styles.title)}>
                     {compileChapterTitle(chapter)}
