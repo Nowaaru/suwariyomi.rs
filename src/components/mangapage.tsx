@@ -73,7 +73,7 @@ const MangaPage = (props: MangaPageProps) => {
 
     const [imageData, setImageData] = useState<HTMLImageElement | null>(null);
     useEffect(() => {
-        if (imageData) return;
+        if (imageData?.src === url) return;
         const newImage = new Image();
         newImage.src = url;
 
