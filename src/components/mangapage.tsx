@@ -73,13 +73,14 @@ const MangaPage = (props: MangaPageProps) => {
 
     const [imageData, setImageData] = useState<HTMLImageElement | null>(null);
     useEffect(() => {
+        if (imageData) return;
         const newImage = new Image();
         newImage.src = url;
 
         newImage.onload = () => {
             setImageData(newImage);
         };
-    }, [url]);
+    }, [url, imageData]);
 
     const canvas = useRef<HTMLCanvasElement>(null);
     useLayoutEffect(() => {
