@@ -3,14 +3,16 @@ import { useEffect, useMemo, useState } from "react";
 import { Chapter, Manga } from "types/manga";
 
 import BackButton from "components/button";
+import ChapterComponent from "components/chapter";
 import CircularProgress from "components/circularprogress";
 import _ from "lodash";
-import SourceHandler, { Source } from "util/sources";
+import SourceHandler, { getAllChapters, Source } from "util/sources";
 
-import ipc from "ipc";
 import { open } from "@tauri-apps/api/shell";
+import ipc from "ipc";
 
 import {
+    Box,
     Button,
     ButtonGroup,
     Progress,
@@ -18,7 +20,6 @@ import {
     Text,
     Tooltip,
 } from "@chakra-ui/react";
-import ChapterComponent from "components/chapter";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { stripHtml } from "string-strip-html";
 import {
