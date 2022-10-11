@@ -335,22 +335,31 @@ const Reader = () => {
 
     const lastMovedFadeThreshold = 1000;
     const [forceShow, setForceShow] = useState(false);
-    const [mouseData, setMouseData] = useState({
+    const [mouseData, _setMouseData] = useState({
         x: 0,
         y: 0,
 
         lastMoved: 0,
     });
 
+    const setMouseData = useCallback(_.throttle(_setMouseData, 350), [
+        _setMouseData,
+    ]);
     useEffect(() => {
-        const newInterval = setInterval(
-            () =>
-                setMouseData((oldData) => ({
-                    ...oldData,
-                    lastMoved: oldData.lastMoved + 100,
-                })),
-            100
-        );
+        const newInterval = setInterval(() => {
+            setMouseData((oldData) =>
+                oldData.lastMoved >= lastMovedFadeThreshold
+                    ? oldData
+                    : {
+                          ...oldData,
+                          lastMoved: _.clamp(
+                              oldData.lastMoved + 500,
+                              0,
+                              lastMovedFadeThreshold
+                          ),
+                      }
+            );
+        }, 500);
 
         return () => clearInterval(newInterval);
     }, [setMouseData]);
