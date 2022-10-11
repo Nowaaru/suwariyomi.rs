@@ -40,6 +40,7 @@ const View = () => {
     // manga shit 275x435
     // 2px white border
 
+    const [loadingChapters, setLoading] = useState(false);
     const Navigate = useNavigate();
     const styles = useMemo(
         () =>
@@ -315,10 +316,12 @@ const View = () => {
 
                 chapters: {
                     maxWidth: "800px",
-                    width: "50%",
+                    minWidth: "30%",
+                    width: "fit-content",
                     height: "fit-content",
                     maxHeight: "530px",
                     overflowY: "scroll",
+                    overflowX: "hidden",
                     overscrollBehavior: "none",
                     backgroundColor: "#142333",
                     marginLeft: "125px",
@@ -403,45 +406,50 @@ const View = () => {
                         setMangaData(data ?? null);
                     });
 
-                console.log("found it!");
                 setMangaData(foundManga as Manga);
             })
             .catch(console.error);
     }, [mangaId, sourceHandler, mangaData, mangaSource]);
 
     useEffect(() => {
-        if (!sourceHandler) return;
         if (!mangaId) return;
+        if (!sourceHandler) return;
+        if (rawChapterData) return;
 
-        sourceHandler
-            ?.getChapters(mangaId)
-            .then((unchangedData) =>
-                unchangedData
-                    .filter(({ lang }) => lang === "en")
-                    .sort(
-                        ({ chapter: aChapter }, { chapter: bChapter }) =>
-                            bChapter - aChapter
-                    )
-            )
-            .then(setChapterData);
-    }, [mangaId, sourceHandler]);
+        getAllChapters(sourceHandler, mangaId).then(setChapterData);
+    }, [mangaId, rawChapterData, sourceHandler]);
+
+    const firstUnreadChapter = useMemo(() => {
+        return rawChapterData
+            ?.filter((x) => !isChapterCompleted(x))
+            .map((y) => ({ i: y, ch: y.chapter }))
+            .sort((a, b) => a.ch - b.ch)[0];
+    }, [rawChapterData]);
+
+    useEffect(() => {
+        if (!firstUnreadChapter) return;
+        const foundChapter = document.getElementById(firstUnreadChapter.i.id);
+
+        if (foundChapter)
+            foundChapter.scrollIntoView({
+                block: "center",
+                inline: "center",
+                behavior: "auto",
+            });
+    }, [firstUnreadChapter, styles.chapters]);
 
     const chapterElements = useMemo(() => {
         if (!rawChapterData) return [];
         if (!sourceHandler) return [];
 
         return rawChapterData.map((e) => (
-            <ChapterComponent key={e.id} chapter={e as Chapter} />
+            <ChapterComponent key={e.id} id={e.id} chapter={e as Chapter} />
         ));
     }, [rawChapterData, sourceHandler]);
 
     if (mangaData && Array.isArray(rawChapterData)) {
-        const firstUnreadChapter = rawChapterData
-            .filter((x) => !isChapterCompleted(x))
-            .map((y) => ({ i: y, ch: y.chapter }))
-            .sort((a, b) => a.ch - b.ch)[0];
         const chapterPre =
-            firstUnreadChapter?.i.pages > 0
+            (firstUnreadChapter?.i.pages ?? 0) > 0
                 ? "Continue Reading"
                 : "Start Reading";
         const chapterDisplay = firstUnreadChapter
@@ -636,7 +644,7 @@ const View = () => {
                         </div>
                     </div>
                 </div>
-                <div className={css(styles.bottom)}>
+                <div className={css(styles.bottom)} id="bottom">
                     <div className={css(styles.metabottom)}>
                         <div className={css(styles.tagscontainer)}>
                             <span> Tags </span>
@@ -732,9 +740,9 @@ const View = () => {
                             ) : null}
                         </div>
                     </div>
-                    <div className={css(styles.chapters)}>
+                    <Box className={css(styles.chapters)}>
                         {chapterElements}
-                    </div>
+                    </Box>
                 </div>
             </div>
         );
