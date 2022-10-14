@@ -1,6 +1,7 @@
 import { Flex } from "@chakra-ui/react";
 import { css, StyleSheet } from "aphrodite";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import type { Page } from "pages/reader";
 
 import _ from "lodash";
 import chroma from "chroma-js";
@@ -41,7 +42,7 @@ export enum FilterType {
 }
 
 type MangaPageBase = {
-    bitmap?: ImageBitmap;
+    page: Page;
 };
 
 type MangaAppearance = {
@@ -55,7 +56,7 @@ type MangaPageProps = MangaPageBase &
     };
 
 const MangaPage = (props: MangaPageProps) => {
-    const { bitmap } = props;
+    const { bitmap } = props.page;
     const isComfortable = props.fit === "comfortable";
     const padding = isComfortable ? "5%" : "0";
     const styles = StyleSheet.create({
@@ -98,6 +99,7 @@ const MangaPage = (props: MangaPageProps) => {
             width="100%"
             height="100%"
             padding={padding}
+            key={props.page.url}
         >
             {bitmap ? (
                 <canvas
