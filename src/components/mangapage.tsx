@@ -5,15 +5,6 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import _ from "lodash";
 import chroma from "chroma-js";
 
-type MangaBlob = {
-    blob: Blob;
-    url?: never;
-};
-type MangaUrl = {
-    blob?: never;
-    url: string;
-};
-
 type MangaRoundedTrue = {
     rounded: true;
     radius: number;
@@ -30,8 +21,8 @@ type MangaFilters =
           filterType: FilterType;
       }
     | {
-          filterColor: never;
-          filterType: never;
+          filterColor?: never;
+          filterType?: never;
       };
 
 export enum FilterType {
@@ -49,18 +40,22 @@ export enum FilterType {
     Exclusion = "exclusion",
 }
 
+type MangaPageBase = {
+    bitmap?: ImageBitmap;
+};
+
 type MangaAppearance = {
     baseZoom?: number; // TBA when I can be fucked to implement canvas-based manga pages because zooming and panning is a demonic thing to implement.
 } & (MangaRoundedTrue | MangaRoundedFalse);
 
-type MangaPageProps = (MangaBlob | MangaUrl) &
+type MangaPageProps = MangaPageBase &
     MangaFilters &
     MangaAppearance & {
         fit?: "width" | "height" | "comfortable";
     };
 
 const MangaPage = (props: MangaPageProps) => {
-    const url = props.url || URL.createObjectURL(props.blob ?? new Blob());
+    const { bitmap } = props;
     const isComfortable = props.fit === "comfortable";
     const padding = isComfortable ? "5%" : "0";
     const styles = StyleSheet.create({
@@ -71,30 +66,13 @@ const MangaPage = (props: MangaPageProps) => {
         },
     });
 
-    const [imageData, setImageData] = useState<HTMLImageElement | null>(null);
-    useEffect(() => {
-        if (imageData?.src === url) return;
-        const newImage = new Image();
-        newImage.src = url;
-
-        newImage.onload = () => {
-            setImageData(newImage);
-        };
-    }, [url, imageData]);
-
     const canvas = useRef<HTMLCanvasElement>(null);
     useLayoutEffect(() => {
-        if (!imageData || !canvas.current) return;
+        if (!bitmap || !canvas.current) return;
         const ctx = canvas.current.getContext("2d");
 
         if (ctx) {
-            ctx.drawImage(
-                imageData,
-                0,
-                0,
-                imageData.naturalWidth,
-                imageData.naturalHeight
-            );
+            ctx.drawImage(bitmap, 0, 0, bitmap.width, bitmap.height);
 
             const { filterColor, filterType } = props;
             if (filterColor) {
@@ -102,17 +80,12 @@ const MangaPage = (props: MangaPageProps) => {
 
                 ctx.globalCompositeOperation = filterType;
                 ctx.fillStyle = filterColor.hex();
-                ctx.fillRect(
-                    0,
-                    0,
-                    imageData.naturalWidth,
-                    imageData.naturalHeight
-                );
+                ctx.fillRect(0, 0, bitmap.width, bitmap.height);
 
                 ctx.restore();
             }
         }
-    }, [imageData, props]);
+    }, [bitmap, props]);
 
     return (
         <Flex
@@ -126,12 +99,16 @@ const MangaPage = (props: MangaPageProps) => {
             height="100%"
             padding={padding}
         >
-            <canvas
-                width={imageData?.naturalWidth}
-                height={imageData?.naturalHeight}
-                className={css(styles.page)}
-                ref={canvas}
-            />
+            {bitmap ? (
+                <canvas
+                    width={bitmap.width}
+                    height={bitmap.height}
+                    className={css(styles.page)}
+                    ref={canvas}
+                />
+            ) : (
+                <span>No bitmap.</span>
+            )}
         </Flex>
     );
 };
