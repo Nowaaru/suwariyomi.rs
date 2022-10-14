@@ -19,7 +19,7 @@ import CircularProgress from "components/circularprogress";
 import Lightbar from "components/lightbar";
 import MangaPage from "components/mangapage";
 import _ from "lodash";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
     MdFormatListNumbered,
@@ -32,10 +32,11 @@ import {
 } from "react-icons/md";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Chapter } from "types/manga";
-import SourceHandler, { getAllChapters, Source } from "util/sources";
 import { compileChapterTitle } from "util/textutil";
+import SourceHandler, { getAllChapters, Source } from "util/sources";
+import { AnimatePresence, motion } from "framer-motion";
 
-type Page = {
+export type Page = {
     url: string;
     blob: Blob;
     bitmap?: ImageBitmap;
@@ -64,7 +65,7 @@ enum PageLoadType {
 
 enum PageAnimationType {
     None = 1,
-    Slide = 2
+    Slide = 2,
 }
 
 const IconButtonWithLabel = (
@@ -102,7 +103,7 @@ const Reader = () => {
     const Navigate = useNavigate();
 
     const pageLoadType: PageLoadType = useMemo<PageLoadType>(
-        () => PageLoadType.Individually,
+        () => PageLoadType.Batch,
         []
     );
 
@@ -217,12 +218,14 @@ const Reader = () => {
     const incrementPage = useCallback(() => {
         if (!currentPageNumber) return;
         if (handleIntermediary(1)) return;
+
         setCurrentPageNumber(currentPageNumber + 1);
     }, [currentPageNumber, handleIntermediary]);
 
     const decrementPage = useCallback(() => {
         if (!currentPageNumber) return;
         if (handleIntermediary(-1)) return;
+
         setCurrentPageNumber(currentPageNumber - 1);
     }, [currentPageNumber, handleIntermediary]);
 
@@ -359,7 +362,12 @@ const Reader = () => {
             );
 
             const dataWhenTargetChapterIsNotPresent = (
-                <Text alignSelf="center">
+                <Text
+                    as={motion.p}
+                    initial={{ opacity: "0", transform: "scaleX(0.85)" }}
+                    animate={{ opacity: "1", transform: "scaleX(1)" }}
+                    alignSelf="center"
+                >
                     There is no {isGoingBack ? "previous" : "next"} chapter.
                 </Text>
             );
@@ -568,104 +576,107 @@ const Reader = () => {
             });
     }, [pages, mangaData, sourceHandler]);
 
-    const currentMangaPage = useMemo(() => {
-        if (!currentPageNumber) return;
-        if (!currentPage?.completed || currentPage?.didError) {
-            return (
-                <div
-                    style={{
-                        width: "100vw",
-                        height: "100vh",
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        verticalAlign: "middle",
-                    }}
-                >
-                    {currentPage?.didError ? (
-                        <Button
-                            display="flex"
-                            disabled={!!currentPage}
-                            onClick={() => {
-                                if (!currentPage) return;
-                                downloadPage(currentPage).then(
-                                    (downloadedPage) =>
+    const makeMangaPage = useCallback(
+        (oneBasedPageNumber: number) => {
+            if (!oneBasedPageNumber) return;
+
+            const page = pages?.[oneBasedPageNumber - 1];
+            if (!page?.completed || page?.didError) {
+                return (
+                    <div
+                        style={{
+                            width: "100vw",
+                            height: "100vh",
+                            position: "relative",
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            verticalAlign: "middle",
+                        }}
+                    >
+                        {page?.didError ? (
+                            <Button
+                                display="flex"
+                                as={motion.button}
+                                _hover={{
+                                    backgroundColor: "#f88379",
+                                    color: "whitesmoke",
+                                }}
+                                transition="background-color 0.15s, color 0.15s"
+                                initial={{
+                                    opacity: "0",
+                                    transform: "scaleX(0.90) scaleY(0.90)",
+                                }}
+                                animate={{
+                                    opacity: "1",
+                                    transform: "scaleX(1) scaleY(1)",
+                                    transition: {
+                                        duration: 0.05,
+                                    },
+                                }}
+                                onClick={() => {
+                                    if (!page) return;
+                                    downloadPage(page).then((downloadedPage) =>
                                         setPages((oldPages) => {
                                             const newPages = _.cloneDeep(
                                                 oldPages as Page[]
                                             );
 
-                                            newPages[currentPageNumber - 1] =
+                                            newPages[oneBasedPageNumber - 1] =
                                                 downloadedPage;
 
                                             return newPages;
                                         })
-                                );
-                            }}
-                        >
-                            Retry
-                        </Button>
-                    ) : (
-                        <CircularProgress display="flex" />
-                    )}
-                </div>
-            );
-        }
+                                    );
+                                }}
+                            >
+                                Retry
+                            </Button>
+                        ) : (
+                            <CircularProgress display="flex" />
+                        )}
+                    </div>
+                );
+            }
 
-        return <MangaPage fit="comfortable" bitmap={currentPage.bitmap} />;
-    }, [currentPageNumber, downloadPage, currentPage]);
+            return <MangaPage fit="comfortable" page={page} />;
+        },
+        [downloadPage, pages]
+    );
 
-    const shouldHide = false;
-    const forceShow = false;
-    // If there are no pages, simply show a loading progress.
-    if (!pages || pages.length <= 0)
-        return (
-            <Flex
-                flexDirection="column"
-                className={css(styles.reader)}
-                justifyContent="center"
-                alignItems="center"
-            >
-                <Text
-                    color="whitesmoke"
-                    fontFamily="Cascadia Code"
-                    marginTop="-8px"
-                    marginBottom="8px"
-                    fontSize="16px"
-                >
-                    Loading pages...
-                </Text>
-                <CircularProgress showTimeElapsed />
-            </Flex>
-        );
+    const [shouldHide, setHide] = useState(true);
+    const [forceShow, setForceShow] = useState(false);
 
-    return (
-        <div className={css(styles.reader)}>
-            {mangaData.chapters ? (
-                <Chapters
-                    onChapterSelect={(chapterId) => {
-                        updateMangaData((oldMangaData) => ({
-                            ...oldMangaData,
-                            chapterId,
-                        }));
+    useEffect(() => {
+        if (shouldHide || forceShow) return;
+        const timeout = setTimeout(() => {
+            setHide(true);
+        }, 2500);
 
-                        const newParams = new URLSearchParams(queryParams);
-                        newParams.set("chapter", chapterId);
+        return () => clearTimeout(timeout);
+    }, [shouldHide, forceShow]);
 
-                        setQueryParams(newParams);
-                        setCurrentPageNumber(null);
-                    }}
-                    chapters={mangaData.chapters}
-                    isOpen={chaptersAreOpen}
-                    onClose={onChaptersClose}
-                />
-            ) : null}
-            {displayIntermediary ? intermediaryContainer : currentMangaPage}
+    const Toolbar = (
+        <AnimatePresence>
             <Container
+                key="toolbar"
                 position="absolute"
                 maxWidth="100%"
                 height="100px"
                 bottom="50px"
+                as={motion.div}
+                initial={{
+                    opacity: 0,
+                    transform: "scaleX(0.9) scaleY(0.9)",
+                }}
+                animate={{
+                    opacity: 1,
+                    transform: "scaleX(1) scaleY(1)",
+                }}
+                exit={{
+                    opacity: 0,
+                    transform: "scaleX(0.9) scaleY(0.9)",
+                }}
                 centerContent
             >
                 <Container
@@ -679,7 +690,8 @@ const Reader = () => {
                     width="fit-content"
                     height="fit-content"
                     maxHeight="100%"
-                    display={shouldHide ? "none" : "initial"}
+                    onMouseEnter={() => setForceShow(true)}
+                    onMouseLeave={() => setForceShow(false)}
                 >
                     <ButtonGroup height="100%">
                         <IconButtonWithLabel
@@ -722,6 +734,59 @@ const Reader = () => {
                     </ButtonGroup>
                 </Container>
             </Container>
+        </AnimatePresence>
+    );
+
+    if (!pages || !currentPageNumber || pages.length <= 0)
+        return (
+            <Flex
+                flexDirection="column"
+                className={css(styles.reader)}
+                justifyContent="center"
+                alignItems="center"
+            >
+                <Text
+                    color="whitesmoke"
+                    fontFamily="Cascadia Code"
+                    marginTop="-8px"
+                    marginBottom="8px"
+                    fontSize="16px"
+                >
+                    Loading pages...
+                </Text>
+                <CircularProgress showTimeElapsed />
+            </Flex>
+        );
+
+    const currentMangaPage = makeMangaPage(currentPageNumber);
+    return (
+        <div
+            className={css(styles.reader)}
+            onMouseMove={() => {
+                if (shouldHide) setHide(false);
+            }}
+        >
+            {mangaData.chapters ? (
+                <Chapters
+                    onChapterSelect={(chapterId) => {
+                        updateMangaData((oldMangaData) => ({
+                            ...oldMangaData,
+                            chapterId,
+                        }));
+
+                        const newParams = new URLSearchParams(queryParams);
+                        newParams.set("chapter", chapterId);
+
+                        setQueryParams(newParams);
+                        setCurrentPageNumber(null);
+                    }}
+                    chapters={mangaData.chapters}
+                    isOpen={chaptersAreOpen}
+                    onClose={onChaptersClose}
+                />
+            ) : null}
+            {displayIntermediary ? intermediaryContainer : currentMangaPage}
+            {shouldHide ? null : Toolbar}
             {pages && pages.length > 0 && currentPageNumber ? (
                 <Lightbar
                     onTabClick={(_, tab) => {
