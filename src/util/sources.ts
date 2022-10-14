@@ -30,7 +30,6 @@ export abstract class Source {
             [K in
                 | "createdAt"
                 | "updatedAt"
-                | "publishAt"
                 | "volume"
                 | "chapter"]?: "asc" | "desc";
         }
