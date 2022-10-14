@@ -9,6 +9,11 @@
         }
     },
     "lint-staged": {
+        "**/*.ts": [
+            "eslint --fix",
+            "tsc",
+            "git add"
+        ],
         "**/*.js": [
             "eslint --fix",
             "git add"
