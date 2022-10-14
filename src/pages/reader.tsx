@@ -49,6 +49,13 @@ type MangaData = {
     chapters: Array<Chapter> | null;
 };
 
+// Batch type is less intensive, but slower.
+// Individually is faster, but updates state more - therefore laggier. :thumbsup:
+enum PageLoadType {
+    Batch = 1,
+    Individually = 2,
+}
+
 const IconButtonWithLabel = (
     props: {
         label: string;
@@ -81,8 +88,10 @@ const IconButtonWithLabel = (
 const Reader = () => {
     const futurePagesToLoad = 4;
     const Navigate = useNavigate();
-    const [pageSources, setPageSources] = useState<Array<string>>([]);
-    const pages = useRef<Array<Page>>([]);
+    const pageLoadType: PageLoadType = useMemo<PageLoadType>(
+        () => PageLoadType.Batch,
+        []
+    );
 
     const styles = StyleSheet.create({
         reader: {
@@ -102,22 +111,24 @@ const Reader = () => {
         chapters: null,
     });
 
+    const [pages, setPages] = useState<Array<Page> | null>(null);
+    const [displayIntermediary, setIntermediary] = useState(false);
     const [currentPage, setCurrentPage] = useState<Page | null>(null);
+
     const setPage = useCallback(
         (oneBasedPageIndex: number) => {
+            if (!pages) return;
             setCurrentPage(
-                pages.current[
-                    _.clamp(oneBasedPageIndex - 1, 0, pages.current.length - 1)
-                ]
+                pages[_.clamp(oneBasedPageIndex - 1, 0, pages.length - 1)]
             );
         },
         [setCurrentPage, pages]
     );
 
     const currentPageNumber: number | null = useMemo<number | null>(() => {
-        const foundPage: number = pages.current.findIndex(
-            (x) => x.url === currentPage?.url
-        );
+        const foundPage: number =
+            pages?.findIndex((x) => x.url === currentPage?.url) ?? -1;
+
         return foundPage === -1 ? null : foundPage + 1;
     }, [pages, currentPage]);
 
@@ -176,21 +187,147 @@ const Reader = () => {
         );
     }, [sourceHandler, mangaData]);
 
+
+
+
+
+
+            );
+
+
+
+    const downloadPage = useCallback(async (page: Page): Promise<Page> => {
+        return fetch(page.url, {
+            method: "GET",
+            responseType: ResponseType.Binary,
+            timeout: 10,
+        })
+            .then(async (response) => {
+                if (!response.ok)
+                    return {
+                        ...page,
+                        didError: true,
+                        completed: false,
+                        isDownloading: false,
+                    };
+
+                const blob = new Blob( // SHOUTOUTS TO TAURI APPS' MELLENIO AND GIBBY FOR THEIR HELP
+                    [new Uint8Array(response.data as Array<number>)],
+                    { type: response.headers["content-type"] }
+                );
+                return {
+                    ...page,
+                    didError: false,
+                    completed: true,
+                    isDownloading: false,
+
+                    contentSize: Number(response.headers["content-length"]),
+                    bitmap: await createImageBitmap(blob),
+                    blob: blob,
+                } as Page;
+            })
+            .catch((err) => {
+                const erroringPage = pages?.findIndex(
+                    (z) => z.url === page.url
+                );
+                console.error(
+                    `An error occurred trying to download Page ${
+                        erroringPage ? erroringPage + 1 : "<unknown>"
+                    }:\n${err}`
+                );
+                return {
+                    ...page,
+                    didError: true,
+                    completed: false,
+                    isDownloading: false,
+                };
+            });
+    }, []);
+
+    const [loadingQueue, setLoadingQueue] = useState<Array<Page>>([]);
+    const loadingQueueOnFinishedHandler = useCallback(
+        (pages: Array<Page>) =>
+            setPages((oldPages) => {
+                if (!oldPages) return null;
+
+                const newPages = [...oldPages].map(
+                    (n) => pages.find((y) => y.url === n.url) ?? n
+                );
+
+                const newCurrentPage = newPages.find(
+                    (p) => p.url === currentPage?.url
+                );
+
+                console.log("Inputted pages:", pages);
+                if (newCurrentPage) setCurrentPage(newCurrentPage);
+                return newPages;
+            }),
+        [currentPage?.url]
+    );
+
     useEffect(() => {
-        if (
-            !sourceHandler ||
-            !mangaData.chapterId ||
-            !mangaData.mangaId ||
-            pageSources?.length > 0
-        )
-            return;
+        if (!currentPage || !currentPageNumber) return;
+        const pagesToLoad = pages
+            ?.slice(
+                Math.max(currentPageNumber - 1, 0),
+                currentPageNumber + (futurePagesToLoad - 1)
+            )
+            .filter((y) => !y.isDownloading && !y.completed && !y.didError); // do not redownload pages
+
+        if (pagesToLoad && pagesToLoad.length > 0)
+            setLoadingQueue((loadingQueue) => [
+                ...loadingQueue,
+                ...pagesToLoad,
+            ]);
+    }, [currentPage, currentPageNumber, pages]);
+
+    useEffect(() => {
+        if (loadingQueue.length === 0) return;
+
+        setLoadingQueue((loadingQueue) => {
+            const pagesToBeLoaded = loadingQueue.splice(0, futurePagesToLoad);
+
+            setPages((oldPages) => {
+                if (!oldPages) return null;
+                pagesToBeLoaded.forEach((p) => {
+                    const maybePage = oldPages?.find((u) => u.url == p.url);
+                    if (maybePage) maybePage.isDownloading = true;
+                });
+
+                return [...oldPages];
+            });
+
+            // encouraging bad coding practices #5,000,296
+            const downloadedPages = pagesToBeLoaded.map(downloadPage);
+            if (pageLoadType === PageLoadType.Batch)
+                Promise.all(downloadedPages).then(
+                    loadingQueueOnFinishedHandler
+                );
+            else
+                downloadedPages.forEach(async (p) =>
+                    p.then((q) => loadingQueueOnFinishedHandler([q]))
+                );
+
+            return loadingQueue;
+        });
+    }, [
+        loadingQueue,
+        downloadPage,
+        currentPage,
+        loadingQueueOnFinishedHandler,
+        pageLoadType,
+    ]);
+
+    useEffect(() => {
+        if (!mangaData || !mangaData.mangaId || !mangaData.chapterId) return;
+        if (!sourceHandler) return;
+        if (pages) return;
 
         sourceHandler
-            .getPages(mangaData.mangaId, mangaData.chapterId)
-            .then((newPagesArray) => {
-                setPageSources(newPagesArray);
-                pages.current = newPagesArray.map((n) => ({
-                    url: n,
+            .getPages(mangaData?.mangaId, mangaData?.chapterId)
+            .then((allPages) => {
+                const newPages = allPages.map((pageUrl) => ({
+                    url: pageUrl,
                     blob: new Blob(),
 
                     didError: false,
@@ -200,100 +337,14 @@ const Reader = () => {
                     contentSize: -1,
                 }));
 
-                setCurrentPage(pages.current[0]);
+                setPages(newPages);
+                setCurrentPage(newPages[0]);
             });
-    }, [mangaData, sourceHandler, pageSources?.length]);
-
-    const downloadPage = useCallback(
-        ({ pageUrl: page }: { pageUrl: string }) => {
-            const foundPageIndex = pages.current.findIndex(
-                ({ url }) => url === page
-            );
-
-            const associatedPageObject = {
-                ...(pages.current.find(({ url }) => url === page) ?? {}),
-            };
-
-            if (
-                !associatedPageObject ||
-                _.isEmpty(associatedPageObject) ||
-                associatedPageObject?.completed ||
-                associatedPageObject?.isDownloading
-            )
-                return;
-
-            const setError = () =>
-                (pages.current[foundPageIndex] = Object.assign(
-                    associatedPageObject,
-                    {
-                        didError: true,
-                        completed: false,
-                        isDownloading: false,
-                        contentSize: -1,
-                    }
-                ) as Page);
-
-            pages.current[foundPageIndex] = Object.assign(
-                associatedPageObject,
-                { isDownloading: true }
-            ) as Page;
-
-            fetch(page, {
-                method: "GET",
-                responseType: ResponseType.Binary,
-                timeout: 10,
-            })
-                .then((response) => {
-                    if (!response.ok) setError();
-                    const newBlob = new Blob( // SHOUTOUTS TO TAURI APPS' MELLENIO AND GIBBY FOR THEIR HELP
-                        [new Uint8Array(response.data as Array<number>)],
-                        { type: response.headers["content-type"] }
-                    );
-
-                    pages.current[foundPageIndex] = Object.assign(
-                        associatedPageObject,
-                        {
-                            blob: newBlob,
-                            contentSize: response.headers["content-length"],
-                            isDownloading: false,
-                            completed: true,
-                        }
-                    ) as Page;
-
-                    if (associatedPageObject.url === currentPage?.url) {
-                        setCurrentPage(associatedPageObject as Page);
-                    }
-                })
-                .catch((error) => {
-                    const erroredPage = Object.assign(associatedPageObject, {
-                        isDownloading: false,
-                        completed: false,
-                        didError: true,
-                    }) as Page;
-
-                    pages.current[foundPageIndex] = erroredPage;
-                    setCurrentPage(erroredPage);
-
-                    console.error(error);
-                });
-        },
-        [currentPage?.url]
-    );
-
-    useEffect(() => {
-        if (!currentPageNumber) return;
-        const pagesToLoad = pageSources.slice(
-            0,
-            currentPageNumber + futurePagesToLoad - 1
-        );
-
-        pagesToLoad.forEach((pageUrl) => downloadPage({ pageUrl }));
-    }, [pageSources, currentPageNumber, downloadPage]);
+    }, [pages, mangaData, sourceHandler]);
 
     const currentMangaPage = useMemo(() => {
         if (!currentPageNumber) return;
-        if (!currentPage?.completed && !currentPage?.didError) {
-            const currentPage = pages.current[currentPageNumber - 1];
+        if (!currentPage?.completed || currentPage?.didError) {
             return (
                 <div
                     style={{
@@ -311,7 +362,24 @@ const Reader = () => {
                             disabled={!!currentPage}
                             onClick={() => {
                                 if (!currentPage) return;
-                                downloadPage({ pageUrl: currentPage.url });
+                                downloadPage(currentPage).then(
+                                    (downloadedPage) =>
+                                        setPages((oldPages) => {
+                                            const newPages = _.cloneDeep(
+                                                oldPages as Page[]
+                                            );
+
+                                            newPages[currentPageNumber - 1] =
+                                                downloadedPage;
+                                            if (
+                                                currentPage.url ===
+                                                downloadedPage.url
+                                            )
+                                                setCurrentPage(downloadedPage);
+
+                                            return newPages;
+                                        })
+                                );
                             }}
                         >
                             Retry
@@ -323,14 +391,7 @@ const Reader = () => {
             );
         }
 
-        return (
-            <MangaPage
-                fit="comfortable"
-                filterType={FilterType.Dodge}
-                filterColor={chroma("DF1920")}
-                blob={currentPage?.blob ?? new Blob()}
-            />
-        );
+        return <MangaPage fit="comfortable" bitmap={currentPage.bitmap} />;
     }, [currentPageNumber, downloadPage, currentPage]);
 
     const lastMovedFadeThreshold = 1000;
@@ -388,7 +449,6 @@ const Reader = () => {
 
                         setQueryParams(newParams);
                         setCurrentPage(null);
-                        setPageSources([]);
                     }}
                     chapters={mangaData.chapters}
                     isOpen={chaptersAreOpen}
@@ -459,13 +519,13 @@ const Reader = () => {
                     </ButtonGroup>
                 </Container>
             </Container>
-            {pages.current.length > 0 && currentPageNumber ? (
+            {pages && pages.length > 0 && currentPageNumber ? (
                 <Lightbar
                     onTabClick={(_, tab) => {
                         if (tab === currentPageNumber) return;
                         setPage(tab);
                     }}
-                    pages={pages.current.length ?? 1}
+                    pages={pages.length ?? 1}
                     current={currentPageNumber}
                 />
             ) : null}
