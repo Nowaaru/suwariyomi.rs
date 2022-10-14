@@ -19,7 +19,7 @@ import CircularProgress from "components/circularprogress";
 import Lightbar from "components/lightbar";
 import MangaPage from "components/mangapage";
 import _ from "lodash";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import {
     MdFormatListNumbered,
