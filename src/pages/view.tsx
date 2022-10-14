@@ -322,7 +322,7 @@ const View = () => {
                     maxHeight: "530px",
                     overflowY: "scroll",
                     overflowX: "hidden",
-                    overscrollBehavior: "none",
+                    overscrollBehavior: "contain",
                     backgroundColor: "#142333",
                     marginLeft: "125px",
                     marginTop: "24px",
