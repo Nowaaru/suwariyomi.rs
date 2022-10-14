@@ -21,6 +21,7 @@ import MangaPage from "components/mangapage";
 import _ from "lodash";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { AnimatePresence, motion } from "framer-motion";
 import {
     MdFormatListNumbered,
     MdHome,
@@ -32,9 +33,8 @@ import {
 } from "react-icons/md";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Chapter } from "types/manga";
-import { compileChapterTitle } from "util/textutil";
 import SourceHandler, { getAllChapters, Source } from "util/sources";
-import { AnimatePresence, motion } from "framer-motion";
+import { compileChapterTitle } from "util/textutil";
 
 export type Page = {
     url: string;
@@ -61,11 +61,6 @@ type MangaData = {
 enum PageLoadType {
     Batch = 1,
     Individually = 2,
-}
-
-enum PageAnimationType {
-    None = 1,
-    Slide = 2,
 }
 
 const IconButtonWithLabel = (
