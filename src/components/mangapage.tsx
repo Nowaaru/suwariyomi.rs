@@ -1,6 +1,6 @@
 import { Flex } from "@chakra-ui/react";
 import { css, StyleSheet } from "aphrodite";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef } from "react";
 import type { Page } from "pages/reader";
 
 import _ from "lodash";
