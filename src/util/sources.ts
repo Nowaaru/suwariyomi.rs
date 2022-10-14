@@ -237,11 +237,7 @@ export async function getAllChapters(sourceHandler: Source, mangaId: string) {
             ?.getChapters(mangaId)
             .then(({ data, total }) => ({
                 data: data
-                    .filter(({ lang }) => lang === "en")
-                    .sort(
-                        ({ chapter: aChapter }, { chapter: bChapter }) =>
-                            bChapter - aChapter
-                    ),
+                    .filter(({ lang }) => lang === "en"),
                 total,
             }))
             .catch(console.error);
