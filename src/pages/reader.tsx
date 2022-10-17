@@ -6,6 +6,7 @@ import {
     Flex,
     IconButton,
     IconButtonProps,
+    Modal,
     Text,
     Tooltip,
     useDisclosure,
@@ -734,11 +735,12 @@ const Reader = () => {
 
     if (!pages || !currentPageNumber || pages.length <= 0)
         return (
-            <Flex
+            <VStack
                 flexDirection="column"
                 className={css(styles.reader)}
                 justifyContent="center"
                 alignItems="center"
+                gap="4"
             >
                 <Text
                     color="whitesmoke"
@@ -750,7 +752,7 @@ const Reader = () => {
                     Loading pages...
                 </Text>
                 <CircularProgress showTimeElapsed />
-            </Flex>
+            </VStack>
         );
 
     const currentMangaPage = makeMangaPage(currentPageNumber);
