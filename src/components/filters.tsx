@@ -264,7 +264,7 @@ const Filters = (props: {
                     Filters for{" "}
                     <span className={css(styles.header)}>{handler.id}</span>
                 </ModalHeader>
-                <ModalCloseButton />
+                <ModalCloseButton color="whitesmoke" />
                 <Divider
                     position="relative"
                     marginTop="-8px"
