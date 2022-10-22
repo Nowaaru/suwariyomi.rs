@@ -6,21 +6,21 @@ import {
     Flex,
     IconButton,
     IconButtonProps,
-    Modal,
     Text,
     Tooltip,
     useDisclosure,
     VStack,
 } from "@chakra-ui/react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { fetch, ResponseType } from "@tauri-apps/api/http";
-import { open } from "@tauri-apps/api/shell";
 import { css, StyleSheet } from "aphrodite";
+import { open } from "@tauri-apps/api/shell";
 import Chapters from "components/chapters";
 import CircularProgress from "components/circularprogress";
 import Lightbar from "components/lightbar";
 import MangaPage from "components/mangapage";
+import MangaSettings from "components/mangasettings";
 import _ from "lodash";
-import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -229,6 +229,12 @@ const Reader = () => {
         isOpen: chaptersAreOpen,
         onOpen: onChaptersOpen,
         onClose: onChaptersClose,
+    } = useDisclosure();
+
+    const {
+        isOpen: settingsAreOpen,
+        onOpen: onSettingsOpen,
+        onClose: onSettingsClose,
     } = useDisclosure();
 
     useEffect(() => {
@@ -697,7 +703,7 @@ const Reader = () => {
                         />
                         <IconButtonWithLabel
                             label="Open Settings"
-                            onClick={() => Navigate(-1)}
+                            onClick={() => onSettingsOpen()}
                             icon={<MdSettings />}
                         />
                         <Divider orientation="vertical" />
@@ -780,6 +786,12 @@ const Reader = () => {
                     chapters={mangaData.chapters}
                     isOpen={chaptersAreOpen}
                     onClose={onChaptersClose}
+                />
+            ) : null}
+            {sourceHandler ? (
+                <MangaSettings
+                    isOpen={settingsAreOpen}
+                    onClose={onSettingsClose}
                 />
             ) : null}
             {displayIntermediary ? intermediaryContainer : currentMangaPage}
