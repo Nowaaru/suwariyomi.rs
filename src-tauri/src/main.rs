@@ -19,6 +19,7 @@ pub mod db;
 pub mod download;
 pub mod errors;
 pub mod handlers;
+pub mod readerdb;
 
 #[must_use] pub fn get_db_path() -> Option<PathBuf> {
     let return_none = false;
