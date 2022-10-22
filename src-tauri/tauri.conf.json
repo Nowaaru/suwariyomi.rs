@@ -89,7 +89,7 @@
                 "decorations": true,
                 "resizable": true,
                 "visible": false,
-                "minWidth": 800,
+                "minWidth": 1050,
                 "minHeight": 600,
 
                 "url": "/"
