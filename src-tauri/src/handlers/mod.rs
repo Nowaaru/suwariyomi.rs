@@ -1,8 +1,13 @@
-use std::{fs, path::{PathBuf, Path}, error::Error};
 use crate::{
-    db::{Chapter, ChapterDB, Manga, MangaDB, Mangas, Chapters},
+    db::{Chapter, ChapterDB, Chapters, Manga, MangaDB, Mangas},
     errors::{self, InternalError},
     get_db_path,
+    readerdb::ReaderDB,
+};
+use std::{
+    error::Error,
+    fs,
+    path::{Path, PathBuf},
 };
 
 use tauri::{
@@ -10,45 +15,53 @@ use tauri::{
     Env, Manager,
 };
 
-pub fn stringify_result<T,E>(r: Result<T, E>) -> Result<T, String>
-        where E: Error
+pub fn stringify_result<T, E>(r: Result<T, E>) -> Result<T, String>
+where
+    E: Error,
 {
     match r {
         Ok(y) => Ok(y),
-        Err(e) => Err(e.to_string())
+        Err(e) => Err(e.to_string()),
     }
 }
 
-pub fn stringify_result_none<T,E>(r: Result<T, E>) -> Result<(), String>
-        where E: Error
+pub fn stringify_result_none<T, E>(r: Result<T, E>) -> Result<(), String>
+where
+    E: Error,
 {
     match r {
         Ok(..) => Ok(()),
-        Err(e) => Err(e.to_string())
+        Err(e) => Err(e.to_string()),
     }
 }
 
-#[must_use] pub fn get_manga_db() -> MangaDB {
+#[must_use]
+pub fn get_manga_db() -> MangaDB {
     MangaDB::new(&get_db_path())
 }
 
-#[must_use] pub fn get_chapter_db() -> ChapterDB {
+#[must_use]
+pub fn get_chapter_db() -> ChapterDB {
     ChapterDB::new(&get_db_path())
 }
 
 #[tauri::command]
 pub fn splash_close(window: tauri::Window) -> Result<(), errors::InternalError> {
-    window.get_window("splashscreen").map_or_else(|| Err(crate::errors::InternalError::new("No splash-screen found.")), |splashscreen| match splashscreen.close() {
-        Ok(()) => Ok(()),
-        Err(why) => Err(crate::errors::InternalError::new(&format!(
-            "Splashscreen failed to close: {}",
-            why
-       ))),
-   })
+    window.get_window("splashscreen").map_or_else(
+        || Err(crate::errors::InternalError::new("No splash-screen found.")),
+        |splashscreen| match splashscreen.close() {
+            Ok(()) => Ok(()),
+            Err(why) => Err(crate::errors::InternalError::new(&format!(
+                "Splashscreen failed to close: {}",
+                why
+            ))),
+        },
+    )
 }
 
 #[tauri::command]
-#[must_use] pub fn path_exists(path: &str) -> bool {
+#[must_use]
+pub fn path_exists(path: &str) -> bool {
     Path::new(path).exists()
 }
 
@@ -68,7 +81,10 @@ pub fn get_manga(id: String, source: String) -> Result<Option<Manga>, String> {
 }
 
 #[tauri::command]
-pub fn get_mangas(source: String, ids: std::vec::Vec<String>) -> Result<std::vec::Vec<Manga>, String> {
+pub fn get_mangas(
+    source: String,
+    ids: std::vec::Vec<String>,
+) -> Result<std::vec::Vec<Manga>, String> {
     let db = get_manga_db();
     stringify_result(db.get_multiple(source, ids))
 }
@@ -115,7 +131,11 @@ pub fn get_chapter(
 }
 
 #[tauri::command]
-pub fn get_chapters(source: String, manga_id: String, ids: std::vec::Vec<String>) -> Result<std::vec::Vec<Chapter>, String> {
+pub fn get_chapters(
+    source: String,
+    manga_id: String,
+    ids: std::vec::Vec<String>,
+) -> Result<std::vec::Vec<Chapter>, String> {
     let db = get_chapter_db();
     stringify_result(db.get_multiple(source, manga_id, ids))
 }
@@ -145,7 +165,10 @@ pub fn get_sources() -> Result<Vec<PathBuf>, InternalError> {
         app_context.config(),
         app_context.package_info(),
         &Env::default(),
-        Path::new("com.suwariyomirs.swrs\\sources").as_os_str().to_str().unwrap(),
+        Path::new("com.suwariyomirs.swrs\\sources")
+            .as_os_str()
+            .to_str()
+            .unwrap(),
         Some(BaseDirectory::Config),
     );
 
@@ -157,19 +180,45 @@ pub fn get_sources() -> Result<Vec<PathBuf>, InternalError> {
                 }
 
                 let mut all_sources: Vec<PathBuf> = vec![];
-                fs::read_dir(path).map_or_else(|_| Err(InternalError::new("unable to read sources directory")), |itr| {
-                    itr.for_each(|val| if let Ok(val) = val {
-                        all_sources.push(val.path());
-                    });
+                fs::read_dir(path).map_or_else(
+                    |_| Err(InternalError::new("unable to read sources directory")),
+                    |itr| {
+                        itr.for_each(|val| {
+                            if let Ok(val) = val {
+                                all_sources.push(val.path());
+                            }
+                        });
 
-                    Ok(all_sources)
-                })
+                        Ok(all_sources)
+                    },
+                )
             }
             Err(y) => Err(InternalError::new(y.to_string().as_str())),
         }
     } else {
         Err(InternalError::new("unable to get sources dir"))
     }
+}
+
+#[tauri::command]
+pub fn get_reader_settings(
+    source: String,
+    id: String,
+) -> Result<Option<serde_json::Value>, InternalError> {
+    let reader_result = ReaderDB::new(&get_db_path()).get(source, id);
+    if reader_result.is_err() {
+        return Err(InternalError::new(reader_result.unwrap_err().to_string()));
+    }
+
+    Ok(reader_result.unwrap())
+}
+
+#[tauri::command]
+pub fn set_reader_settings(source: String, id: String, data: String) -> Result<(), ()> {
+    let reader_db = ReaderDB::new(&get_db_path());
+    reader_db.insert(source, id, data);
+
+    Ok(())
 }
 
 #[tauri::command]

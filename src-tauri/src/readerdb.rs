@@ -39,7 +39,7 @@ impl ReaderDB {
         Self { db }
     }
 
-    pub fn insert<T>(&self, id: T, data: T, json_data: T)
+    pub fn insert<T>(&self, source: String, id: String, json_data: T)
     where
         T: serde::Serialize + rusqlite::ToSql,
     {
@@ -48,7 +48,7 @@ impl ReaderDB {
                 "REPLACE INTO ReaderSettings
                 (source, id, data) VALUES (?1, ?2, ?3)
             ",
-                (id, data, json_data),
+                (source, id, json_data),
             )
             .map_or_else(|_| (), |_| ())
     }

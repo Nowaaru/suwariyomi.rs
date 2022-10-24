@@ -21,7 +21,8 @@ pub mod errors;
 pub mod handlers;
 pub mod readerdb;
 
-#[must_use] pub fn get_db_path() -> Option<PathBuf> {
+#[must_use]
+pub fn get_db_path() -> Option<PathBuf> {
     let return_none = false;
     if return_none {
         return None;
@@ -78,12 +79,20 @@ async fn main() {
             let app_data = tauri::api::path::app_dir(&app_config);
 
             if let Some(path) = app_data {
-                assert!(path.exists() || std::fs::create_dir(&path).is_ok(), "unable to create path {:?}", path.to_str().unwrap());
+                assert!(
+                    path.exists() || std::fs::create_dir(&path).is_ok(),
+                    "unable to create path {:?}",
+                    path.to_str().unwrap()
+                );
 
                 // try creating sources directory
                 let sources_dir = path.join("sources/");
                 println!("{} {}", &sources_dir.display(), &sources_dir.exists());
-                assert!(sources_dir.exists() || std::fs::create_dir(&sources_dir).is_ok(), "unable to create path {:?}", sources_dir.to_str().unwrap());
+                assert!(
+                    sources_dir.exists() || std::fs::create_dir(&sources_dir).is_ok(),
+                    "unable to create path {:?}",
+                    sources_dir.to_str().unwrap()
+                );
             }
             Ok(())
         })
@@ -117,6 +126,8 @@ async fn main() {
             handlers::remove_chapter,
             handlers::clear_chapters,
             handlers::get_sources,
+            handlers::get_reader_settings,
+            handlers::set_reader_settings,
             handlers::return_to_tray,
         ])
         .plugin(
