@@ -10,7 +10,7 @@
 
 ## Building from Source
 
-###### [dependencies] rust (nightly), node, npm.
+###### [dependencies] rust (nightly), node, npm, yarn.
 
 1. To build `suwariyomi.rs`, first clone the repository:
 
@@ -22,11 +22,11 @@
 
 3. Compile dependencies:
 
-   `npm install`
+   `yarn`
 
 4. To run the application in dev, run:
 
-   `npm run tauri dev`
+   `yarn tauri dev`
 
 ## Source Extensions
 
