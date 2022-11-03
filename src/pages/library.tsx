@@ -1,7 +1,7 @@
-import { StyleSheet, css, rgba } from "util/aphrodite";
+import {StyleSheet, css, rgba} from "util/aphrodite";
 import LibrarySource from "components/librarysource";
-import { useState, useMemo, useCallback, useEffect } from "react";
-import { motion, Variants } from "framer-motion";
+import {useState, useMemo, useCallback, useEffect} from "react";
+import {motion, Variants} from "framer-motion";
 import _ from "lodash";
 import {
     ButtonGroup,
@@ -16,9 +16,9 @@ import {
     TimeIcon,
     SearchIcon,
 } from "@chakra-ui/icons";
-import { Link } from "react-router-dom";
-import SourceHandler, { Source } from "util/sources";
-import { Manga } from "types/manga";
+import {Link} from "react-router-dom";
+import SourceHandler, {Source} from "util/sources";
+import {Manga} from "types/manga";
 
 import ipc from "ipc";
 const backgroundColor_high = "rgb(18, 30, 42)";
@@ -27,7 +27,7 @@ const backgroundColor_low = "#0D1620";
 const objectAccent = "#fb8e84";
 const textAccent = "#f88379";
 
-const { manga: MangaDB } = ipc;
+const {manga: MangaDB} = ipc;
 
 const libraryVariants: Variants = {
     hidden: {
@@ -339,7 +339,12 @@ const Library = () => {
                 variant="solid"
                 spacing="32px"
             >
-                <LibraryButton aria-label="Settings" icon={<SettingsIcon />} />
+                <Link to="/settings">
+                    <LibraryButton
+                        aria-label="Settings"
+                        icon={<SettingsIcon />}
+                    />
+                </Link>
                 <LibraryButton aria-label="History" icon={<TimeIcon />} />
                 <LibraryButton aria-label="Download" icon={<DownloadIcon />} />
                 <Link to="/search">
