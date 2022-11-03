@@ -11,10 +11,10 @@ import {
     useDisclosure,
     VStack,
 } from "@chakra-ui/react";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { fetch, ResponseType } from "@tauri-apps/api/http";
-import { css, StyleSheet } from "aphrodite";
-import { open } from "@tauri-apps/api/shell";
+import {useCallback, useEffect, useMemo, useState} from "react";
+import {fetch, ResponseType} from "@tauri-apps/api/http";
+import {css, StyleSheet} from "aphrodite";
+import {open} from "@tauri-apps/api/shell";
 import Chapters from "components/chapters";
 import CircularProgress from "components/circularprogress";
 import Lightbar from "components/lightbar";
@@ -22,7 +22,7 @@ import MangaPage from "components/mangapage";
 import MangaSettings from "components/mangasettings";
 import _ from "lodash";
 
-import { AnimatePresence, motion } from "framer-motion";
+import {AnimatePresence, motion} from "framer-motion";
 import {
     MdFormatListNumbered,
     MdHome,
@@ -32,10 +32,10 @@ import {
     MdSettings,
     MdShare,
 } from "react-icons/md";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { Chapter } from "types/manga";
-import SourceHandler, { getAllChapters, Source } from "util/sources";
-import { compileChapterTitle } from "util/textutil";
+import {useNavigate, useSearchParams} from "react-router-dom";
+import {Chapter} from "types/manga";
+import SourceHandler, {getAllChapters, Source} from "util/sources";
+import {compileChapterTitle} from "util/textutil";
 
 export type Page = {
     url: string;
@@ -73,7 +73,7 @@ const IconButtonWithLabel = (
 ) => {
     const newProps: {
         [K in keyof typeof props]?: IconButtonProps[keyof IconButtonProps];
-    } & { ["aria-label"]: string } = {
+    } & {["aria-label"]: string} = {
         ["aria-label"]: props.label,
     };
 
@@ -103,7 +103,7 @@ const Reader = () => {
         []
     );
 
-    const styles = StyleSheet.create({
+    const styles = useMemo(() => StyleSheet.create({
         reader: {
             backgroundColor: "#0D1620",
             width: "100vw",
@@ -125,7 +125,7 @@ const Reader = () => {
         },
 
         title: {},
-    });
+    }), []);
 
     const [queryParams, setQueryParams] = useSearchParams();
     const [sourceHandler, setSourceHandler] = useState<Source | null>(null);
@@ -248,7 +248,7 @@ const Reader = () => {
         if (!sourceHandler || !mangaData.mangaId || mangaData.chapters) return;
 
         getAllChapters(sourceHandler, mangaData.mangaId).then((chapters) =>
-            updateMangaData({ ...mangaData, chapters })
+            updateMangaData({...mangaData, chapters})
         );
     }, [sourceHandler, mangaData]);
 
@@ -265,14 +265,14 @@ const Reader = () => {
         const chapterFactor = currentChapterIdx + (isGoingBack ? -1 : 1);
         const targetChapter =
             mangaData.chapters[
-                _.clamp(chapterFactor, 0, mangaData.chapters.length)
+            _.clamp(chapterFactor, 0, mangaData.chapters.length)
             ];
         const currentChapter = mangaData.chapters[currentChapterIdx];
 
         const skippedSubchapters = // This will probably flag incorrectly due to floating point errors
             Math.round(
                 ((targetChapter.chapter % 1) - (currentChapter.chapter % 1)) *
-                    10
+                10
             );
 
         const skippedChapters = Math.floor(
@@ -295,7 +295,7 @@ const Reader = () => {
                             color: "#f88379",
                             transform: "scaleX(1.05) scaleY(1.05)",
                         }}
-                        _active={{ transform: "scaleX(1.2) scaleY(1.2)" }}
+                        _active={{transform: "scaleX(1.2) scaleY(1.2)"}}
                         onClick={() => Navigate(-1)}
                         hasArrow={false}
                         label="Go Back"
@@ -318,7 +318,7 @@ const Reader = () => {
                             color: "#f88379",
                             transform: "scaleX(1.05) scaleY(1.05)",
                         }}
-                        _active={{ transform: "scaleX(1.2) scaleY(1.2)" }}
+                        _active={{transform: "scaleX(1.2) scaleY(1.2)"}}
                         onClick={() => Navigate(-1)}
                         hasArrow={false}
                         label="Go Back"
@@ -366,8 +366,8 @@ const Reader = () => {
             const dataWhenTargetChapterIsNotPresent = (
                 <Text
                     as={motion.p}
-                    initial={{ opacity: "0", transform: "scaleX(0.85)" }}
-                    animate={{ opacity: "1", transform: "scaleX(1)" }}
+                    initial={{opacity: "0", transform: "scaleX(0.85)"}}
+                    animate={{opacity: "1", transform: "scaleX(1)"}}
                     alignSelf="center"
                 >
                     There is no {isGoingBack ? "previous" : "next"} chapter.
@@ -416,7 +416,7 @@ const Reader = () => {
         if (!pages) return;
 
         const onKeyPress = (e: KeyboardEvent) => {
-            const { code } = e;
+            const {code} = e;
             const codeMaps: Record<string, number> = {
                 ArrowRight: 1,
                 ArrowLeft: -1,
@@ -455,7 +455,7 @@ const Reader = () => {
 
                     const blob = new Blob( // SHOUTOUTS TO TAURI APPS' MELLENIO AND GIBBY FOR THEIR HELP
                         [new Uint8Array(response.data as Array<number>)],
-                        { type: response.headers["content-type"] }
+                        {type: response.headers["content-type"]}
                     );
                     return {
                         ...page,
@@ -473,8 +473,7 @@ const Reader = () => {
                         (z) => z.url === page.url
                     );
                     console.error(
-                        `An error occurred trying to download Page ${
-                            erroringPage ? erroringPage + 1 : "<unknown>"
+                        `An error occurred trying to download Page ${erroringPage ? erroringPage + 1 : "<unknown>"
                         }:\n${err}`
                     );
                     return {
@@ -494,8 +493,8 @@ const Reader = () => {
             setPages((oldPages) =>
                 oldPages
                     ? [...oldPages].map(
-                          (n) => pages.find((y) => y.url === n.url) ?? n
-                      )
+                        (n) => pages.find((y) => y.url === n.url) ?? n
+                    )
                     : null
             ),
         []
