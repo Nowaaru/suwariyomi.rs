@@ -10,7 +10,7 @@ import View from "pages/view";
 import SplashScreen from "pages/splash";
 import Reader from "pages/reader";
 import Search from "pages/search";
-
+import Settings from "pages/settings";
 // Utility
 import DefaultThemeDark from "assets/themes/dark";
 
@@ -33,6 +33,7 @@ export default function App() {
                         <Route path="view" element={<View />} />
                         <Route path="search" element={<Search />} />
                         <Route path="splash" element={<SplashScreen />} />
+                        <Route path="settings" element={<Settings />} />
                     </Routes>
                 </MangaRouter>
             </ChakraProvider>
