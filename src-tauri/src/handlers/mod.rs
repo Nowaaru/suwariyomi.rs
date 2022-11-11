@@ -3,6 +3,7 @@ use crate::{
     errors::{self, InternalError},
     get_db_path,
     readerdb::ReaderDB,
+    settings::Settings,
 };
 use std::{
     error::Error,
@@ -51,7 +52,7 @@ pub fn splash_close(window: tauri::Window) -> Result<(), errors::InternalError> 
         || Err(crate::errors::InternalError::new("No splash-screen found.")),
         |splashscreen| match splashscreen.close() {
             Ok(()) => Ok(()),
-            Err(why) => Err(crate::errors::InternalError::new(&format!(
+            Err(why) => Err(crate::errors::InternalError::new(format!(
                 "Splashscreen failed to close: {}",
                 why
             ))),
@@ -201,20 +202,26 @@ pub fn get_sources() -> Result<Vec<PathBuf>, InternalError> {
 }
 
 #[tauri::command]
+pub fn get_app_settings() -> Result<Option<serde_json::Value>, InternalError> {
+    Settings {}.get()
+}
+
+#[tauri::command]
+pub fn set_app_settings(new_settings: std::string::String) -> bool {
+    Settings {}.set(Some(new_settings))
+}
+
+#[tauri::command]
 pub fn get_reader_settings(
     source: String,
     id: String,
 ) -> Result<Option<serde_json::Value>, InternalError> {
-    let reader_result = ReaderDB::new(&get_db_path()).get(source, id);
-    if reader_result.is_err() {
-        return Err(InternalError::new(reader_result.unwrap_err().to_string()));
-    }
-
-    Ok(reader_result.unwrap())
+    let db_return = ReaderDB::new(&get_db_path()).get(source, id);
+    db_return.map_or_else(|why| Err(InternalError::new(why)), Ok)
 }
 
 #[tauri::command]
-pub fn set_reader_settings(source: String, id: String, data: String) -> Result<(), ()> {
+pub fn set_reader_settings(source: String, id: String, data: String) -> Result<(), InternalError> {
     let reader_db = ReaderDB::new(&get_db_path());
     reader_db.insert(source, id, data);
 

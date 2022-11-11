@@ -20,6 +20,7 @@ pub mod download;
 pub mod errors;
 pub mod handlers;
 pub mod readerdb;
+pub mod settings;
 
 #[must_use]
 pub fn get_db_path() -> Option<PathBuf> {
@@ -45,6 +46,7 @@ pub fn get_db_path() -> Option<PathBuf> {
     }
 
     panic!("unable to get db path");
+    .map_or_else(|_| panic!("unable to get db path"), Some)
 }
 
 #[tokio::main]
@@ -128,6 +130,8 @@ async fn main() {
             handlers::get_sources,
             handlers::get_reader_settings,
             handlers::set_reader_settings,
+            handlers::set_app_settings,
+            handlers::get_app_settings,
             handlers::return_to_tray,
         ])
         .plugin(

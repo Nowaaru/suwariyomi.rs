@@ -146,7 +146,7 @@ export type LoadedSettings = Omit<Settings, "Downloads"> & {
     Downloads: Omit<Settings["Downloads"], "location"> & { location: string };
 };
 
-export const DefaultSettings: Settings = {
+export const DefaultSettings: Promise<LoadedSettings> = downloadDir().then((dir) => ({
     General: {
         locale: "en",
         dateFormat: DateFormat.Default,
@@ -195,7 +195,7 @@ export const DefaultSettings: Settings = {
         blendMode: BlendMode.Default,
     },
     Downloads: {
-        location: downloadDir(),
+        location: dir,
         saveChaptersAsCBZ: false,
         removeWhenMarkedRead: false,
         removeAfterRead: false,
@@ -217,7 +217,7 @@ export const DefaultSettings: Settings = {
     Advanced: {
         sendCrashReports: true,
     },
-};
+}));
 
 export const SettingsSchema: Schema = {
     type: "object",
