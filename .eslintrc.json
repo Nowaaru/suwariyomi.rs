@@ -35,6 +35,7 @@
         "indent": "off",
         "@typescript-eslint/indent": "off",
         "linebreak-style": ["error", "unix"],
+        "array-bracket-spacing": ["error", "always"],
         "quotes": [
             "error",
             "double",
