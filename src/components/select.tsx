@@ -1,10 +1,15 @@
-import ReactSelect, { GroupBase, Props, ActionMeta } from "react-select";
+import ReactSelect, { GroupBase, Props } from "react-select";
+import makeAnimated from "react-select/animated"
+import _ from "lodash";
+
 
 function Select<
     Option,
     IsMulti extends boolean = false,
     Group extends GroupBase<Option> = GroupBase<Option>
->(props: Props<Option, IsMulti, Group>): JSX.Element {
+>(
+    props: Props<Option, IsMulti, Group>
+): JSX.Element {
     return (
         <ReactSelect
             styles={{
@@ -14,9 +19,11 @@ function Select<
                     backgroundColor: "unset",
                     fontWeight: state.isSelected ? "bolder" : "initial",
                     color: state.isSelected ? "#fb8e84" : "#00000099",
+                    ...(props.styles?.option?.({}, state) ?? {})
                 }),
+                ...(_.omit(props.styles ?? {}, "option")),
             }}
-            {...props}
+            {..._.omit(props, "styles")}
         />
     );
 }
