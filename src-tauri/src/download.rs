@@ -72,7 +72,7 @@ impl Result {
         name: std::string::String,
     ) -> std::result::Result<(), DownloadError> {
         let path = std::path::Path::new(&path).join(format!("{}.{}", name, self.extension));
-        match std::fs::File::create(&path) {
+        match std::fs::File::create(path) {
             Ok(mut file) => {
                 if let Ok(()) = file.write_all(&self.bytes) {
                     return Ok(());
