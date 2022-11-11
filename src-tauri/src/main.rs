@@ -72,7 +72,7 @@ async fn main() {
 
             // Setup files in filesystem
             let app_config = app.config();
-            let app_data = tauri::api::path::app_dir(&app_config);
+            let app_data = tauri::api::path::app_config_dir(&app_config);
 
             if let Some(path) = app_data {
                 assert!(
