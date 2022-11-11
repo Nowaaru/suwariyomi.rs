@@ -30,7 +30,7 @@ pub fn get_db_path() -> Option<PathBuf> {
     }
 
     let app_context = tauri::generate_context!();
-    let db_path = resolve_path(
+    resolve_path(
         app_context.config(),
         app_context.package_info(),
         &tauri::Env::default(),
@@ -39,13 +39,7 @@ pub fn get_db_path() -> Option<PathBuf> {
             .to_str()
             .unwrap(),
         Some(BaseDirectory::Config),
-    );
-
-    if let Ok(db_path) = db_path {
-        return Some(db_path);
-    }
-
-    panic!("unable to get db path");
+    )
     .map_or_else(|_| panic!("unable to get db path"), Some)
 }
 
