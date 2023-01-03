@@ -34,9 +34,6 @@
         "react-hooks/exhaustive-deps": ["warn"],
         "indent": "off",
         "@typescript-eslint/indent": "off",
-        "linebreak-style": ["error", "unix"],
-        "array-bracket-spacing": ["error", "always"],
-        "object-curly-spacing": ["error", "always"],
         "quotes": [
             "error",
             "double",

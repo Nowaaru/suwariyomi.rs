@@ -3049,7 +3049,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/d3-selection@npm:*":
+"@types/d3-selection@npm:*, @types/d3-selection@npm:^3.0.4":
   version: 3.0.4
   resolution: "@types/d3-selection@npm:3.0.4"
   checksum: b1e486db7f020610c854996a96b2f59a43b89d48bc7ac2ef9479f6f6e6324d3b21d7dfc8031a0b6d049a84b769b14eca65d73fc42613ab0044ef67973a9fe6ca
@@ -4525,7 +4525,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"d3-selection@npm:2 - 3, d3-selection@npm:3":
+"d3-selection@npm:2 - 3, d3-selection@npm:3, d3-selection@npm:^3.0.0":
   version: 3.0.0
   resolution: "d3-selection@npm:3.0.0"
   checksum: f4e60e133309115b99f5b36a79ae0a19d71ee6e2d5e3c7216ef3e75ebd2cb1e778c2ed2fa4c01bef35e0dcbd96c5428f5bd6ca2184fe2957ed582fde6841cbc5
@@ -9886,6 +9886,7 @@ __metadata:
     "@testing-library/user-event": ^14.4.3
     "@types/chai": ^4.3.3
     "@types/chroma-js": ^2.1.4
+    "@types/d3-selection": ^3.0.4
     "@types/d3-zoom": ^3.0.2
     "@types/jest": ^28.1.6
     "@types/node": ^18.7.10
@@ -9899,6 +9900,7 @@ __metadata:
     all-contributors-cli: ^6.22.0
     chroma-js: ^2.4.2
     clear: ^0.1.0
+    d3-selection: ^3.0.0
     d3-zoom: ^3.0.0
     date-fns: ^2.29.2
     eslint: ^8.21.0
@@ -9937,7 +9939,7 @@ __metadata:
     ts-jest: ^28.0.7
     ts-node: ^10.9.1
     types-registry: ^0.1.606
-    typescript: ^4.6.4
+    typescript: ^4.9.4
     use-image: ^1.0.12
     vite: ^3.0.2
     vite-plugin-full-reload: ^1.0.4
@@ -10375,7 +10377,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:^4.6.4":
+"typescript@npm:^4.6.4, typescript@npm:^4.9.4":
   version: 4.9.4
   resolution: "typescript@npm:4.9.4"
   bin:
@@ -10385,7 +10387,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@^4.6.4#~builtin<compat/typescript>":
+"typescript@patch:typescript@^4.6.4#~builtin<compat/typescript>, typescript@patch:typescript@^4.9.4#~builtin<compat/typescript>":
   version: 4.9.4
   resolution: "typescript@patch:typescript@npm%3A4.9.4#~builtin<compat/typescript>::version=4.9.4&hash=ad5954"
   bin:
