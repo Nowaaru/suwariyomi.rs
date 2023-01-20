@@ -38,11 +38,6 @@ impl Settings {
         std::string::String: From<T>,
         T: From<std::string::String>,
     {
-        if new_settings.is_some() {
-            println!("is some");
-        } else {
-            println!("is none")
-        };
         write(
             self.get_path(),
             new_settings.map_or_else(
