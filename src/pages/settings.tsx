@@ -12,13 +12,20 @@ import {
 import { StyleSheet, css } from "aphrodite";
 import CircularProgress from "components/circularprogress";
 import { Schema } from "jsonschema";
+import _ from "lodash";
 import { useMemo, useState, useRef, useEffect } from "react";
 
 import { MdArrowBackIosNew } from "react-icons/md";
 import { Link } from "react-router-dom";
 import useScrollbar from "util/hook/usescrollbar";
+import ipcFunctions from "util/ipc";
 
-import { DefaultSettings, SettingsSchema } from "util/settings";
+import {
+    DefaultSettings,
+    LoadedSettings,
+    Neverless,
+    SettingsSchema,
+} from "util/settings";
 import { ChangeHandler, SettingsHandler } from "util/settingshandler";
 
 const Settings = () => {
@@ -40,22 +47,37 @@ const Settings = () => {
         if (!tabContent || tabContent.tab !== tabIndex)
             handler
                 .construct(Promise.resolve(SettingsSchema), (newValue, id) => {
-                    let c = (console as Console & { _logRaw: ChangeHandler })
-                        ._logRaw;
-
-                    c(newValue, id);
                     if (!tabContent || !id) return;
                     handler.getSettings().then((settings) => {
                         // TODO: make this not stupid
-                        const f =
-                            settings[
-                                tabContent.allTabs[
-                                    tabIndex
-                                ] as keyof typeof settings
-                            ];
+                        const settingsKey = tabContent.allTabs[
+                            tabIndex
+                        ] as keyof typeof settings;
 
-                        (f as Record<string, string>)[id as keyof typeof f] =
-                            newValue as any;
+                        const partialSettings = _.omit(
+                            settings[settingsKey],
+                            (
+                                Object.keys(settings) as Array<
+                                    keyof typeof settings
+                                >
+                            ).filter(
+                                (key) =>
+                                    Object.keys(settings[key] ?? {}).length > 0
+                            )
+                        ) as Neverless<{
+                            -readonly [K in keyof LoadedSettings]: LoadedSettings[K];
+                        }>;
+
+                        partialSettings[id as keyof typeof partialSettings] =
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            newValue as any; // idk mf theres like 4000 different types that could be in here
+                                             // how do you expect me to make this not stupid
+
+                        console.log(partialSettings);
+                        /*ipcFunctions.app.setAppSettings({
+                            ...settings,
+                            [settingsKey]: partialSettings,
+                        });*/
                     });
                 })
                 .then(async (jsxObject) => {
