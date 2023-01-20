@@ -76,7 +76,30 @@ const MangaModal = ({
                 ) : null}
 
                 {content ? (
-                    <ModalBody maxHeight="750px" overflow="auto" className={contentClassName}>
+                    <ModalBody
+                        maxHeight="750px"
+                        marginRight="16px"
+                        overflow="auto"
+                        sx={{
+                            "&::-webkit-scrollbar": {
+                                width: "8px",
+                            },
+
+                            "&::-webkit-scrollbar-track": {
+                                background: "#00000000",
+                            },
+
+                            "&::-webkit-scrollbar-thumb": {
+                                background: "#fb8e84",
+                                borderRadius: "2px",
+                            },
+
+                            "&::-webkit-scrollbar-thumb:hover": {
+                                background: "#f88379",
+                            },
+                        }}
+                        className={contentClassName}
+                    >
                         {content}
                     </ModalBody>
                 ) : null}
