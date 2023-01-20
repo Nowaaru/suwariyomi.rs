@@ -2,6 +2,7 @@ import {
     CircularProgress as CircularProgressChakra,
     CircularProgressLabel,
     CircularProgressProps,
+    VStack,
 } from "@chakra-ui/react";
 
 import { css, StyleSheet } from "aphrodite";
@@ -11,7 +12,7 @@ const CircularProgress = (
     props: Omit<
         CircularProgressProps,
         "isIndeterminate" | "capIsRound" | "sx"
-    > & { showTimeElapsed?: boolean }
+    > & { showTimeElapsed?: boolean; progressLabel?: string }
 ) => {
     const styles = useMemo(
         () =>
@@ -25,6 +26,7 @@ const CircularProgress = (
         []
     );
 
+    console.log(props.progressLabel);
     const [time, setTime] = useState(0);
     useEffect(() => {
         if (!props.showTimeElapsed) return;
@@ -35,7 +37,7 @@ const CircularProgress = (
         return () => clearInterval(interval);
     }, [props]);
 
-    return (
+    const circularProgressInstance = (
         <CircularProgressChakra
             isIndeterminate
             capIsRound
@@ -51,8 +53,16 @@ const CircularProgress = (
                     {time}s
                 </CircularProgressLabel>
             ) : null}
-            {props.children ?? null}
         </CircularProgressChakra>
+    );
+
+    return props.progressLabel ? (
+        <VStack>
+            {circularProgressInstance}
+            <span className={css(styles.label)}>{props.progressLabel}</span>
+        </VStack>
+    ) : (
+        circularProgressInstance
     );
 };
 

@@ -14,10 +14,14 @@ import { useMemo } from "react";
 import { css, StyleSheet } from "aphrodite";
 
 export type MangaModalProps = {
-    header?: JSX.Element;
-    footer?: JSX.Element | JSX.Element[];
-    content?: JSX.Element | JSX.Element[];
+    header?: JSX.Element | null;
+    footer?: JSX.Element | JSX.Element[] | null;
+    content?: JSX.Element | JSX.Element[] | null;
     children?: never;
+
+    headerClassName?: string;
+    footerClassName?: string;
+    contentClassName?: string;
 } & Pick<ModalProps, "isOpen" | "onClose">;
 
 const MangaModal = ({
@@ -26,6 +30,10 @@ const MangaModal = ({
     footer,
     isOpen,
     onClose,
+
+    headerClassName,
+    footerClassName,
+    contentClassName,
 }: MangaModalProps) => {
     const styles = useMemo(
         () =>
@@ -49,8 +57,11 @@ const MangaModal = ({
                 position="relative"
                 color="whitesmoke"
                 paddingBottom={footer ? "unset" : "32px"}
+                width="fit-content"
+                maxWidth="90vw"
+                minWidth="450px"
             >
-                <ModalHeader>
+                <ModalHeader className={headerClassName}>
                     {header}
                     <ModalCloseButton color="whitesmoke" />
                 </ModalHeader>
@@ -64,8 +75,16 @@ const MangaModal = ({
                     />
                 ) : null}
 
-                {content ? <ModalBody>{content}</ModalBody> : null}
-                {footer ? <ModalFooter>{footer}</ModalFooter> : null}
+                {content ? (
+                    <ModalBody maxHeight="750px" overflow="auto" className={contentClassName}>
+                        {content}
+                    </ModalBody>
+                ) : null}
+                {footer ? (
+                    <ModalFooter className={footerClassName}>
+                        {footer}
+                    </ModalFooter>
+                ) : null}
             </ModalContent>
         </Modal>
     );

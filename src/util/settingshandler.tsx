@@ -23,7 +23,7 @@ import {
 } from "./settings";
 
 export type ChangeHandler = (newValue: unknown, id?: string) => unknown;
-const getElementFromValue = (
+export const getElementFromValue = (
     value: Schema,
     tab?: keyof Settings,
     changeHandler?: ChangeHandler,
@@ -170,10 +170,22 @@ export class SettingsHandler {
 
                 return newSettings;
             });
+
+        this.waitForInit = new Promise<readonly [Schema, LoadedSettings]>(
+            (resolve) => {
+                this._initiatedResolver = resolve;
+            }
+        );
     }
 
-    public async init(): Promise<ThisType<SettingsHandler>> {
-        return await Promise.all([this.schema, this.settings]);
+    public async init(): Promise<SettingsHandler> {
+        const promiseData = await Promise.all([
+            this.schema,
+            this.settings as Promise<LoadedSettings>,
+        ] as const);
+        this._initiatedResolver(promiseData);
+
+        return this;
     }
 
     public async getTabs(
@@ -206,7 +218,7 @@ export class SettingsHandler {
                         key,
                         <Box
                             textAlign="start"
-                            width="55%"
+                            width="100%"
                             fontSize="32px"
                             marginTop="8px"
                             key={key}
@@ -293,6 +305,14 @@ export class SettingsHandler {
             ) as Record<keyof Settings, JSX.Element>;
         });
     }
+
+    public waitForInit: Promise<readonly [Schema, LoadedSettings]>;
+
+    private _initiatedResolver!: (
+        value:
+            | readonly [Schema, LoadedSettings]
+            | PromiseLike<readonly [Schema, LoadedSettings]>
+    ) => void;
 
     private styles = StyleSheet.create({
         resetButton: {
