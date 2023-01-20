@@ -89,6 +89,7 @@ const ipcFunctions = {
                 newSettings: format(new_settings, {
                     printFunctionName: false,
                     printBasicPrototype: false,
+                    callToJSON: true,
                 }),
             });
         },

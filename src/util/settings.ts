@@ -2,7 +2,11 @@ import { downloadDir } from "@tauri-apps/api/path";
 import { Schema } from "jsonschema";
 import _ from "lodash";
 
-type Unimplemented = Record<string, never>;
+type Unimplemented = Record<never, string>;
+
+export type Neverless<T> = {
+    [U in keyof T as T[U] extends never ? never : U]: T[U];
+};
 
 enum ThemeType {
     Light = "Light",
@@ -147,8 +151,14 @@ export type Settings = Readonly<{
     };
 }>;
 
-export type LoadedSettings = Omit<Settings, "Downloads"> & {
-    Downloads: Omit<Settings["Downloads"], "location"> & { location: string };
+export type LoadedSettings = {
+    [S in keyof Settings]: S extends "Downloads"
+        ? {
+              [V in keyof Settings[S]]: V extends "location"
+                  ? Awaited<Settings[S][V]>
+                  : Settings[S][V];
+          }
+        : Settings[S];
 };
 
 export type SettingsCategory = keyof Settings;
