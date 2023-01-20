@@ -1,4 +1,4 @@
-import { Flex, useEditable } from "@chakra-ui/react";
+import { Flex, Portal, useDisclosure, useEditable } from "@chakra-ui/react";
 import { css, StyleSheet } from "aphrodite";
 import {
     Dispatch,
@@ -16,6 +16,7 @@ import type { Page } from "pages/reader";
 import _, { clamp } from "lodash";
 import chroma from "chroma-js";
 import useForceUpdate from "util/hook/forceupdate";
+import ContextMenu from "./ctxreader";
 
 type MangaRoundedTrue = {
     rounded: true;
@@ -95,10 +96,16 @@ const MangaPage = (props: MangaPageProps) => {
     const padding = isComfortable ? "5%" : "0";
 
     const [[panX, panY], setPan] = useState<readonly [number, number] | []>([]);
+    const {
+        onClose: onMenuClose,
+        onOpen: onMenuOpen,
+        isOpen: isMenuOpen,
+    } = useDisclosure();
     const [panner, setPanner] =
         useState<React.MouseEvent<HTMLCanvasElement, MouseEvent>>();
-    
+
     const [zoom, setZoom] = useState(props.baseZoom ?? 1);
+    const [[mouseX, mouseY], setMousePosition] = useState([panX, panY]);
 
     const styles = StyleSheet.create({
         page: {
@@ -251,6 +258,14 @@ const MangaPage = (props: MangaPageProps) => {
 
     const handleMouseMove = useCallback(
         (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
+            const { clientX, clientY } = e;
+            setMousePosition([clientX, clientY]);
+        },
+        []
+    );
+
+    const handleCanvasPan = useCallback(
+        (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
             if (!panner) return;
             if (panner.button === 2) return;
             if (!imagePositioningData) return;
@@ -329,48 +344,64 @@ const MangaPage = (props: MangaPageProps) => {
     }, []);
 
     return (
-        <Flex
-            justifyContent="center"
-            flexDirection="row"
-            verticalAlign="middle"
-            alignItems="center"
-            backgroundColor="#0D1620"
-            position="relative"
-            width="100%"
-            height="100%"
-            padding={padding}
-            key={props.page.url.href}
-        >
-            {bitmap ? (
-                <canvas
-                    className={css(styles.page)}
-                    width={window.innerWidth}
-                    height={window.innerHeight}
-                    onWheel={handleWheel}
-                    onContextMenu={(e) => e.preventDefault()}
-                    onMouseMove={handleMouseMove}
-                    onMouseDown={(e) => {
-                        if (e.button === 1) {
-                            if (!imagePositioningData) return;
-                            if (panner) {
-                                setPanner(undefined);
-                            }
-                            // console.log("booyah");
+        <>
+            <Portal>
+                <ContextMenu
+                    x={mouseX}
+                    y={mouseY}
+                    isOpen={isMenuOpen}
+                    onClose={onMenuClose}
+                    onItemClick={console.log}
+                />
+            </Portal>
+            <Flex
+                justifyContent="center"
+                flexDirection="row"
+                verticalAlign="middle"
+                alignItems="center"
+                backgroundColor="#0D1620"
+                position="relative"
+                width="100%"
+                height="100%"
+                padding={padding}
+                key={props.page.url.href}
+            >
+                {bitmap ? (
+                    <canvas
+                        className={css(styles.page)}
+                        width={window.innerWidth}
+                        height={window.innerHeight}
+                        onWheel={handleWheel}
+                        onContextMenu={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
+                            setMousePosition([e.clientX, e.clientY]);
+                            onMenuOpen();
+                        }}
+                        onMouseMove={handleCanvasPan}
+                        onMouseDown={(e) => {
+                            if (e.button === 1) {
+                                if (!imagePositioningData) return;
+                                if (panner) {
+                                    setPanner(undefined);
+                                }
+                                // console.log("booyah");
+                                e.preventDefault();
+                                e.stopPropagation();
 
-                            setPan([]);
-                            setZoom(imagePositioningData.minZoom);
-                        }
-                        setPanner(e);
-                    }}
-                    onMouseUp={() => setPanner(undefined)}
-                    ref={canvas}
-                />
-            ) : (
-                <span>No bitmap.</span>
-            )}
-        </Flex>
+                                setPan([]);
+                                setZoom(imagePositioningData.minZoom);
+                            }
+                            setPanner(e);
+                        }}
+                        onMouseUp={() => setPanner(undefined)}
+                        ref={canvas}
+                    />
+                ) : (
+                    <span>No bitmap.</span>
+                )}
+            </Flex>
+        </>
     );
 };
 
