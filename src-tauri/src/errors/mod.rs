@@ -5,8 +5,10 @@ pub struct InternalError {
 }
 
 impl InternalError {
-    #[must_use] pub fn new<T>(message: T) -> Self
-    where T: ToString
+    #[must_use]
+    pub fn new<T>(message: T) -> Self
+    where
+        T: ToString,
     {
         Self {
             message: message.to_string(),
@@ -17,7 +19,7 @@ impl InternalError {
 impl From<rusqlite::Error> for InternalError {
     fn from(err: rusqlite::Error) -> Self {
         Self {
-            message: err.to_string()
+            message: err.to_string(),
         }
     }
 }
@@ -25,7 +27,7 @@ impl From<rusqlite::Error> for InternalError {
 impl From<serde_json::Error> for InternalError {
     fn from(err: serde_json::Error) -> Self {
         Self {
-            message: err.to_string()
+            message: err.to_string(),
         }
     }
 }
@@ -33,11 +35,10 @@ impl From<serde_json::Error> for InternalError {
 impl From<serde_rusqlite::Error> for InternalError {
     fn from(err: serde_rusqlite::Error) -> Self {
         Self {
-            message: err.to_string()
+            message: err.to_string(),
         }
     }
 }
-
 
 impl std::fmt::Display for InternalError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -57,10 +58,9 @@ pub struct DownloadError {
 }
 
 impl DownloadError {
-    #[must_use] pub const fn new(msg: std::string::String) -> Self {
-        Self {
-            message: msg,
-        }
+    #[must_use]
+    pub const fn new(msg: std::string::String) -> Self {
+        Self { message: msg }
     }
 }
 
@@ -83,7 +83,8 @@ pub struct RequestError {
 }
 
 impl RequestError {
-    #[must_use] pub const fn new(msg: std::string::String, status: std::string::String) -> Self {
+    #[must_use]
+    pub const fn new(msg: std::string::String, status: std::string::String) -> Self {
         Self {
             message: msg,
             status,
