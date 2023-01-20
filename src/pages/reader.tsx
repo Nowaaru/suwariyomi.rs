@@ -605,7 +605,9 @@ const Reader = () => {
             const { current: lastPageNumber } = cachedPageNumber;
             uninterfacedConsole.log(oneBasedPageNumber, lastPageNumber);
 
-            let runResetCycle = doReset || (cachedLoadStatus.current === false && page?.completed);
+            let runResetCycle =
+                doReset ||
+                (cachedLoadStatus.current === false && page?.completed);
             if (lastPageNumber !== oneBasedPageNumber && !runResetCycle) {
                 runResetCycle = true;
                 setReset(runResetCycle);
@@ -688,12 +690,15 @@ const Reader = () => {
     const [forceShow, setForceShow] = useState(false);
 
     useEffect(() => {
-        if (shouldHide || forceShow) return;
-        const timeout = setTimeout(() => {
+        const timeout = setInterval(() => {
+            if (shouldHide || forceShow) return;
+
             setHide(true);
+            setForceShow(false);
+            clearInterval(timeout);
         }, 2500);
 
-        return () => clearTimeout(timeout);
+        return () => clearInterval(timeout);
     }, [shouldHide, forceShow]);
 
     const currentMangaPage = useMemo(() => {
@@ -702,17 +707,14 @@ const Reader = () => {
         if (
             cachedPageNumber.current !== currentPageNumber ||
             !cachedMangaPage.current ||
-            cachedLoadStatus.current === false && pages?.[currentPageNumber - 1]?.completed === true
+            (cachedLoadStatus.current === false &&
+                pages?.[currentPageNumber - 1]?.completed === true)
         ) {
             return (cachedMangaPage.current = makeMangaPage(currentPageNumber));
         }
 
         return cachedMangaPage.current;
-    }, [
-        makeMangaPage,
-        currentPageNumber,
-        pages,
-    ]);
+    }, [makeMangaPage, currentPageNumber, pages]);
 
     const Toolbar = (
         <AnimatePresence>
@@ -759,7 +761,10 @@ const Reader = () => {
                         />
                         <IconButtonWithLabel
                             label="Open Settings"
-                            onClick={() => onSettingsOpen()}
+                            onClick={() => {
+                                setHide(true);
+                                onSettingsOpen();
+                            }}
                             icon={<MdSettings />}
                         />
                         <Divider orientation="vertical" />
@@ -786,7 +791,10 @@ const Reader = () => {
                         <IconButtonWithLabel icon={<MdShare />} label="Share" />
                         <IconButtonWithLabel
                             label="Open Chapter Index"
-                            onClick={onChaptersOpen}
+                            onClick={() => {
+                                setHide(true);
+                                onChaptersOpen();
+                            }}
                             icon={<MdFormatListNumbered />}
                         />
                     </ButtonGroup>
@@ -821,7 +829,7 @@ const Reader = () => {
         <div
             className={css(styles.reader)}
             onMouseMove={() => {
-                if (shouldHide) setHide(false);
+                if (!settingsAreOpen && !chaptersAreOpen) setHide(false);
             }}
         >
             <>
@@ -841,13 +849,21 @@ const Reader = () => {
                         }}
                         chapters={mangaData.chapters}
                         isOpen={chaptersAreOpen}
-                        onClose={onChaptersClose}
+                        onClose={() => {
+                            setHide(false);
+                            setForceShow(false);
+                            onChaptersClose();
+                        }}
                     />
                 ) : null}
                 {sourceHandler ? (
                     <MangaSettings
                         isOpen={settingsAreOpen}
-                        onClose={onSettingsClose}
+                        onClose={() => {
+                            setHide(false);
+                            setForceShow(false);
+                            onSettingsClose();
+                        }}
                     />
                 ) : null}
                 {displayIntermediary ? intermediaryContainer : currentMangaPage}
