@@ -246,6 +246,7 @@ const Filters = (props: {
         return <>{out.filter((n) => n)}</>;
     }, [filters]);
 
+    // TODO: turn into a MangaModal component
     return (
         <Modal
             isOpen={isOpen}

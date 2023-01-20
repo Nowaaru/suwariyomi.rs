@@ -37,6 +37,7 @@ const Chapters = ({
         </LazyLoadComponent>
     ));
 
+    // TODO: turn into a MangaModal component
     return (
         <Modal isOpen={isOpen} onClose={onClose}>
             <ModalOverlay />
