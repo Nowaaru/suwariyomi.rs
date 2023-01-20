@@ -114,7 +114,7 @@ const LightbarTab = (props: LightbarTabProps) => {
     return (
         <div
             onClick={(e) => {
-                if (onClick) onClick(e, pageNumber);
+                onClick?.(e, pageNumber);
             }}
             className={css(styles.lightbarTab)}
         >

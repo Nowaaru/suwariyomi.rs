@@ -3,6 +3,7 @@ import {
     Flex,
     HStack,
     Icon,
+    IconButton,
     Text,
     Textarea,
     Tooltip,
@@ -26,19 +27,23 @@ const getElementFromValue = (
     value: Schema,
     tab?: keyof Settings,
     changeHandler?: ChangeHandler,
-    curValue?: any
+    _curValue?: unknown
 ) => {
     const { type, id, enum: enumeration } = value;
     switch (type) {
         case "boolean": {
+            const curValue = _curValue as boolean;
+
             return (
                 <CheckboxRipple
-                    defaultChecked={curValue}
+                    defaultChecked={curValue as boolean}
                     onChange={(v) => changeHandler?.(v.target.checked, id)}
                 />
             );
         }
         case "string": {
+            const curValue = _curValue as string;
+
             if (enumeration) {
                 const enumerationIndex = enumeration.findIndex(
                     (x) => x === curValue
@@ -69,7 +74,6 @@ const getElementFromValue = (
                       ]
                     : undefined;
 
-                console.log(enumeration);
                 return (
                     <Select
                         onChange={(n) =>
@@ -113,7 +117,7 @@ const getElementFromValue = (
             return (
                 <Textarea
                     placeholder="Type here..."
-                    defaultValue={curValue ?? null}
+                    defaultValue={(curValue as string) ?? null}
                     height="fit-content"
                     minHeight="16px"
                     paddingRight="16px"
@@ -123,7 +127,26 @@ const getElementFromValue = (
             );
         }
         default:
-            return <MdError />;
+            return (
+                <Tooltip
+                    label={
+                        <span>
+                            This component{" "}
+                            <span style={{ fontFamily: "Cascadia Code" }}>
+                                ({id}::{type})
+                            </span>{" "}
+                            has not been implemented yet.
+                        </span>
+                    }
+                >
+                    <IconButton
+                        aria-label="no-component"
+                        icon={<Icon as={MdError} />}
+                        style={{ background: "none" }}
+                        isRound
+                    />
+                </Tooltip>
+            );
     }
 };
 
@@ -158,7 +181,7 @@ export class SettingsHandler {
     ): Promise<Array<keyof Settings>> {
         return Promise.resolve(schema).then(
             (schema) =>
-                Object.keys(schema?.properties! ?? {}) as Array<keyof Settings>
+                Object.keys(schema?.properties ?? {}) as Array<keyof Settings>
         );
     }
 
@@ -248,7 +271,7 @@ export class SettingsHandler {
                                             alignItems="center"
                                             justifyContent="center"
                                             width="25%"
-                                            paddingRight="32px"
+                                            paddingRight="64px"
                                         >
                                             {getElementFromValue(
                                                 value,
