@@ -676,8 +676,8 @@ const Reader = () => {
             return (
                 <MangaPage
                     fit="comfortable"
-                    reset={[!!runResetCycle, setReset]}
                     page={page}
+                    reset={[!!runResetCycle, setReset]}
                 />
             );
         },

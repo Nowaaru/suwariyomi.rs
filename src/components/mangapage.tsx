@@ -84,7 +84,7 @@ const MangaPage = (props: MangaPageProps) => {
     const {
         zoomFactor = 0.25,
         panRate = 1,
-        maxZoom = 2,
+        maxZoom = 4,
         onZoomChange,
         onPanChange,
     } = props;
@@ -96,6 +96,7 @@ const MangaPage = (props: MangaPageProps) => {
     const [[panX, panY], setPan] = useState<readonly [number, number] | []>([]);
     const [panner, setPanner] =
         useState<React.MouseEvent<HTMLCanvasElement, MouseEvent>>();
+    
     const [zoom, setZoom] = useState(props.baseZoom ?? 1);
 
     const styles = StyleSheet.create({
@@ -108,7 +109,7 @@ const MangaPage = (props: MangaPageProps) => {
 
     useEffect(() => {
         // on mount, reset zoom and pan
-        const [ reset, setReset ] = props.reset ?? [false, () => void 0];
+        const [reset, setReset] = props.reset ?? [false, () => void 0];
         console.log(props);
         console.log("FFFFF", reset);
         if (reset) {
@@ -274,8 +275,6 @@ const MangaPage = (props: MangaPageProps) => {
             if (panX === undefined || panY === undefined) return;
 
             const { deltaY, clientX, clientY } = e;
-            const isZoomingOut = deltaY > 0;
-
             const {
                 bitmapWidth,
                 bitmapHeight,
@@ -284,8 +283,6 @@ const MangaPage = (props: MangaPageProps) => {
                 xMax,
                 yMin,
                 yMax,
-                bitmapCenterX,
-                bitmapCenterY,
             } = imagePositioningData;
 
             const zoomCenterX = (clientX - panX) / (bitmapWidth * zoom);
@@ -296,15 +293,6 @@ const MangaPage = (props: MangaPageProps) => {
                     minZoom,
                     Math.min(maxZoom, zoom - Math.sign(deltaY) * zoomFactor)
                 );
-
-                if (isZoomingOut) {
-                    setPan(() => [
-                        bitmapCenterX * newZoom,
-                        bitmapCenterY * newZoom,
-                    ]);
-
-                    return newZoom;
-                }
 
                 setPan(([x, y]) => [
                     clamp(
@@ -324,7 +312,7 @@ const MangaPage = (props: MangaPageProps) => {
                 return newZoom;
             });
         },
-        [imagePositioningData, maxZoom, zoomFactor, panX, panY]
+        [imagePositioningData, maxZoom, zoomFactor, panX, panY, zoom]
     );
 
     useEffect(() => {
@@ -370,15 +358,8 @@ const MangaPage = (props: MangaPageProps) => {
                             e.preventDefault();
                             e.stopPropagation();
 
+                            setPan([]);
                             setZoom(imagePositioningData.minZoom);
-                            setPan(
-                                imagePositioningData
-                                    ? [
-                                          imagePositioningData.bitmapCenterX,
-                                          imagePositioningData.bitmapCenterY,
-                                      ]
-                                    : [0, 0]
-                            );
                         }
                         setPanner(e);
                     }}
