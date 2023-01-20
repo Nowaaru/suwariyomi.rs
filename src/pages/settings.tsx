@@ -156,7 +156,7 @@ const Settings = () => {
                     borderStyle="dashed"
                     borderColor="#000000CC"
                 />
-                <TabPanels>
+                <TabPanels maxWidth={ tabContent ? "55%" : "unset"}>
                     {tabContent ? tabContent.content : <CircularProgress />}
                 </TabPanels>
             </Tabs>
