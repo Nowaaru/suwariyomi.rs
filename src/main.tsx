@@ -1,12 +1,13 @@
 /* eslint-disable no-global-assign */
-import App from "./app";
+import App from "./App";
 import React from "react";
 import ReactDOM from "react-dom/client";
 
 import _ from "lodash";
 import * as logApi from "tauri-plugin-log-api";
 import { format as prettyFormat } from "pretty-format";
-const uninterfacedConsole = _.cloneDeep(console);
+import uninterfacedConsole from "util/console";
+
 const mappedLogApi = _.mapValues(
     _.omit(logApi, "default"),
     (loggerFn, loggerKey) =>
