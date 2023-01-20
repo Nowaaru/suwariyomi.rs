@@ -78,7 +78,7 @@ const Filters = (props: {
                             (a.name ?? a.id).localeCompare(b.name ?? b.id)
                         );
                     return (
-                        <Accordion allowToggle allowMultiple key={key}>
+                        <Accordion allowMultiple key={key}>
                             <AccordionItem border="none">
                                 <AccordionButton
                                     backgroundColor="#00000022"
