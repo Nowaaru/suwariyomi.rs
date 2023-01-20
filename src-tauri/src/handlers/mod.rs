@@ -53,8 +53,7 @@ pub fn splash_close(window: tauri::Window) -> Result<(), errors::InternalError> 
         |splashscreen| match splashscreen.close() {
             Ok(()) => Ok(()),
             Err(why) => Err(crate::errors::InternalError::new(format!(
-                "Splashscreen failed to close: {}",
-                why
+                "Splashscreen failed to close: {why}"
             ))),
         },
     )

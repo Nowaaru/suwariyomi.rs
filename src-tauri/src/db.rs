@@ -87,7 +87,7 @@ impl std::fmt::Display for Manga {
         } = self;
 
         // TODO: Make this multiline
-        write!(f, "Manga {{\n\tid: {}\n\tname: {}\n\tdescription: {}\n\tsource: {}\n\tcovers: {:?}\n\n\tchapters: {:?}\n\tauthors: {:?}\n\ttags: {:?}\n\tuploaded: {}\n\tadded: {}\n}}", id, name, description, source, covers, chapters, authors, tags,  uploaded, added)
+        write!(f, "Manga {{\n\tid: {id}\n\tname: {name}\n\tdescription: {description}\n\tsource: {source}\n\tcovers: {covers:?}\n\n\tchapters: {chapters:?}\n\tauthors: {authors:?}\n\ttags: {tags:?}\n\tuploaded: {uploaded}\n\tadded: {added}\n}}")
     }
 }
 
@@ -138,20 +138,20 @@ impl std::fmt::Display for Chapter {
         } = self;
 
         writeln!(f, "Chapter {{")?;
-        writeln!(f, "\tid: {}", id)?;
-        writeln!(f, "\tmanga_id: {}", manga_id)?;
-        writeln!(f, "\tsource: {}", source)?;
-        writeln!(f, "\tchapter: {}", chapter)?;
-        writeln!(f, "\tvolume: {}", volume)?;
-        writeln!(f, "\ttitle: {}", title)?;
-        writeln!(f, "\tlast_read: {}", last_read)?;
-        writeln!(f, "\tlast_updated: {}", last_updated)?;
-        writeln!(f, "\tdate_uploaded: {}", date_uploaded)?;
-        writeln!(f, "\ttime_spent_reading: {}", time_spent_reading)?;
-        writeln!(f, "\tpages: {}", pages)?;
-        writeln!(f, "\ttotal: {}", total)?;
-        writeln!(f, "\tlang: {}", lang)?;
-        writeln!(f, "\tscanlators: {:#?}", scanlators)?;
+        writeln!(f, "\tid: {id}")?;
+        writeln!(f, "\tmanga_id: {manga_id}")?;
+        writeln!(f, "\tsource: {source}")?;
+        writeln!(f, "\tchapter: {chapter}")?;
+        writeln!(f, "\tvolume: {volume}")?;
+        writeln!(f, "\ttitle: {title}")?;
+        writeln!(f, "\tlast_read: {last_read}")?;
+        writeln!(f, "\tlast_updated: {last_updated}")?;
+        writeln!(f, "\tdate_uploaded: {date_uploaded}")?;
+        writeln!(f, "\ttime_spent_reading: {time_spent_reading}")?;
+        writeln!(f, "\tpages: {pages}")?;
+        writeln!(f, "\ttotal: {total}")?;
+        writeln!(f, "\tlang: {lang}")?;
+        writeln!(f, "\tscanlators: {scanlators:#?}")?;
         write!(f, "}}")
     }
 }
@@ -252,7 +252,7 @@ impl MangaDB {
             [],
         ) {
             Ok(_) => println!("Table was created."),
-            Err(why) => println!("Failed: {}", why),
+            Err(why) => println!("Failed: {why}"),
         }
 
         Self { db }
@@ -398,7 +398,7 @@ impl ChapterDB {
             [],
         ) {
             Ok(_) => println!("Chapters table was created."),
-            Err(why) => panic!("Loading chapters failed: {}", why),
+            Err(why) => panic!("Loading chapters failed: {why}"),
         }
 
         Self { db }
@@ -492,23 +492,22 @@ impl ChapterDB {
         let mut manga_id_value = String::new();
 
         if let Some(id) = id {
-            id_value = format!("AND id={}", id);
+            id_value = format!("AND id={id}");
         };
 
         if let Some(id) = manga_id {
-            manga_id_value = format!("AND manga_id={}", id);
+            manga_id_value = format!("AND manga_id={id}");
         };
 
         if let Some(source) = source {
-            source_value = format!("AND source={}", source);
+            source_value = format!("AND source={source}");
         };
 
         match self
             .db
             .prepare(
                 format!(
-                    "SELECT * FROM Chapters WHERE 1=1 {} {} {}",
-                    id_value, manga_id_value, source_value
+                    "SELECT * FROM Chapters WHERE 1=1 {id_value} {manga_id_value} {source_value}"
                 )
                 .as_str(),
             )?
