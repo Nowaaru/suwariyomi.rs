@@ -63,6 +63,7 @@ interface CanvasProps {
 
 type MangaPageBase = {
     page: Page;
+    debug?: boolean;
     reset?: [boolean, Dispatch<SetStateAction<boolean>>];
 };
 
@@ -222,7 +223,7 @@ const MangaPage = (props: MangaPageProps) => {
             ctx.translate(-panX, -panY);
             ctx.restore();
 
-            if (panner) {
+            if (panner && props.debug) {
                 const { canvas } = ctx;
 
                 ctx.fillStyle = "#0F0";
@@ -349,7 +350,7 @@ const MangaPage = (props: MangaPageProps) => {
                     onContextMenu={(e) => e.preventDefault()}
                     onMouseMove={handleMouseMove}
                     onMouseDown={(e) => {
-                        if (e.button === 2) {
+                        if (e.button === 1) {
                             if (!imagePositioningData) return;
                             if (panner) {
                                 setPanner(undefined);
