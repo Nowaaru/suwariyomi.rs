@@ -148,6 +148,7 @@ const Reader = () => {
         chapters: null,
     });
 
+    const cachedLoadStatus = useRef<boolean>(false);
     const cachedPageNumber = useRef<number | void>();
     const cachedMangaPage = useRef<JSX.Element | void>();
 
@@ -604,14 +605,17 @@ const Reader = () => {
             const { current: lastPageNumber } = cachedPageNumber;
             uninterfacedConsole.log(oneBasedPageNumber, lastPageNumber);
 
-            let runResetCycle = doReset;
+            let runResetCycle = doReset || (cachedLoadStatus.current === false && page?.completed);
             if (lastPageNumber !== oneBasedPageNumber && !runResetCycle) {
                 runResetCycle = true;
                 setReset(runResetCycle);
             }
 
+            cachedLoadStatus.current = true;
             cachedPageNumber.current = oneBasedPageNumber;
             if (!page?.completed || page?.didError) {
+                cachedLoadStatus.current = false;
+
                 return (
                     <div
                         style={{
@@ -694,15 +698,21 @@ const Reader = () => {
 
     const currentMangaPage = useMemo(() => {
         if (!currentPageNumber) return null;
+
         if (
             cachedPageNumber.current !== currentPageNumber ||
-            !cachedMangaPage.current
+            !cachedMangaPage.current ||
+            cachedLoadStatus.current === false && pages?.[currentPageNumber - 1]?.completed === true
         ) {
             return (cachedMangaPage.current = makeMangaPage(currentPageNumber));
         }
 
         return cachedMangaPage.current;
-    }, [makeMangaPage, currentPageNumber]);
+    }, [
+        makeMangaPage,
+        currentPageNumber,
+        pages,
+    ]);
 
     const Toolbar = (
         <AnimatePresence>
