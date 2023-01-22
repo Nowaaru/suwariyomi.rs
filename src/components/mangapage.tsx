@@ -345,15 +345,14 @@ const MangaPage = (props: MangaPageProps) => {
 
     return (
         <>
-            <Portal>
-                <ContextMenu
-                    x={mouseX}
-                    y={mouseY}
-                    isOpen={isMenuOpen}
-                    onClose={onMenuClose}
-                    onItemClick={console.log}
-                />
-            </Portal>
+            <ContextMenu
+                overflowRef={canvas}
+                x={mouseX}
+                y={mouseY}
+                isOpen={isMenuOpen}
+                onClose={onMenuClose}
+                onItemClick={console.log}
+            />
             <Flex
                 justifyContent="center"
                 flexDirection="row"
