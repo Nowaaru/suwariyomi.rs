@@ -23,6 +23,8 @@ import {
 } from "./settings";
 
 export type ChangeHandler = (newValue: unknown, id?: string) => unknown;
+export type ResetHandler = (id?: string) => unknown;
+
 export const getElementFromValue = (
     value: Schema,
     tab?: keyof Settings,
@@ -207,7 +209,8 @@ export class SettingsHandler {
 
     public async construct(
         schema: Promise<Schema> = this.schema,
-        changeHandler: ChangeHandler
+        changeHandler: ChangeHandler,
+        resetHandler: ResetHandler
     ): Promise<Record<keyof Settings, JSX.Element>> {
         const currentSettings = await this.settings;
         return Promise.resolve(schema).then(async (schema) => {
