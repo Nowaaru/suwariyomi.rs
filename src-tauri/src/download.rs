@@ -82,9 +82,7 @@ impl Result {
                     "An error occured whilst writing to file.".to_string(),
                 ))
             }
-            Err(why) => Err(DownloadError::new(
-                format!("Failed to write file: {why}"),
-            )),
+            Err(why) => Err(DownloadError::new(format!("Failed to write file: {why}"))),
         }
     }
 }
