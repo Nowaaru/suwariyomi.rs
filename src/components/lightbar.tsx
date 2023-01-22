@@ -116,6 +116,7 @@ const LightbarTab = (props: LightbarTabProps) => {
             onClick={(e) => {
                 onClick?.(e, pageNumber);
             }}
+            onContextMenu={(e) => e.preventDefault()}
             className={css(styles.lightbarTab)}
         >
             <span
@@ -208,7 +209,7 @@ const Lightbar = (props: LightbarProps) => {
         return lightbarTabs;
     }, [LightbarTab, props]);
 
-    return <div className={css(styles.lightBar)}>{generateTabs()}</div>;
+    return <div onContextMenu={(e) => e.preventDefault()} className={css(styles.lightBar)}>{generateTabs()}</div>;
 };
 
 export default Lightbar;

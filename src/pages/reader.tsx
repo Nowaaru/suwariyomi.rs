@@ -720,6 +720,7 @@ const Reader = () => {
         <AnimatePresence>
             <Container
                 key="toolbar"
+                onContextMenu={(e) => e.preventDefault()}
                 position="absolute"
                 maxWidth="100%"
                 height="100px"
